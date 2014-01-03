@@ -1,0 +1,2 @@
+function [x minVal]=minGridSearch(cf,varargin)
+NUM_PARAM=length(varargin);

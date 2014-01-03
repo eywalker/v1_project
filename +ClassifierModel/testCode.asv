@@ -1,0 +1,27 @@
+SESSION_NUM=13;
+trialInfo=sessionData(SESSION_NUM).trial_info;
+counts=cat(2,trialInfo.counts);
+orientation=[trialInfo.orientation];
+orientation=mod(orientation,180)+180;
+contrast=[trialInfo.contrast];
+
+contrastList=sort(unique(contrast(:)),1,'descend');
+contVal=contrastList(1);
+trials=find(contrast==contrastList(1)); %choose highest contrast
+GPtc=ClassifierModel.GPPPCEncoder(size(counts,1)); %initialize with 96 units
+GPtc.train(orientation(trials),[],counts(:,trials)); %train the GP tuning curves
+%decode_ori=230:0.5:310;
+
+sc=GPtc.encode(decode_ori,contVal);
+
+pnEnc=ClassifierModel.PoissonNoisePPCEncoder(GPtc);
+likelihood=pnEnc.getLikelihood(orientation(trials),[],counts(:,trials));
+
+%%
+F = gpRegTuningFunctions(orientation(trials)',counts(:,trials));
+%%
+ms=[];
+for i = 1: 8
+    cat(sessionData(i).modelScores,2);
+    
+end
