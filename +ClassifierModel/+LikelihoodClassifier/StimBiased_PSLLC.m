@@ -67,10 +67,22 @@ classdef StimBiased_PSLLC < handle
         function muLL = train(self, decodeOri, likelihood, stimulus, classResp, nReps)
             fprintf('Training %s', self.modelName);
             % TRAIN Trains the likelihood classifier to learn the model
-            if nargin < 5
+            if nargin < 6
                 nReps = 10; % defaults to 10 repetitions of training
             end
             
+            % dirty method to handle struct being passed in as the arg
+            if nargin <= 3 && isstruct(decodeOri)
+                if nargin == 3 % nReps passed in
+                    nReps = likelihood
+                end
+                trainStruct = decodeOri
+                decodeOri = trainStruct.decodeOri
+                likelihood = trainStruct.likelihood
+                stimulus = trainStruct.stimulus
+                classResp = trainStruct.classResp
+            end
+               
             logLRatio = self.getLogLRatio(decodeOri, likelihood, stimulus); % precompute the log-likelihood ratio
             
             function cost = cf(param)

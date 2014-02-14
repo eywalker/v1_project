@@ -81,6 +81,9 @@ classdef ContrastAdjustedGPDPCEncoder < handle
         
         function spikeCounts = encode(self, stimulus, contrast)
             % ENCODE Encode the given stimulus into spike counts
+            if nargin < 3 % no contrast give -> assume highest contrast
+                contrast = self.contList(end);
+            end
             
             spikeCounts=zeros(self.NUM_UNITS,length(stimulus));
             for indUnit=1:self.NUM_UNITS
@@ -91,6 +94,7 @@ classdef ContrastAdjustedGPDPCEncoder < handle
                 spikeCounts(indUnit,:)=f;
             end
             contInd = arrayfun(@(x) find(self.contList == x), contrast);
+            
             if(length(contInd) == 1) % if only one contrast value given, assume it's the same for all sitmuli
                 contInd = contInd * ones(size(stimulus));
             end
@@ -101,13 +105,24 @@ classdef ContrastAdjustedGPDPCEncoder < handle
         
         function plot(self)
             % Plot out resultant tuning functions
+            % Currently implemented dirtily just to get the desired plot
+            % when plotting for total of 96 units - ought to generalize it!
             ROW = ceil(sqrt(self.NUM_UNITS));
             COL = ceil(self.NUM_UNITS/ROW);
-            stim = linspace(min(self.trainStimulus),max(self.trainStimulus),100);
-            spikeCounts = self.encode(stim,[]);
-            for indUnit=1:self.NUM_UNITS
+            lb = min(self.trainStimulus);
+            ub = max(self.trainStimulus);
+            stim = linspace(lb, ub, 100);
+            spikeCounts = self.encode(stim);
+            indSkip = [1, 10, 91, 100];
+            count = 1;
+            for indUnit=1:100
+                if ismember(indUnit, indSkip)
+                    continue;
+                end
                 subplot(ROW,COL,indUnit);
-                plot(stim,spikeCounts(indUnit,:));
+                plot(stim,spikeCounts(count,:));
+                count = count + 1;
+                xlim([lb, ub]);
             end
         end
         

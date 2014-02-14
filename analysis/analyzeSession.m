@@ -1,10 +1,26 @@
+
 function cvResults = analyzeSession(trialInfo)
+% This code takes a trialInfo structure array and perform v1-decoding
+% analysis, returning cross-validated analysis results for each contrast
+% found within the trialInfo structure.
+% 
+% Author: Edgar Y. Walker
+% Created: Aug, 2013
+% Email: edgar.walker@gmail.com
+%
+% Lasted edited on Feb 10, 2014 by Edgar Walker (edgar.walker@gmail.com)
+
+    % analysis constants
+    UNIT_THR = -3; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
+
+    % experiment configuration
     sigmaA = 3;
     sigmaB = 15;
     sCenter = 270;
     decodeOri = [220:0.5:320];
     N = 10; % N way cross validation
     
+    % extract details trial info
     all_counts = cat(2,trialInfo.counts);             
     all_orientation = [trialInfo.orientation];
     all_orientation=mod(all_orientation,180)+180;
@@ -17,15 +33,18 @@ function cvResults = analyzeSession(trialInfo)
 
     % train tuning curves and obtain likelihood for all contrasts
     fprintf('Training tuning curves...\n');
+    
     gpCurve = ClassifierModel.CoderDecoder.ContrastAdjustedGPDPCEncoder(96);
     gpCurve.train(all_orientation, all_contrast, all_counts); % train GP tuning curves
     pnCodec = ClassifierModel.CoderDecoder.PoissonNoisePPCodec(gpCurve); % wrap GP tuning curves with Poisson noise
     logLAll = pnCodec.getLogLikelihood(all_orientation, all_contrast, all_counts); % assess quality of tuning curve
     unitLL = mean(logLAll, 2);
-    goodUnits = (unitLL > -3);
+    goodUnits = (unitLL > UNIT_THR);
     pnCodec.baseEncoder = gpCurve.restrict(goodUnits); % remove channels with poor tuning curve fit
     L = pnCodec.getLikelihoodDistrWithContrastPrior(decodeOri, contList, contPrior, all_counts(goodUnits, :)); % decode likelihood
     
+    
+    %% run analysis for each contrast separately
     for indContrast = 1:length(contList)
         
         contrast = contList(indContrast); 
@@ -52,6 +71,8 @@ function cvResults = analyzeSession(trialInfo)
             
 
             fprintf('Training models...\n');
+            
+            %% create all model instances
             
             % create and initialize list of non-stim-biased models
             modelListA = {};
@@ -84,6 +105,7 @@ function cvResults = analyzeSession(trialInfo)
             % create the behavioral model
             behModel = ClassifierModel.BehavioralClassifier.BPLClassifier2(sigmaA, sigmaB, sCenter);
             
+            %% train all models
             
             % train non stim_biased models
             modelStruct = struct();
@@ -94,6 +116,7 @@ function cvResults = analyzeSession(trialInfo)
                 modelStruct(modelInd).trainLL = model.train(decodeOri, train.L, train.resp, 50);
             end
             
+            % train stim biased models
             for modelInd = 1:length(modelListB)
                 model = modelListB{modelInd};
                 modelStruct(modelInd + nA).modelName = model.modelName;
@@ -104,12 +127,13 @@ function cvResults = analyzeSession(trialInfo)
             modelStruct(nA + nB + 1).modelName = behModel.modelName;
             modelStruct(nA + nB + 1).trainLL = behModel.train(train.s, contrast, train.resp, 50);
             
-            % test all models
+            %% test all models
             for modelInd = 1:length(modelListA)
                 model = modelListA{modelInd};
                 modelStruct(modelInd).testLL = model.getLogLikelihood(decodeOri, test.L, test.resp);
                 fprintf('%s: %2.3f\n', model.modelName, modelStruct(modelInd).testLL);
             end
+            
             
             for modelInd = 1:length(modelListB)
                 model = modelListB{modelInd};
@@ -134,7 +158,6 @@ function cvResults = analyzeSession(trialInfo)
         cvContrast(indContrast).trialInd = trialInd;
         cvContrast(indContrast).splits = splits;
         cvContrast(indContrast).data = cvData;
-        
     end
     
     % populate cvResults

@@ -90,7 +90,21 @@ classdef BPLLikelihoodClassifier < handle
             if nargin < 5
                 nReps = 10;
             end
-            [s_hat, sigma] = self.cwExtractor(decodeOri, likelihood);
+            
+            % Dirty method to handle struct being passed in as the arg
+            if nargin <= 3 && isstruct(decodeOri)
+                if nargin == 3 % nReps passed in
+                    nReps = likelihood
+                end
+                trainStruct = decodeOri
+                decodeOri = trainStruct.decodeOri
+                likelihood = trainStruct.likelihood
+                classResp = trainStruct.classResp
+            end
+            
+            
+            [s_hat, sigma] = self.cwExtractor(decodeOri, likelihood); % pull out the peak and widt of likelihood distr
+            
             function cost = cf(param)
                 self.setModelParameters(param); % update parameter values
                 cost = -self.getLogLikelihoodHelper(s_hat, sigma, classResp);

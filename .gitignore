@@ -3,3 +3,4 @@
 ~*
 *.asv
 data/
+.DS_Store
