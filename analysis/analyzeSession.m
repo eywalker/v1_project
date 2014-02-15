@@ -62,92 +62,74 @@ function cvResults = analyzeSession(trialInfo)
             trainInd = trialInd([1:splits(ind), splits(ind+1)+1:end]); % pick training sets
 
             % build train and test set
-            train.L = L(:,trainInd);
-            train.s = all_orientation(trainInd);
-            train.resp = all_resp(trainInd);
-            test.L = L(:,testInd);
-            test.s = all_orientation(testInd);
-            test.resp = all_resp(testInd);
+            trainSet.decodeOri = decodeOri;
+            trainSet.likelihood = L(:,trainInd);
+            trainSet.stimulus = all_orientation(trainInd);
+            trainSet.classResp = all_resp(trainInd);
+            
+            testSet.decodeOri = decodeOri;
+            testSet.likelihood = L(:,testInd);
+            testSet.stimulus = all_orientation(testInd);
+            testSet.classResp = all_resp(testInd);
             
 
             fprintf('Training models...\n');
             
             %% create all model instances
             
-            % create and initialize list of non-stim-biased models
-            modelListA = {};
+            % create and initialize list of models
+            modelList = {};
             model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter,'GaussianPeak');
-            modelListA = [modelListA {model}];
-            model = ClassifierModel.LikelihoodClassifier.OptimalWidth(sigmaA, sigmaB, sCenter, 'OptimizedWidth', @ClassifierModel.getMeanStd);
-            modelListA = [modelListA {model}];
+            modelList = [modelList {model}];
+            %model = ClassifierModel.LikelihoodClassifier.OptimalWidth(sigmaA, sigmaB, sCenter, 'OptimizedWidth', @ClassifierModel.getMeanStd);
+            %modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'ML_Peak', @ClassifierModel.getMaxStd);
-            modelListA = [modelListA {model}];
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'LikelihoodMean', @ClassifierModel.getMeanStd);
-            modelListA = [modelListA {model}];
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PeakWidthPSLLC(sigmaA, sigmaB, sCenter, 'GaussianPeakWidth');
-            modelListA = [modelListA {model}];
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PeakWidthPSLLC(sigmaA, sigmaB, sCenter, 'LikelihoodMeanWidth',@ClassifierModel.getMeanStd);
-            modelListA = [modelListA {model}];
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.FullPSLLC(sigmaA, sigmaB, sCenter, 'FullLikelihood');
-            modelListA = [modelListA {model}];
-            
-            nA = length(modelListA);
-            
-            % create and initialize list of stim-biased models
-            modelListB = {};
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PeakWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SC_GaussianWidth');
-            modelListB = [modelListB {model}];
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PeakWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SC_LikelihoodWidth', @ClassifierModel.getMeanStd);
-            modelListB = [modelListB {model}];
+            modelList = [modelList {model}];
             
-            nB = length(modelListB);
-            
-            % create the behavioral model
-            behModel = ClassifierModel.BehavioralClassifier.BPLClassifier2(sigmaA, sigmaB, sCenter);
+            %model = ClassifierModel.BehavioralClassifier.BPLClassifier2(sigmaA, sigmaB, sCenter);
+            %modelList = [modelList {model}];
             
             %% train all models
             
-            % train non stim_biased models
+  
             modelStruct = struct();
             
-            for modelInd = 1:length(modelListA)
-                model = modelListA{modelInd};
+            for modelInd = 1:length(modelList)
+                model = modelList{modelInd};
                 modelStruct(modelInd).modelName = model.modelName;
-                modelStruct(modelInd).trainLL = model.train(decodeOri, train.L, train.resp, 50);
+                modelStruct(modelInd).trainLL = model.train(trainSet, 50);
             end
             
-            % train stim biased models
-            for modelInd = 1:length(modelListB)
-                model = modelListB{modelInd};
-                modelStruct(modelInd + nA).modelName = model.modelName;
-                modelStruct(modelInd + nA).trainLL = model.train(decodeOri, train.L, train.s, train.resp, 50);
-            end
-            
-            % train behavioral classifier
-            modelStruct(nA + nB + 1).modelName = behModel.modelName;
-            modelStruct(nA + nB + 1).trainLL = behModel.train(train.s, contrast, train.resp, 50);
+%             % train behavioral classifier
+%             modelStruct(nA + nB + 1).modelName = behModel.modelName;
+%             modelStruct(nA + nB + 1).trainLL = behModel.train(train.s, contrast, train.resp, 50);
             
             %% test all models
-            for modelInd = 1:length(modelListA)
-                model = modelListA{modelInd};
-                modelStruct(modelInd).testLL = model.getLogLikelihood(decodeOri, test.L, test.resp);
+            for modelInd = 1:length(modelList)
+                model = modelList{modelInd};
+                modelStruct(modelInd).testLL = model.getLogLikelihood(testSet);
                 fprintf('%s: %2.3f\n', model.modelName, modelStruct(modelInd).testLL);
             end
             
-            
-            for modelInd = 1:length(modelListB)
-                model = modelListB{modelInd};
-                modelStruct(modelInd + nA).testLL = model.getLogLikelihood(decodeOri, test.L, test.s, test.resp);
-                fprintf('%s: %2.3f\n', model.modelName, modelStruct(modelInd + nA).testLL);
-            end
-            
-            modelStruct(nA + nB + 1).testLL = behModel.getLogLikelihood(test.s, contrast, test.resp);
-            fprintf('%s: %2.3f\n', behModel.modelName, modelStruct(nA + nB + 1).testLL);
+%             modelStruct(nA + nB + 1).testLL = behModel.getLogLikelihood(test.s, contrast, test.resp);
+%             fprintf('%s: %2.3f\n', behModel.modelName, modelStruct(nA + nB + 1).testLL);
             
             
-            % store results of this CV run
-            cvData(ind).trainSet = train;
-            cvData(ind).testSet = test;
+            %% store results of this CV run
+            cvData(ind).trainSet = trainSet;
+            cvData(ind).testSet = testSet;
             cvData(ind).models = modelStruct;
             
         end

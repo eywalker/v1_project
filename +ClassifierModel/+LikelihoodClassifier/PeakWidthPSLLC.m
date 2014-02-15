@@ -21,7 +21,9 @@ classdef PeakWidthPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     end
     
     methods (Access = protected)
-        function logLRatio = getLogLRatio(self, decodeOri, likelihood)
+        function logLRatio = getLogLRatio(self, dataStruct) %decodeOri, likelihood)
+            decodeOri = dataStruct.decodeOri;
+            likelihood = dataStruct.likelihood;
             [s_hat, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
             s_hat = s_hat(:);
             sigma = sigma(:);

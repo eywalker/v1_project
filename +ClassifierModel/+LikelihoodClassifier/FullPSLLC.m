@@ -14,8 +14,9 @@ classdef FullPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     end
     
     methods (Access = protected)
-        function logLRatio = getLogLRatio(self, decodeOri, likelihood)
-            decodeOri = decodeOri(:);
+        function logLRatio = getLogLRatio(self, dataStruct)% decodeOri, likelihood)
+            decodeOri = dataStruct.decodeOri(:);
+            likelihood = dataStruct.likelihood;
             psA = normpdf(decodeOri, self.stimCenter, self.sigmaA); % p(s | C = 'A')
             psB = normpdf(decodeOri, self.stimCenter, self.sigmaB); % p(s | C = 'B')
             prA = likelihood' * psA; % p(r | C = 'A')

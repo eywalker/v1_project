@@ -32,7 +32,7 @@ classdef PSLLC < handle
     
     methods (Abstract, Access = protected)
         
-        getLogLRatio(obj, decodeOri, likelihood);
+        getLogLRatio(obj, dataStruct);
         % As explained in the class documentation, this method has to be
         % implemented by subclass. It is at this step where you can set the
         % rest of the behavior to depend on only certain aspect of the
@@ -56,21 +56,21 @@ classdef PSLLC < handle
             obj.modelName = modelName;
         end
         
-        function pA = pRespA(self, decodeOri, likelihood)
+        function pA = pRespA(self, dataStruct)
         % pRespA Returns the probability of the classifier responding 
         % class 'A' given the likelihood function over the orientation
         % decodeOri. Likelhood must have the dimension of D x T where D
         % is the size of decodeOri and T is number of trials
-            logLRatio = self.getLogLRatio(decodeOri, likelihood);
+            logLRatio = self.getLogLRatio(dataStruct);
             pA = self.pRespAHelper(logLRatio);
         end
         
-        function classResp = classifyLikelihood(self, decodeOri, likelihood)
+        function classResp = classifyLikelihood(self, dataStruct)
         % classifyLikelihood Classifies the given likelihood
         % distribution over decodeOri as arising from either class A or
         % class B. Note that this is a stochastic classifier and thus
         % its response varies from run to run.
-            pA = self.pRespA(decodeOri, likelihood);
+            pA = self.pRespA(dataStruct);
             nTrials = size(likelihood, 2);
             n = rand(nTrials, 1);
             classResp = cell(nTrials, 1);
@@ -83,15 +83,15 @@ classdef PSLLC < handle
             end
         end
         
-        function [muLL, logLList] = getLogLikelihood(self, decodeOri, likelihood, classResp)
+        function [muLL, logLList] = getLogLikelihood(self, dataStruct)
         % getLogLikelihood Returns the log-liklihood of generating
         % response vector classResp given the likilihood functions over
         % orientation for each trial.
-            logLRatio = self.getLogLRatio(decodeOri, likelihood);
-            [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, classResp);
+            logLRatio = self.getLogLRatio(dataStruct);
+            [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.classResp);
         end
         
-        function muLL = train(self, decodeOri, likelihood, classResp, nReps)
+        function muLL = train(self, trainSet, nReps)%decodeOri, likelihood, classResp, nReps)
         % train Trains the model using the training dataset.
         % 
         % Note that this train method will only train three parameters
@@ -102,17 +102,17 @@ classdef PSLLC < handle
         %
             fprintf('Training %s', self.modelName);
             % TRAIN Trains the likelihood classifier to learn the model
-            if nargin < 5
+            if nargin < 3
                 nReps = 10; % defaults to 10 repetitions of training
             end
             
-            logLRatio = self.getLogLRatio(decodeOri, likelihood); % precompute the log-likelihood ratio
+            logLRatio = self.getLogLRatio(trainSet); % precompute the log-likelihood ratio
             
             function cost = cf(param)
             % cost function for optimization - defined as the negative log
             % likelihood.
                 self.setModelParameters(param); % update parameter values
-                cost = -self.getLogLikelihoodHelper(logLRatio, classResp);
+                cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.classResp);
                 if(isnan(cost) || ~isreal(cost))
                     cost = Inf;
                 end

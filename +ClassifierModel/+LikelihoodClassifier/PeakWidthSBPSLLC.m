@@ -1,4 +1,4 @@
-classdef PeakWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.StimBiased_PSLLC
+classdef PeakWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     % Posterior-Sampling with Lapse rate based Likelihood Classifier
     properties
         pwExtractor;
@@ -15,13 +15,17 @@ classdef PeakWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.StimBiased_PSLL
             if nargin < 4
                 modelName = 'PeakWidthSBPSLLC';
             end
-            obj = obj@ClassifierModel.LikelihoodClassifier.StimBiased_PSLLC(sigmaA, sigmaB, stimCenter, modelName);
+            obj = obj@ClassifierModel.LikelihoodClassifier.PSLLC(sigmaA, sigmaB, stimCenter, modelName);
             obj.pwExtractor = pwExtractor;
         end
     end
     
     methods (Access = protected)
-        function logLRatio = getLogLRatio(self, decodeOri, likelihood, stimulus)
+        function logLRatio = getLogLRatio(self, dataStruct) %decodeOri, likelihood, stimulus)
+            decodeOri = dataStruct.decodeOri(:);
+            likelihood = dataStruct.likelihood;
+            stimulus = dataStruct.stimulus;
+            
             [~, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
             s_hat = stimulus(:);
             sigma = sigma(:);
