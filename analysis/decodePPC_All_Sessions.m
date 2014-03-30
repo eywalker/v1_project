@@ -11,8 +11,9 @@ legend_label=arrayfun(@(x){sprintf('Contrast = %0.3f',x)},contList);
 legend_handle1=zeros(size(contList));
 legend_handle2=legend_handle1;
 
+bpl = ClassifierModel.BehavioralClassifier.BPLClassifier2(sigmaA, sigmaB, sCenter);
 
-prcPts=0:10:100;
+prcPts=0:25:100;
 prcCenter=0.5*(prcPts(1:end-1)+prcPts(2:end));
 distrPrcByContrast=cell(1,length(contList));
 sessions=1:9;
@@ -35,7 +36,8 @@ for indSession=sessions
             binc(ind)=mean(sigma_l(trials));
             s_sub=s(trials);
             resp_sub=classResp(trials);
-            [priorA, sigma_x(ind)]=fitModelBP(sigmaA,sigmaB,s_sub,resp_sub);
+            bpl.train(s_sub,[],resp_sub);
+            sigma_x(ind) = bpl.sigma;
         end
         disp(binc);
         disp(sigma_x);
@@ -82,14 +84,14 @@ title('Average sigma of fitted BP-model vs sigma_L percentile');
 legend(legend_handle,legend_label);
 
 %% compare sigma_l distribution across contrasts
-sessions=[1:9];
+sessions=[1:6];
 allContrastInfo=[sessionData(sessions).contrast_info];
 contList=sort(unique([allContrastInfo.contrast]),2,'descend');
 figure;
 colors=lines;
 legend_label=arrayfun(@(x){sprintf('Contrast = %0.3f',x)},contList);
 legend_handle=zeros(size(contList));
-edges=0:0.25:10;
+edges=0:0.25:15;
 avgDistr=cell(length(contList),1);
 subplot(1,2,1);
 for indCont=1:length(allContrastInfo)
@@ -107,7 +109,7 @@ end
 xlabel('sigma_L');
 ylabel('Frequency');
 title('Distribution of sigma_L by contrast');
-xlim([0,7]);
+xlim([0,12]);
 legend(legend_handle,legend_label);
 subplot(1,2,2);
 legend_handle=[];
@@ -123,7 +125,7 @@ end
 title('Averaged distribution of sigma_L by contrast');
 xlabel('sigma_L');
 ylabel('Frequency');
-xlim([0,7]);
+xlim([0,12]);
 ylim([0,0.6]);
 legend(legend_handle,legend_label);
 %% Analyze performance according to the sigma_L 

@@ -1,14 +1,30 @@
 classdef PeakWidthPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     % Posterior-Sampling with Lapse rate based Likelihood Classifier
+    % (PSLLC) model that would extract peak and width information from the
+    % full likelihood function and replace it with Gaussian likelihood of
+    % equivalent peak (mean) and width (standard deviation). By default the
+    % model will fit gaussian curve to the full likelihood function, but
+    % alternative method of peak/width extraction may be employed by
+    % passing in a peak-width extractor (pwExtractor) function. The
+    % pwExtractor must accept decode orientation over which the likelihood
+    % function matrix is defined, and return peak and width for each
+    % sample.
+    %
+    % Author: Edgar Y. Walker
+    % e-mail: edgar.walker@gmail.com
+    % Last modified: Feb 16, 2014
+    %
     properties
         pwExtractor;
     end
     
     methods
         function obj = PeakWidthPSLLC(sigmaA, sigmaB, stimCenter, modelName, pwExtractor)
-            % CONSTRUCTOR Initializes the object with experiment settings about standard
-            % deviation (sigmaA and sigmaB) and center (stimCenter) of two
-            % distributions.
+        % Initializes the object with experiment settings about
+        % standard deviation (sigmaA and sigmaB) and center
+        % (stimCenter) of two distributions. You can optionally pass in
+        % name of the model (modelName) and a function handle to the
+        % likelihood peak and width extractor (pwExtractor).
             if nargin < 5
                 pwExtractor = @ClassifierModel.fitGaussToLikelihood;
             end

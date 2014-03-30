@@ -1,4 +1,3 @@
-
 function cvResults = analyzeSession(trialInfo)
 % This code takes a trialInfo structure array and perform v1-decoding
 % analysis, returning cross-validated analysis results for each contrast

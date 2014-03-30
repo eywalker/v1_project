@@ -1,11 +1,29 @@
 classdef ContrastAdjustedGPDPCEncoder < handle
-    % GPENCODER Gaussian process based deterministic population encoder of 
-    % the orientation stimuli (tuning curve based)
-    %   Note that this is a DETERMINISTIC encoder (i.e. same stimulus
-    %   always elicit identical responses). To make this into a PPC
-    %   encoder, wrap it with a noise model such as PoissonNoisePPCodec
+    % Gaussian process based deterministic population encoder of 
+    % the orientation stimuli (tuning curve based) with contrast
+    % adjustments.
+    %
+    % This model extends the standard Gaussian Process based DPC by
+    % assuming that the contrast only modifies the canonical tuning
+    % function over orientation by a constant factor. Note that this is not
+    % a strict contrast-gain model as no assumption is made about the trend
+    % of the gain against the contrast (i.e. the constant gain is a
+    % function of contrast but does not need to be of any particular form).
+    % 
+    % The current implementation of this model does NOT interpolate between
+    % contrast values and thus the function's response can only be
+    % simulated for set of contrast values used to train the model.
+    %
+    % Note that this is a DETERMINISTIC encoder (i.e. same stimulus
+    % always elicit identical responses). To make this into a PPC
+    % encoder, wrap it with a noise model such as PoissonNoisePPCodec
+    %
+    % Author: Edgar Y. Walker
+    % e-mail: edgar.walker@gmail.com
+    % Last modified: Feb 16, 2014
+    %
     properties
-        contList;
+        contList; % list of contrasts for which tuning function is trained and thus defined
         normBias;
         
         sigma_obs=1; % baseline observation
@@ -81,7 +99,7 @@ classdef ContrastAdjustedGPDPCEncoder < handle
         
         function spikeCounts = encode(self, stimulus, contrast)
             % ENCODE Encode the given stimulus into spike counts
-            if nargin < 3 % no contrast give -> assume highest contrast
+            if nargin < 3 % no contrast given -> assume highest contrast
                 contrast = self.contList(end);
             end
             
@@ -104,9 +122,12 @@ classdef ContrastAdjustedGPDPCEncoder < handle
         end
         
         function plot(self)
+            figure;
             % Plot out resultant tuning functions
             % Currently implemented dirtily just to get the desired plot
             % when plotting for total of 96 units - ought to generalize it!
+            margin = 0.05;
+            w = (1 - 2*margin)/10;
             ROW = ceil(sqrt(self.NUM_UNITS));
             COL = ceil(self.NUM_UNITS/ROW);
             lb = min(self.trainStimulus);
@@ -119,8 +140,15 @@ classdef ContrastAdjustedGPDPCEncoder < handle
                 if ismember(indUnit, indSkip)
                     continue;
                 end
-                subplot(ROW,COL,indUnit);
-                plot(stim,spikeCounts(count,:));
+                %hax=subplot(ROW,COL,indUnit);
+                hax = axes;
+                hf=plot(stim,spikeCounts(count,:));
+                xlabel([]);
+                ylabel([]);
+                set(hax,'Position',[margin+w*floor((indUnit-1)/10), margin + w*mod(indUnit-1, 10), w, w]);
+                set(hax,'xtick',[],'ytick',[]);
+                set(hax,'xticklabel',[]);
+                set(hax,'yticklabel',[]);
                 count = count + 1;
                 xlim([lb, ub]);
             end

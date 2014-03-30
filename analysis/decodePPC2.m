@@ -1,28 +1,28 @@
- % Fetch session list - run only if sessionData struct lost
-% key = acq.Sessions('session_datetime > "2013-06-01"');
-% sessionData=fetch((class_discrimination.ClassDiscriminationExperiment * ephys.SpikesAlignedSet) & key);
-% 
-% hSession=waitbar(0,sprintf('Completed session %d out of %d',0,length(sessionData)));
-% h=waitbar(0,sprintf('Fetching Recording Data (%f2.2%% complete)',0));
-% for idxSess=1:length(sessionData)
-%     session=sessionData(idxSess);
-%     info=fetch(acq.Sessions & session,'*');
-%     date=info.session_datetime;
-%     trial_info=fetch(class_discrimination.ClassDiscriminationTrial & session, '*');
-%     
-%     
+%Fetch session list - run only if sessionData struct lost
+%key = acq.Sessions('session_datetime > "2013-06-01"');
+sessionData=fetch((class_discrimination.ClassDiscriminationExperiment * ephys.SpikesAlignedSet));
+
+hSession=waitbar(0,sprintf('Completed session %d out of %d',0,length(sessionData)));
+h=waitbar(0,sprintf('Fetching Recording Data (%f2.2%% complete)',0));
+for idxSess=1:length(sessionData)
+    session=sessionData(idxSess);
+    info=fetch(acq.Sessions & session,'*');
+    date=info.session_datetime;
+    trial_info=fetch(class_discrimination.ClassDiscriminationTrial & session, '*');
+    
+    
 %     waitbar(0,h,sprintf('Fetching Recording Data (%f2.2%% complete)',0));
 %     for i = 1:length(trial_info)
 %         spikes = fetch(ephys.SpikesAlignedTrial & trial_info(i), 'spikes_aligned');
 %         trial_info(i).counts = arrayfun(@(x) sum(x.spikes_aligned > 0 & x.spikes_aligned < 500), spikes);
 %         waitbar(i/length(trial_info),h, sprintf('Fetching Recording Data (%2.2f%% complete)',i/length(trial_info)*100));
 %     end
-%     sessionData(idxSess).trial_info=trial_info;
-%     sessionData(idxSess).date=date;
-%     waitbar(idxSess/length(sessionData),hSession,sprintf('Completed session %d out of %d',idxSess,length(sessionData)));
-% end
-% close(h);
-% close(hSession);
+    sessionData(idxSess).trial_info=trial_info;
+    sessionData(idxSess).date=date;
+    waitbar(idxSess/length(sessionData),hSession,sprintf('Completed session %d out of %d',idxSess,length(sessionData)));
+end
+close(h);
+close(hSession);
 %% Specify session number
 %for sessionNum = 1 : length(sessionData)
 SESSION_NUM=20;
