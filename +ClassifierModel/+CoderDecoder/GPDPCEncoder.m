@@ -67,14 +67,38 @@ classdef GPDPCEncoder < handle
         end
         
         function plot(self)
+            figure;
             % Plot out resultant tuning functions
+            % Currently implemented dirtily just to get the desired plot
+            % when plotting for total of 96 units - ought to generalize it!
+            margin = 0.05;
+            w = (1 - 2*margin)/10;
             ROW = ceil(sqrt(self.NUM_UNITS));
             COL = ceil(self.NUM_UNITS/ROW);
-            stim = linspace(min(self.trainStimulus),max(self.trainStimulus),100);
-            spikeCounts = self.encode(stim,[]);
-            for indUnit=1:self.NUM_UNITS
-                subplot(ROW,COL,indUnit);
-                plot(stim,spikeCounts(indUnit,:));
+            lb = 230;%min(self.trainStimulus);
+            ub = 310;%max(self.trainStimulus);
+            stim = linspace(lb, ub, 100);
+            spikeCounts = self.encode(stim);
+            indSkip = [1, 10, 91, 100];
+            count = 1;
+            for indUnit=1:100
+                if ismember(indUnit, indSkip)
+                    continue;
+                end
+                %hax=subplot(ROW,COL,indUnit);
+                hax = axes;
+                scale=max(spikeCounts(count,:))-min(spikeCounts(count,:));
+                hf=plot(stim,(spikeCounts(count,:)-min(spikeCounts(count,:)))/scale);
+                xlabel([]);
+                ylabel([]);
+                set(hax,'Position',[margin+w*floor((indUnit-1)/10), margin + w*mod(indUnit-1, 10), w, w]);
+                set(hax,'xtick',[],'ytick',[]);
+                set(hax,'xticklabel',[]);
+                set(hax,'yticklabel',[]);
+                count = count + 1;
+                xlim([lb, ub]);
+                ylim([-.05,1.05])
+                %ylim([0, 10]);
             end
         end
         

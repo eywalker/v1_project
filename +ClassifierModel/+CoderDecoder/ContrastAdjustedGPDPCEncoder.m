@@ -26,8 +26,8 @@ classdef ContrastAdjustedGPDPCEncoder < handle
         contList; % list of contrasts for which tuning function is trained and thus defined
         normBias;
         
-        sigma_obs=1; % baseline observation
-        sigma_kernel=10; % Covariance kernel smoothness parameter
+        sigma_obs=2; % baseline observation
+        sigma_kernel=20; % Covariance kernel smoothness parameter
         
         trainStimulus=[]; % Stimulus values on which GP was trained
         alpha; % weight vector (?)
@@ -142,6 +142,8 @@ classdef ContrastAdjustedGPDPCEncoder < handle
                 end
                 %hax=subplot(ROW,COL,indUnit);
                 hax = axes;
+                %scale=max(spikeCounts(count,:))-min(spikeCounts(count,:));
+                %hf=plot(stim,(spikeCounts(count,:)-min(spikeCounts(count,:)))/scale);
                 hf=plot(stim,spikeCounts(count,:));
                 xlabel([]);
                 ylabel([]);
@@ -151,6 +153,8 @@ classdef ContrastAdjustedGPDPCEncoder < handle
                 set(hax,'yticklabel',[]);
                 count = count + 1;
                 xlim([lb, ub]);
+                %ylim([-.05,1.05])
+                %ylim([0, 10]);
             end
         end
         

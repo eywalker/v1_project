@@ -33,7 +33,7 @@ decodeOri = [220:0.5:320];
 N = 10; % N way cross validation 
 % NOTE: Session 10 apparently sucks!
 
-for sessionNum = 1:5%length(sessionData)
+for sessionNum = 1%length(sessionData)
     fprintf('Working on session %d...\n',sessionNum);
     %
     % units = [1 2 3 7, ...
@@ -140,6 +140,7 @@ for sessionNum = 1:5%length(sessionData)
                 modelStruct(modelInd).trainLL = model.train(decodeOri, train.L, train.resp, 50);
             end
             
+            % train stim-biased moedls
             for modelInd = 1:length(modelListB)
                 model = modelListB{modelInd};
                 modelStruct(modelInd + nA).modelName = model.modelName;

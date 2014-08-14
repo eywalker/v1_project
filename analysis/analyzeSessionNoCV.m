@@ -10,7 +10,7 @@ function cvResults = analyzeSessionNoCV(trialInfo)
 % Lasted edited on Feb 16, 2014 by Edgar Walker (edgar.walker@gmail.com)
 
     % analysis constants
-    UNIT_THR = -3; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
+    UNIT_THR = -4; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
 
     % experiment configuration
     sigmaA = 3;

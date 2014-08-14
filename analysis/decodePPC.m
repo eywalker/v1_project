@@ -24,7 +24,7 @@ end
 close(h);
 close(hSession);
 %% Specify session number
-SESSION_NUM=8;
+SESSION_NUM=9;
 
 %%
 % units = [1 2 3 7, ...
@@ -216,7 +216,7 @@ for indCont=1:length(contrastInfo)
     imagesc(1:length(s),decode_ori,L(:,idx));
     hold on;
     plot(1:length(s),s,'k','LineWidth',2);
-    set(gca,'CLim',[0 0.3]);
+    set(gca,'CLim',[0 0.1]);
     title(sprintf('Contrast = %0.3f',contVal));
     xlabel('Trial');
     ylabel('s (deg)');

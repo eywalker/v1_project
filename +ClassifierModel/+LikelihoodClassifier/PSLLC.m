@@ -127,8 +127,8 @@ classdef PSLLC < handle
             for i = 1 : nReps
                 fprintf('.');
                 x0(1) = rand;
-                x0(2) = 100*rand;
-                x0(3) = rand;
+                %x0(2) = 100*rand;
+                x0(2) = rand;
                 
                 [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds,[],options);
                 if (cost < minCost)
@@ -150,9 +150,10 @@ classdef PSLLC < handle
             %   of the parameters before setting them. When using this
             %   method to assign parameter values, no check is performed!
             %   the parameters before setting them.
+            
             self.priorA = paramValues(1);
-            self.alpha = paramValues(2);
-            self.lapseRate = paramValues(3);
+            %self.alpha = paramValues(2);
+            self.lapseRate = paramValues(2);
         end
         
         function paramSet = getModelParameters(self)
@@ -168,10 +169,14 @@ classdef PSLLC < handle
             %
             % NOTE: The parameter identity is established by the order in
             % the list. 
-            paramSet.numParameters = 3;
-            paramSet.values = [self.priorA, self.alpha, self.lapseRate];
-            paramSet.lowerBounds = [0, 0, 0];
-            paramSet.upperBounds = [1, Inf, 1];
+            paramSet.numParameters = 2;
+            paramSet.values = [self.priorA, self.lapseRate];
+            paramSet.lowerBounds = [0, 0];
+            paramSet.upperBounds = [1, 1];
+%             paramSet.numParameters = 3;
+%             paramSet.values = [self.priorA, self.alpha, self.lapseRate];
+%             paramSet.lowerBounds = [0, 0, 0];
+%             paramSet.upperBounds = [1, Inf, 1];
         end
     end
     
@@ -183,10 +188,12 @@ classdef PSLLC < handle
             % probability of responding 'A' for each trial, incorporating
             % the accentuation (alpha) and lapse rate.
             logPostRatio = logLRatio + log(self.priorA ./ (1 - self.priorA)) ;% log(p(C = 'A' | r) / p(C = 'B' | r))
-            p = exp(self.alpha .* logPostRatio); % exponentiated posterior ratio [p(B|~)/p(A|~)]^alpha
-            pos = isinf(p);
-            expRespA = p ./ (1 + p); % p(responding A | r) for 0 lapse rate
-            expRespA(pos) = 1;
+            expRespA = (logPostRatio > 1); % expected response A
+            
+%             p = exp(self.alpha .* logPostRatio); % exponentiated posterior ratio [p(B|~)/p(A|~)]^alpha
+%             pos = isinf(p);
+%             expRespA = p ./ (1 + p); % p(responding A | r) for 0 lapse rate
+%             expRespA(pos) = 1;
             pA = expRespA .* (1 - self.lapseRate) + self.lapseRate * 0.5; % final p(C = 'A') including the lapse rate
         end
         

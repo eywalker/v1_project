@@ -73,7 +73,7 @@ disp(size(units));
 % %plot(1:length(trials),s_hat,'r');
 
 %% Obtain tuning curves and likelihood for all contrast levels
-for SESSION_NUM = 1:length(sessionData)
+for SESSION_NUM = 1:10
 sigmaA = 3;
 sigmaB = 15;
 sCenter = 270;

@@ -1,5 +1,5 @@
 result =[]
-for idx=1:20
+for idx=1:length(sessionData)
     result = [result sessionData(idx).simpleFitResults.cvContrast];
 end
 
@@ -11,10 +11,10 @@ for idxResult = 1:length(result)
     fits = [fits; [models.trainLL]];
 end
 
-selected = fits(:,[3, 5,6]);
+selected = fits(:,[3, 5, 6]);
 
 peak = selected(:,1) - selected(:,3);
-pw = selected(:,2) - selected(:,3);
+%pw = selected(:,2) - selected(:,3);
 %% Make bar plots
 
 
@@ -23,7 +23,9 @@ semPeak = std(peak) / sqrt(length(peak))
 muPW = mean(pw);
 semPW = std(pw) / sqrt(length(pw))
 help bar
-figure;bar(1, muPeak,'r'); hold on; bar(2, muPW, 'b')
+figure;
+subplot(1,2,1);
+bar(1, muPeak,'r'); hold on; bar(2, muPW, 'b')
 errorbar([1,2],[muPeak, muPW], [semPeak, semPW], 'linestyle','none')
 errorbar([1,2],[muPeak, muPW], [semPeak, semPW], 'k','linestyle','none')
 legend({'Mean only', 'Mean and Standard deviation'})
@@ -32,10 +34,12 @@ xlim([0.5,2.5])
 set(gca,'xtick',[])
 xlabel('Models');
 ylabel('Log likelihood relative to Full-likelihood model')
-%%
-binEdges = [0.005, 0.015, 0.025, 0.055, 0.16, 0.32];
-%binEdges = logspace(log10(0.005), log10(0.32),10);
+%% Peak and PW
+subplot(1,2,2);
 figure;
+binEdges = [0.005, 0.015, 0.025, 0.055, 0.16, 0.32, 1];
+%binEdges = unique(prctile(contrasts, logspace(-3,2,300)));
+%binEdges = logspace(log10(0.005), log10(0.32),10);
 [peakMu, peakStd, peakN, binc,bins]=nanBinnedStats(contrasts, peak, binEdges);
 peakSEM = peakStd ./ sqrt(peakN);
 errorbar(binc*100, peakMu, peakSEM, 'r');
@@ -44,11 +48,30 @@ hold on;
 pwSEM = pwStd ./ sqrt(pwN);
 errorbar(binc*100, pwMu, pwSEM, 'b');
 xlabel('Contrast (%)');
-ylabel('Log likelihood relative to Full-likelihood model');
+ylabel('Trial Averaged Difference in log-likelihood relative to the Full-likelihood model');
 legend({'Mean only', 'Mean and Standard deviation'})
+set(gca, 'xscale', 'log');
+xlim([0.5,100]);
+set(gca,'xtick', [0.5, 1, 5, 10, 50, 100]);
+
+%% Peak only
+figure;
+binEdges = [0.005, 0.015, 0.025, 0.055, 0.16, 0.32, 1];
+%binEdges = unique(prctile(contrasts, logspace(-3,2,300)));
+%binEdges = logspace(log10(0.005), log10(0.32),10);
+[peakMu, peakStd, peakN, binc,bins]=nanBinnedStats(contrasts, peak, binEdges);
+peakSEM = peakStd ./ sqrt(peakN);
+errorbar(binc*100, peakMu, peakSEM, 'r');
+
+xlabel('Contrast (%)');
+ylabel('Trial Averaged Difference in log-likelihood relative to the Full-likelihood model');
+legend({'Mean only', 'Mean and Standard deviation'})
+set(gca, 'xscale', 'log');
+xlim([0.5,100]);
+set(gca,'xtick', [0.5, 1, 5, 10, 50, 100]);
 
 %% Bars grouped by model
-binEdges = [0.005, 0.015, 0.025, 0.055, 0.32];
+binEdges = [0.005, 0.015, 0.025, 0.055, 0.32, 0.55,1];
 %binEdges = logspace(log10(0.005), log10(0.32),10);
 figure;
 [peakMu, peakStd, peakN, binc,bins]=nanBinnedStats(contrasts, peak, binEdges);
