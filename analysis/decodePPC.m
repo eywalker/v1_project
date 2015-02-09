@@ -1,5 +1,5 @@
  % Fetch session list - run only if sessionData struct lost
-key = acq.Sessions('session_datetime > "2013-08-01"');
+key = acq.Sessions('subject_id = 2');
 sessionData=fetch((class_discrimination.ClassDiscriminationExperiment * ephys.SpikesAlignedSet) & key);
 
 hSession=waitbar(0,sprintf('Completed session %d out of %d',0,length(sessionData)));

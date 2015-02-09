@@ -1,6 +1,6 @@
-classdef BPLClassifier < handle
-    % BPLCLASSIFIER Full Bayesian Classifier with free prior
-    % and lapse rate (BP-L model)
+classdef BPClassifier < handle
+    % BPCLASSIFIER Full Bayesian Classifier with free prior
+    % but no lapse rate
     %   This class represents Bayesian behavioral orientation stimulus
     %   classifier with free prior over stimulus category and lapse rate.
     properties
@@ -31,10 +31,13 @@ classdef BPLClassifier < handle
             
             % check if k is real. If it is not, p(responding 'A') = 0
             if(~isreal(k))
-               pCAs = zeros(size(s));
-            else
-               pCAs = ((1/2)*(erf((s+k)/sigma/sqrt(2))-erf((s-k)./sigma./sqrt(2)))); % p(C='A' | s)
+                listLL = zeros(1,length(stimulus));
+                listLL(respA) = -Inf;
+                muLL = mean(listLL);
+                return
             end
+            
+            pCAs = ((1/2)*(erf((s+k)/sigma/sqrt(2))-erf((s-k)./sigma./sqrt(2)))); % p(C='A' | s)
             L = pCAs*(1-lapseRate)+lapseRate*0.5; % incorporation of lapse rate
             L(respB) = 1-L(respB); % invert probabilites for trials where response was 'B'
             
@@ -44,7 +47,7 @@ classdef BPLClassifier < handle
     end
     
     methods
-        function obj = BPLClassifier(sigmaA, sigmaB, stimCenter)
+        function obj = BPClassifier(sigmaA, sigmaB, stimCenter)
             % BAYESIANBEHAVIORALCLASSIFIER Constructer that takes in sigmaA,
             % sigmaB and stimCenter describing the experiment
             obj.sigmaA = sigmaA;
@@ -76,27 +79,20 @@ classdef BPLClassifier < handle
             function cost=cf(param) % cost function for optimization, defined as negative log-likelihood
                 self.priorA=abs(param(1));
                 self.sigma=abs(param(2));
-                self.lapseRate=abs(param(3));
+                
                 cost = -self.getLogLikelihood(stimulus, contrast, response);
-                %disp(cost);
-                if isinf(cost)
-                    disp('Something not right...');
-                end
-                disp(param);
             end
             
-            minX = [self.priorA, self.sigma, self.lapseRate];
+            minX = [self.priorA, self.sigma];
             minCost = cf(minX);
-            %opt = optimoptions('fmincon');
-            opt.Display = 'off'
+            opt = optimoptions('fmincon');
             opt.MaxIter = 1000;
             opt.MaxFunEvals = 1000;
             opt.Algorithm = 'interior-point';
             for i = 1 : nReps
                 x0(1) = rand;
-                x0(2) = rand * 0.5;
-                x0(3) = rand;
-                [x, cost] = fmincon(@cf, x0, [], [], [], [], [0.001,0.001,0.0001],[1,Inf,1],[],opt);
+                x0(2) = rand * 100;
+                [x, cost] = fmincon(@cf, x0, [], [], [], [], [0.000,0.000],[1,Inf],[],opt);
                 if (cost < minCost)
                     minCost = cost;
                     minX = x;
@@ -105,7 +101,6 @@ classdef BPLClassifier < handle
             
             self.priorA = minX(1);
             self.sigma = minX(2);
-            self.lapseRate = minX(3);
             muLL = -minCost; % obtain the final trial-average log liklihood value attained
         end
         
@@ -141,21 +136,18 @@ classdef BPLClassifier < handle
             %   the parameters before setting them.
             self.priorA = paramValues(1);
             self.sigma = paramValues(2);
-            self.lapseRate = paramValues(3);
         end
         
         function paramSet = getModelParameters(self)
             % GETPARAMETERS Returns a structure containing information about
             % model parameters needed for optimization/training
             paramSet = [];
-            paramSet.numParameters = 3;
+            paramSet.numParameters = 2;
             paramSet.initValues = [self.priorA, self.sigma, self.lapseRate];
             paramSet.lowerBounds = [0, ...
-                                    0, ...
                                     0];
             paramSet.upperBounds = [1, ...
-                                    Inf, ...
-                                    1];
+                                    Inf];
         end
     end
 
