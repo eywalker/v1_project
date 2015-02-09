@@ -82,13 +82,13 @@ classdef BPLClassifier < handle
                 if isinf(cost)
                     disp('Something not right...');
                 end
-                disp(param);
+                
             end
             
             minX = [self.priorA, self.sigma, self.lapseRate];
             minCost = cf(minX);
             %opt = optimoptions('fmincon');
-            opt.Display = 'off'
+            opt.Display = 'off';
             opt.MaxIter = 1000;
             opt.MaxFunEvals = 1000;
             opt.Algorithm = 'interior-point';
