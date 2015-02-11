@@ -7,7 +7,7 @@ classdef OptimalWidth < handle
         priorA = 0.5; % prior for class 'A'
         alpha = 1; % posterior ratio power
         lapseRate = 0; % lapse rate
-        sigma = 5;
+        sigma = 5; % width of the likelihood function
         pointExtractor;
         modelName
     end

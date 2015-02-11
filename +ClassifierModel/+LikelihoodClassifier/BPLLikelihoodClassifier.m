@@ -9,6 +9,12 @@ classdef BPLLikelihoodClassifier < handle
         priorA = 0.5; % prior for class 'A'
         lapseRate = 0; % lapse rate
         cwExtractor; % reference to function that takes in likelihood and returns its center and width
+        
+        fixedParams = false(1, 2);
+        p_lb = [0, 0]; % lower bound for parameters
+        p_ub = [1, 1]; % upper bound for parameters
+        params = {'priorA', 'lapseRate'};
+        
     end
     
     methods
@@ -127,24 +133,45 @@ classdef BPLLikelihoodClassifier < handle
             muLL = -minCost;
         end
         
-         
+        function fixParameterByName(self, field)
+            pos = find(strcmp(field, self.params));
+            if ~isempty(pos)
+                self.fixedParams(pos) = true;
+            end
+        end
+        
+        function releaseParameterByName(self, field)
+            pos = find(strcmp(field, self.params));
+            if ~isempty(pos)
+                self.fixedParams(pos) = false;
+            end
+        end
+            
+        function setParameterFixMap(self, fmap)
+            assert(length(fmap) == length(self.params), 'Parameter fix map size must match the number of parameters!');
+            self.fixedParams = logical(fmap);
+        end
+        
         function setModelParameters(self, paramValues)
             % SETMODELPARAMETERS Immeidately sets the model parameters to the
             % specified values.
             %   WARNING: You have to know the correct number and condition of
             %   the parameters before setting them.
-            self.priorA = paramValues(1);
-            self.lapseRate = paramValues(2);
+            p_set = self.params(~self.fixedParams);
+            for i = 1:length(p_set)
+                self.(p_set{i}) = paramValues(i);
+            end
         end
         
         function paramSet = getModelParameters(self)
             % GETMODELPARAMETERS Returns a structure containing information about
             % model parameters needed for optimization/training
             paramSet = [];
-            paramSet.numParameters = 2;
-            paramSet.values = [self.priorA, self.lapseRate];
-            paramSet.lowerBounds = [0, 0];
-            paramSet.upperBounds = [1, 1];
+            p_set = self.params(~self.fixedParams);
+            paramSet.numParameters = length(p_set);
+            paramSet.values = cellfun(@(x) self.(x), p_set);
+            paramSet.lowerBounds = self.p_lb(~self.fixedParams);
+            paramSet.upperBounds = self.p_ub(~self.fixedParams);
         end
     end
 end

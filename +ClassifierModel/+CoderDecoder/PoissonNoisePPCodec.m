@@ -20,15 +20,13 @@ classdef PoissonNoisePPCodec < handle
         end
         
         function muLL = train(self, stimulus, contrast, spikeCounts, nRepeats)
-            % TRAIN Warning! - This function has not been implemented
-            % appropriately yet! Currently, it simply uses train method
-            % provided by the base encoder
+            % TRAIN Trains the poisson noise codec by woring together with
+            % the underlying encoder.
             if (nargin < 5)
                 nRepeats = 1; % number of times to randomize the initial condition
             end
             
             paramSet = self.baseEncoder.getModelParameters();
-            numParam = paramSet.numParameters;
             x0 = paramSet.initValues;
             lb = paramSet.lowerBounds;
             ub = paramSet.upperBounds;

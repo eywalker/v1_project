@@ -28,6 +28,12 @@ classdef PSLLC < handle
         alpha = 1; % posterior ratio power
         lapseRate = 0;
         modelName = ''; 
+        
+        params = {'priorA', 'lapseRate', 'alpha'};
+        fixedParams = false(1, 3);
+        p_lb = [0, 0, 0]; % lower bound for parameters
+        p_ub = [1, 1, Inf]; % upper bound for parameters
+        
     end
     
     methods (Abstract, Access = protected)
@@ -124,11 +130,11 @@ classdef PSLLC < handle
             
             options=optimset('Display','off','Algorithm','interior-point');%'MaxFunEvals',500,'FunValCheck','on');
             
+            x0set = self.getInitialGuess(nReps);
+            
             for i = 1 : nReps
                 fprintf('.');
-                x0(1) = rand;
-                %x0(2) = 100*rand;
-                x0(2) = rand;
+                x0 = x0set(:, i);
                 
                 [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds,[],options);
                 if (cost < minCost)
@@ -141,43 +147,60 @@ classdef PSLLC < handle
             fprintf('%2.3f\n',muLL);
         end
         
-         
-        function setModelParameters(self, paramValues)
-            % setModelParameters Immediately sets the model parameters to
-            % the specified values.
-            %
-            %   WARNING: You have to know the correct number and condition
-            %   of the parameters before setting them. When using this
-            %   method to assign parameter values, no check is performed!
-            %   the parameters before setting them.
+        function fixParameterByName(self, field)
+            pos = find(strcmp(field, self.params));
+            if ~isempty(pos)
+                self.fixedParams(pos) = true;
+            end
+        end
+        
+        function releaseParameterByName(self, field)
+            pos = find(strcmp(field, self.params));
+            if ~isempty(pos)
+                self.fixedParams(pos) = false;
+            end
+        end
             
-            self.priorA = paramValues(1);
-            %self.alpha = paramValues(2);
-            self.lapseRate = paramValues(2);
+        function setParameterFixMap(self, fmap)
+            assert(length(fmap) == length(self.params), 'Parameter fix map size must match the number of parameters!');
+            self.fixedParams = logical(fmap);
+        end
+        
+        function setModelParameters(self, paramValues)
+            % SETMODELPARAMETERS Immeidately sets the model parameters to the
+            % specified values.
+            %   WARNING: You have to know the correct number and condition of
+            %   the parameters before setting them.
+            p_set = self.params(~self.fixedParams);
+            for i = 1:length(p_set)
+                self.(p_set{i}) = paramValues(i);
+            end
         end
         
         function paramSet = getModelParameters(self)
-            % getModelParameters Returns a structure containing information
-            % about model parameters needed for optimization/training.
-            %
-            % Returned structure contains following fields (and any
-            % additional fields as deemed necessary by implementer):
-            %     numParameters - total number of parameters
-            %     values - current values of parameters
-            %     lowerBounds - lower bound values of parameters
-            %     upperBounds - upper bound values of parameters
-            %
-            % NOTE: The parameter identity is established by the order in
-            % the list. 
-            paramSet.numParameters = 2;
-            paramSet.values = [self.priorA, self.lapseRate];
-            paramSet.lowerBounds = [0, 0];
-            paramSet.upperBounds = [1, 1];
-%             paramSet.numParameters = 3;
-%             paramSet.values = [self.priorA, self.alpha, self.lapseRate];
-%             paramSet.lowerBounds = [0, 0, 0];
-%             paramSet.upperBounds = [1, Inf, 1];
+            % GETMODELPARAMETERS Returns a structure containing information about
+            % model parameters needed for optimization/training
+            paramSet = [];
+            p_set = self.params(~self.fixedParams);
+            paramSet.numParameters = length(p_set);
+            paramSet.values = cellfun(@(x) self.(x), p_set);
+            paramSet.lowerBounds = self.p_lb(~self.fixedParams);
+            paramSet.upperBounds = self.p_ub(~self.fixedParams);
         end
+        
+        function x0 = getInitialGuess(self, nreps)
+            paramSet = self.getModelParameters();
+            np = paramSet.numParameters;
+            r = rand(np, nreps);
+            lb = paramSet.lowerBounds(:);
+            ub = paramSet.upperBounds(:);
+            ub(isinf(ub))=10000;
+            lb(isinf(lb))=-10000;
+
+            x0 = bsxfun(@plus, bsxfun(@times,(ub-lb),r), lb);
+        end
+         
+        
     end
     
     %% Helper functions
@@ -188,12 +211,12 @@ classdef PSLLC < handle
             % probability of responding 'A' for each trial, incorporating
             % the accentuation (alpha) and lapse rate.
             logPostRatio = logLRatio + log(self.priorA ./ (1 - self.priorA)) ;% log(p(C = 'A' | r) / p(C = 'B' | r))
-            expRespA = (logPostRatio > 1); % expected response A
+            %expRespA = (logPostRatio > 1); % expected response A
             
-%             p = exp(self.alpha .* logPostRatio); % exponentiated posterior ratio [p(B|~)/p(A|~)]^alpha
-%             pos = isinf(p);
-%             expRespA = p ./ (1 + p); % p(responding A | r) for 0 lapse rate
-%             expRespA(pos) = 1;
+            p = exp(self.alpha .* logPostRatio); % exponentiated posterior ratio [p(B|~)/p(A|~)]^alpha
+            pos = isinf(p);
+            expRespA = p ./ (1 + p); % p(responding A | r) for 0 lapse rate
+            expRespA(pos) = 1;
             pA = expRespA .* (1 - self.lapseRate) + self.lapseRate * 0.5; % final p(C = 'A') including the lapse rate
         end
         
