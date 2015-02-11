@@ -5,6 +5,7 @@ function setPath
     addpath(fullfile(base, 'analysis'))
     addpath(fullfile(base, 'schema'))
     addpath(fullfile(base, 'misc_code'))
+    addpath(fullfile(base, 'data'))
 
 end
 
