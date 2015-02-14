@@ -4,3 +4,4 @@
 *.asv
 data/
 .DS_Store
+.*.swp

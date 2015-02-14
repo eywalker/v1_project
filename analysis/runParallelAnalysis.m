@@ -2,7 +2,7 @@
 %% Specify session number
 
 
-for sessionNum = 1%length(sessionData)
+parfor sessionNum = 1:30
     fprintf('Working on session %d...\n',sessionNum);
    
     trialInfo=sessionData(sessionNum).trial_info;  
@@ -13,7 +13,7 @@ for sessionNum = 1%length(sessionData)
 end
 
 %%
-for sessionNum = 30:length(sessionData)
+for sessionNum = 30%:length(sessionData)
     fprintf('Working on session %d...\n',sessionNum);
    
     trialInfo=sessionData(sessionNum).trial_info;  

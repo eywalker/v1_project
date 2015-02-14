@@ -10,7 +10,7 @@ function cvResults = analyzeSession(trialInfo)
 % Lasted edited on Feb 10, 2014 by Edgar Walker (edgar.walker@gmail.com)
 
     % analysis constants
-    UNIT_THR = -3; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
+    UNIT_THR = -4; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
 
     % experiment configuration
     sigmaA = 3;
@@ -22,7 +22,7 @@ function cvResults = analyzeSession(trialInfo)
     % extract details trial info
     all_counts = cat(2,trialInfo.counts);             
     all_orientation = [trialInfo.orientation];
-    all_orientation=mod(all_orientation,180)+180;
+    %all_orientation=mod(all_orientation,180)+180; %?? not really sure why I did that...
     all_contrast = [trialInfo.contrast];
     all_resp = {trialInfo.selected_class};
     
@@ -42,7 +42,13 @@ function cvResults = analyzeSession(trialInfo)
     pnCodec.baseEncoder = gpCurve.restrict(goodUnits); % remove channels with poor tuning curve fit
     L = pnCodec.getLikelihoodDistrWithContrastPrior(decodeOri, contList, contPrior, all_counts(goodUnits, :)); % decode likelihood
     
-    
+
+    if sum(goodUnits) < 1 % if no units left after thresholding...
+	fprintf('No units left after thresholding with threshold of %.2f...\n', UNIT_THR);
+	cvResults = [];
+	return;
+    end
+	
     %% run analysis for each contrast separately
     for indContrast = 1:length(contList)
         
@@ -80,9 +86,10 @@ function cvResults = analyzeSession(trialInfo)
             modelList = {};
             model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter,'GaussianPeak');
             modelList = [modelList {model}];
-            %model = ClassifierModel.LikelihoodClassifier.OptimalWidth(sigmaA, sigmaB, sCenter, 'OptimizedWidth', @ClassifierModel.getMeanStd);
+	    % Note that OptimalWidth model is mathematically equivalent to PointPSLLC using the same peak extractor, hence omitted here
+            %model = ClassifierModel.LikelihoodClassifier.OptimalWidth2(sigmaA, sigmaB, sCenter, 'OptimizedWidth2', @ClassifierModel.getMeanStd);
             %modelList = [modelList {model}];
-            model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'ML_Peak', @ClassifierModel.getMaxStd);
+            model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'MLPeak', @ClassifierModel.getMaxStd);
             modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'LikelihoodMean', @ClassifierModel.getMeanStd);
             modelList = [modelList {model}];
@@ -90,13 +97,16 @@ function cvResults = analyzeSession(trialInfo)
             modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.PeakWidthPSLLC(sigmaA, sigmaB, sCenter, 'LikelihoodMeanWidth',@ClassifierModel.getMeanStd);
             modelList = [modelList {model}];
+	    model = ClassifierModel.LikelihoodClassifier.ScaledWidthPSLLC(sigmaA, sigmaB, sCenter, 'ScaledWidthLikelihoodMeanWidth', @ClassifierModel.getMeanStd);
+            modelList = [modelList {model}];
             model = ClassifierModel.LikelihoodClassifier.FullPSLLC(sigmaA, sigmaB, sCenter, 'FullLikelihood');
             modelList = [modelList {model}];
-            model = ClassifierModel.LikelihoodClassifier.PeakWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SC_GaussianWidth');
+            model = ClassifierModel.LikelihoodClassifier.PeakWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SCGaussianWidth');
             modelList = [modelList {model}];
-            model = ClassifierModel.LikelihoodClassifier.PeakWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SC_LikelihoodWidth', @ClassifierModel.getMeanStd);
+            model = ClassifierModel.LikelihoodClassifier.PeakWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SCLikelihoodWidth', @ClassifierModel.getMeanStd);
             modelList = [modelList {model}];
-            
+	    model = ClassifierModel.LikelihoodClassifier.ScaledWidthSBPSLLC(sigmaA, sigmaB, sCenter, 'SCScaledLikelihoodWidth', @ClassifierModel.getMeanStd);
+            modelList = [modelList {model}];
             %model = ClassifierModel.BehavioralClassifier.BPLClassifier2(sigmaA, sigmaB, sCenter);
             %modelList = [modelList {model}];
             
@@ -109,6 +119,7 @@ function cvResults = analyzeSession(trialInfo)
                 model = modelList{modelInd};
                 modelStruct(modelInd).modelName = model.modelName;
                 modelStruct(modelInd).trainLL = model.train(trainSet, 50);
+                modelStruct(modelInd).params = model.getModelParameters;
             end
             
 %             % train behavioral classifier

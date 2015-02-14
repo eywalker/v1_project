@@ -10,7 +10,7 @@ function cvResults = analyzeSessionNoCV(trialInfo)
 % Lasted edited on Feb 16, 2014 by Edgar Walker (edgar.walker@gmail.com)
 
     % analysis constants
-    UNIT_THR = -4; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
+    UNIT_THR = -3; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
 
     % experiment configuration
     sigmaA = 3;
@@ -22,7 +22,7 @@ function cvResults = analyzeSessionNoCV(trialInfo)
     % extract details trial info
     all_counts = cat(2,trialInfo.counts);             
     all_orientation = [trialInfo.orientation];
-    all_orientation=mod(all_orientation,180)+180;
+    %all_orientation=mod(all_orientation,180)+180;
     all_contrast = [trialInfo.contrast];
     all_resp = {trialInfo.selected_class};
     
@@ -65,8 +65,8 @@ function cvResults = analyzeSessionNoCV(trialInfo)
         modelList = {};
         model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter,'GaussianPeak');
         modelList = [modelList {model}];
-        %model = ClassifierModel.LikelihoodClassifier.OptimalWidth(sigmaA, sigmaB, sCenter, 'OptimizedWidth', @ClassifierModel.getMeanStd);
-        %modelList = [modelList {model}];
+        model = ClassifierModel.LikelihoodClassifier.OptimalWidth2(sigmaA, sigmaB, sCenter, 'OptimizedWidth', @ClassifierModel.getMeanStd);
+        modelList = [modelList {model}];
         model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'ML_Peak', @ClassifierModel.getMaxStd);
         modelList = [modelList {model}];
         model = ClassifierModel.LikelihoodClassifier.PointPSLLC(sigmaA, sigmaB, sCenter, 'LikelihoodMean', @ClassifierModel.getMeanStd);

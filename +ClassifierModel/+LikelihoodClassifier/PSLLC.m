@@ -33,6 +33,7 @@ classdef PSLLC < handle
         fixedParams = false(1, 3);
         p_lb = [0, 0, 0]; % lower bound for parameters
         p_ub = [1, 1, Inf]; % upper bound for parameters
+        precompLogLRatio = true % set this to False to get logLRatio recomputed with parameter update
         
     end
     
@@ -112,12 +113,18 @@ classdef PSLLC < handle
                 nReps = 10; % defaults to 10 repetitions of training
             end
             
-            logLRatio = self.getLogLRatio(trainSet); % precompute the log-likelihood ratio
+            if self.precompLogLRatio
+                logLRatio = self.getLogLRatio(trainSet); % precompute the log-likelihood ratio
+            end
             
             function cost = cf(param)
             % cost function for optimization - defined as the negative log
             % likelihood.
+                
                 self.setModelParameters(param); % update parameter values
+                if ~self.precompLogLRatio
+                    logLRatio = self.getLogLRatio(trainSet);
+                end
                 cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.classResp);
                 if(isnan(cost) || ~isreal(cost))
                     cost = Inf;
@@ -136,7 +143,7 @@ classdef PSLLC < handle
                 fprintf('.');
                 x0 = x0set(:, i);
                 
-                [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds,[],options);
+                [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 if (cost < minCost)
                     minCost = cost;
                     minX = x;
@@ -194,13 +201,36 @@ classdef PSLLC < handle
             r = rand(np, nreps);
             lb = paramSet.lowerBounds(:);
             ub = paramSet.upperBounds(:);
-            ub(isinf(ub))=10000;
-            lb(isinf(lb))=-10000;
+            ub(isinf(ub))=100;
+            lb(isinf(lb))=-100;
 
             x0 = bsxfun(@plus, bsxfun(@times,(ub-lb),r), lb);
         end
-         
         
+        function configSet = getModelConfigs(self)
+            % Returns a structure with all configurable component for the
+            % model. This includes ALL (fixed and non-fixed) parameters,
+            % fix map, bounds, and model name
+            configSet = [];
+            configSet.paramNames = self.params;
+            configSet.paramValues = cellfun(@(x) self.(x), self.params);
+            configSet.fixedParams = self.fixedParams;
+            configSet.modelName = self.modelName;
+            configSet.lb = self.p_lb;
+            configSet.ub = self.p_ub;
+        end
+        
+        function setModelConfigs(self, configSet)
+            % Load in the state of the model from a config set
+            paramNames = configSet.paramNames;
+            paramValues = configSet.paramValues;
+            for i = 1:length(paramNames)
+                self.(paramNames{i}) = paramValues(i);
+            end
+            self.fixedParams = configSet.fixedParams;
+            self.modelName = configSet.modelName;
+            self.p_lb = configSet.lb;
+            self.p_ub = configSet.ub;
     end
     
     %% Helper functions
