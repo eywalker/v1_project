@@ -1,4 +1,4 @@
-function cvResults = analyzeSession(trialInfo)
+function cvResults = analyzeSession(trialInfo, shuffle, d)
 % This code takes a trialInfo structure array and perform v1-decoding
 % analysis, returning cross-validated analysis results for each contrast
 % found within the trialInfo structure.
@@ -8,7 +8,12 @@ function cvResults = analyzeSession(trialInfo)
 % Email: edgar.walker@gmail.com
 %
 % Lasted edited on Feb 10, 2014 by Edgar Walker (edgar.walker@gmail.com)
-
+    if nargin < 2
+        shuffle = false;
+    end
+    if nargin < 3
+        d = 1;
+    end
     % analysis constants
     UNIT_THR = -4; % threshold for selecting good unit tuning curve fit, note current value is fairly arbitrary
 
@@ -72,6 +77,21 @@ function cvResults = analyzeSession(trialInfo)
             trainSet.stimulus = all_orientation(trainInd);
             trainSet.classResp = all_resp(trainInd);
             
+            
+            %d = 2; % bin width in degrees
+            if shuffle % shuffle the train set class resp within binned stimulus
+                ori = trainSet.stimulus;
+                orid = round(ori/d) * d;
+                v = unique(orid);
+                for i = 1:length(v)
+                    pos = find(orid == v(i));
+                    p = randperm(length(pos));
+                    rpos = pos(p);
+                    [class_resp{rpos}] = deal(class_resp{rpos});
+                end
+            
+            end
+            
             testSet.decodeOri = decodeOri;
             testSet.likelihood = L(:,testInd);
             testSet.stimulus = all_orientation(testInd);
@@ -119,7 +139,7 @@ function cvResults = analyzeSession(trialInfo)
                 model = modelList{modelInd};
                 modelStruct(modelInd).modelName = model.modelName;
                 modelStruct(modelInd).trainLL = model.train(trainSet, 50);
-                modelStruct(modelInd).params = model.getModelParameters;
+                modelStruct(modelInd).configs = model.getModeslConfig;
             end
             
 %             % train behavioral classifier
@@ -148,11 +168,13 @@ function cvResults = analyzeSession(trialInfo)
         cvContrast(indContrast).contrast = contrast;
         cvContrast(indContrast).positions = pos;
         cvContrast(indContrast).trialInd = trialInd;
+
         cvContrast(indContrast).splits = splits;
         cvContrast(indContrast).data = cvData;
     end
     
     % populate cvResults
+    cvResults.likelihood = L;
     cvResults.sigmaA = sigmaA;
     cvResults.sigmaB = sigmaB;
     cvResults.sCenter = sCenter;
