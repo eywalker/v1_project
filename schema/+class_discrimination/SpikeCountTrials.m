@@ -2,7 +2,6 @@
 class_discrimination.SpikeCountTrials (computed) # Spike counts grouped by units
 -> class_discrimination.SpikeCountSet
 -> class_discrimination.ClassDiscriminationTrial
--> ephys.SpikesAlignedTrial
 -----
 counts          :longblob               # population spikes counts
 n               :int                    # size of the population
@@ -15,6 +14,7 @@ classdef SpikeCountTrials < dj.Relvar
 		function makeTuples(self, key)
             keys = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountSet & key);
 			fprintf('%d trials to populate\n', length(keys));
+            step = 0;
 			for k = keys'
 				tuple = k;
                 data = fetch(ephys.SpikesAlignedTrial & k, 'spikes_aligned');
@@ -22,7 +22,11 @@ classdef SpikeCountTrials < dj.Relvar
                 tuple.counts = arrayfun(@(x) sum(x.spikes_aligned > 0 & x.spikes_aligned < 500), data);
                 tuple.n = length(tuple.counts);
                 insert(self, tuple);
-                fprintf('.');
+                
+                if mod(step, 10)==0
+                    fprintf('.');
+                end
+                step = step + 1;
             end
             fprintf('\n');
 				
