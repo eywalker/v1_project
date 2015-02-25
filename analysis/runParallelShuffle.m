@@ -8,7 +8,7 @@ parfor sessionNum = 1:length(sessionData)
    
     trialInfo=sessionData(sessionNum).trial_info;  
     
-    sessionData(sessionNum).cvResults = analyzeSession(trialInfo);
+    sessionData(sessionNum).cvResults = analyzeShuffleSession(trialInfo);
     fprintf('Completed %d!\n', sessionNum);
     
 end

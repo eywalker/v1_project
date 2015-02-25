@@ -231,6 +231,7 @@ classdef PSLLC < handle
             self.modelName = configSet.modelName;
             self.p_lb = configSet.lb;
             self.p_ub = configSet.ub;
+	end
     end
     
     %% Helper functions

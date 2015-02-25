@@ -45,7 +45,9 @@ function cvResults = analyzeSession(trialInfo, shuffle, d)
     unitLL = mean(logLAll, 2);
     goodUnits = (unitLL > UNIT_THR);
     pnCodec.baseEncoder = gpCurve.restrict(goodUnits); % remove channels with poor tuning curve fit
-    L = pnCodec.getLikelihoodDistrWithContrastPrior(decodeOri, contList, contPrior, all_counts(goodUnits, :)); % decode likelihood
+    %disp(size(all_contrast));
+    %disp(size(all_counts(goodUnits, :)));
+    %L = pnCodec.getLikelihoodDistrWithContrastPrior(decodeOri, contList, contPrior, all_counts(goodUnits, :)); % decode likelihood
     
 
     if sum(goodUnits) < 1 % if no units left after thresholding...
@@ -64,6 +66,8 @@ function cvResults = analyzeSession(trialInfo, shuffle, d)
         % split trials for N-way cross validation
         trialInd = pos(randperm(length(pos)));
         splits = round(linspace(0,length(pos),N+1));
+
+        L = pnCodec.getLikelihoodDistr(decodeOri, contrast, all_counts(goodUnits, :)); % decode likelihood
         
         cvData = struct();
         for ind = 1 : N
@@ -139,7 +143,7 @@ function cvResults = analyzeSession(trialInfo, shuffle, d)
                 model = modelList{modelInd};
                 modelStruct(modelInd).modelName = model.modelName;
                 modelStruct(modelInd).trainLL = model.train(trainSet, 50);
-                modelStruct(modelInd).configs = model.getModeslConfig;
+                modelStruct(modelInd).configs = model.getModelConfigs;
             end
             
 %             % train behavioral classifier
