@@ -19,7 +19,7 @@ classdef SpikeCountTrials < dj.Relvar
 				tuple = k;
                 data = fetch(ephys.SpikesAlignedTrial & k, 'spikes_aligned');
                 data = dj.struct.sort(data, 'unit_id'); % sort by unit_id to be sure about the order
-                tuple.counts = arrayfun(@(x) sum(x.spikes_aligned > 0 & x.spikes_aligned < 500), data);
+                tuple.counts = arrayfun(@(x) sum(x.spikes_aligned > k.count_start & x.spikes_aligned < k.count_stop), data);
                 tuple.n = length(tuple.counts);
                 insert(self, tuple);
                 
