@@ -11,7 +11,7 @@ classdef CVTrainSets < dj.Relvar
 	methods
 
 		function makeTuples(self, key, idx, trainInd)
-            fprintf('Registering train set %d...\n', cv_index);
+            fprintf('Registering train set %d...\n', idx);
             tuple = key;
             tuple.cv_index = idx;
             tuple.train_indices = trainInd;

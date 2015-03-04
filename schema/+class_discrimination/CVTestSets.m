@@ -11,7 +11,7 @@ classdef CVTestSets < dj.Relvar
 	methods
 
 		function makeTuples(self, key, idx, testInd)
-            fprintf('Registering test set %d...\n', cv_index);
+            fprintf('Registering test set %d...\n', idx);
             tuple = key;
             tuple.cv_index = idx;
             tuple.test_indices = testInd;
