@@ -2,10 +2,7 @@ classdef OptimalWidth2 < ClassifierModel.LikelihoodClassifier.PSLLC
     % Posterior-Sampling with Lapse rate based Likelihood Classifier
     properties
         sigma = 5; % width of the likelihood function
-        pointExtractor;
-
-        
-        
+        pointExtractor;    
     end
     
     
@@ -22,6 +19,11 @@ classdef OptimalWidth2 < ClassifierModel.LikelihoodClassifier.PSLLC
             if nargin < 5
                 pointExtractor = @ClassifierModel.fitGaussToLikelihood;
             end
+            if nargin < 3
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
             obj = obj@ClassifierModel.LikelihoodClassifier.PSLLC(sigmaA, sigmaB, stimCenter, modelName);
             obj.pointExtractor = pointExtractor;
             obj.params = [obj.params {'sigma'}];
@@ -29,6 +31,16 @@ classdef OptimalWidth2 < ClassifierModel.LikelihoodClassifier.PSLLC
             obj.p_lb = [obj.p_lb 0];
             obj.p_ub = [obj.p_ub Inf];
             obj.precompLogLRatio = false; %make sure logLRatio gets recomputed with parameter update
+        end
+        
+        function configSet = getModelConfigs(self)
+            configSet = getModelConfigs@ClassifierModel.LikelihoodClassifier.PSLLC(self);
+            configSet.pointExtractorName = func2str(self.pointExtractor);
+        end
+        
+        function setModelConfigs(self, configSet)
+            setModelConfigs@ClassifierModel.LikelihoodClassifier.PSLLC(self, configSet);
+            self.pointExtractor = eval(['@' configSet.pointExtractorName]);
         end
         
     end

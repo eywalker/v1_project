@@ -42,9 +42,9 @@ classdef GPDPCEncoder < handle
             
             if isstruct(stimulus) % if first argument is a structure
                 dataSet = stimulus;
-                stimulus = [dataSet.orientation];
-                contrast = [dataSet.contrast];
-                spikeCounts = [dataSet.counts];
+                stimulus = dataSet.orientation;
+                contrast = dataSet.contrast;
+                spikeCounts = dataSet.counts;
             end
             
             sigma_obs = self.sigma_obs;

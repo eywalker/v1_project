@@ -39,6 +39,7 @@ classdef DataSets < dj.Relvar
             info = fetch(self, '*');
             table = eval(info.dataset_owner);
             dataSet = fetchDataSet(table & sprintf('dataset_id = %d', info.dataset_id));
+            dataSet = packData(dataSet);
         end
     end
 end

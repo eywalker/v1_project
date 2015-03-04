@@ -15,8 +15,23 @@ classdef PointPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             if nargin < 4
                 modelName = 'PointPSLLC';
             end
+            if nargin < 3
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
             obj = obj@ClassifierModel.LikelihoodClassifier.PSLLC(sigmaA, sigmaB, stimCenter, modelName);
             obj.pointExtractor = pointExtractor;
+        end
+        
+        function configSet = getModelConfigs(self)
+            configSet = getModelConfigs@ClassifierModel.LikelihoodClassifier.PSLLC(self);
+            configSet.pointExtractorName = func2str(self.pointExtractor);
+        end
+        
+        function setModelConfigs(self, configSet)
+            setModelConfigs@ClassifierModel.LikelihoodClassifier.PSLLC(self, configSet);
+            self.pointExtractor = eval(['@' configSet.pointExtractorName]);
         end
     end
     

@@ -9,6 +9,11 @@ classdef FullPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             if nargin < 4
                 modelName = 'FullPSLLC';
             end
+            if nargin < 3
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
             obj = obj@ClassifierModel.LikelihoodClassifier.PSLLC(sigmaA, sigmaB, stimCenter, modelName);
         end
     end

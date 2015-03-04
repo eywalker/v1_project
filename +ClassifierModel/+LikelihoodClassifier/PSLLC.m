@@ -100,7 +100,7 @@ classdef PSLLC < handle
         % response vector classResp given the likilihood functions over
         % orientation for each trial.
             logLRatio = self.getLogLRatio(dataStruct);
-            [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.classResp);
+            [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.selected_class);
         end
         
         function muLL = train(self, trainSet, nReps)%decodeOri, likelihood, classResp, nReps)
@@ -130,7 +130,7 @@ classdef PSLLC < handle
                 if ~self.precompLogLRatio
                     logLRatio = self.getLogLRatio(trainSet);
                 end
-                cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.classResp);
+                cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.selected_class);
                 if(isnan(cost) || ~isreal(cost))
                     cost = Inf;
                 end

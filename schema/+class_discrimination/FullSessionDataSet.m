@@ -23,6 +23,7 @@ classdef FullSessionDataSet < dj.Relvar & dj.AutoPopulate
         function dataSet = fetchDataSet(self)
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
             dataSet = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials & self, '*');
+            dataSet = packData(dataSet);
         end
 	end
 

@@ -26,6 +26,11 @@ classdef OptimalWidth < handle
             if nargin < 5
                 pointExtractor = @ClassifierModel.fitGaussToLikelihood;
             end
+            if nargin < 3
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
             obj.sigmaA = sigmaA;
             obj.sigmaB = sigmaB;
             obj.stimCenter = stimCenter;

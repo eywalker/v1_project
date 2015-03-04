@@ -15,8 +15,23 @@ classdef PeakWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             if nargin < 4
                 modelName = 'PeakWidthSBPSLLC';
             end
+            if nargin < 3
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
             obj = obj@ClassifierModel.LikelihoodClassifier.PSLLC(sigmaA, sigmaB, stimCenter, modelName);
             obj.pwExtractor = pwExtractor;
+        end
+        
+        function configSet = getModelConfigs(self)
+            configSet = getModelConfigs@ClassifierModel.LikelihoodClassifier.PSLLC(self);
+            configSet.pwExtractorName = func2str(self.pwExtractor);
+        end
+        
+        function setModelConfigs(self, configSet)
+            setModelConfigs@ClassifierModel.LikelihoodClassifier.PSLLC(self, configSet);
+            self.pwExtractor = eval(['@' configSet.pwExtractorName]);
         end
     end
     
@@ -24,7 +39,7 @@ classdef PeakWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
         function logLRatio = getLogLRatio(self, dataStruct) %decodeOri, likelihood, stimulus)
             decodeOri = dataStruct.decodeOri(:);
             likelihood = dataStruct.likelihood;
-            stimulus = dataStruct.stimulus;
+            stimulus = dataStruct.orientation;
             
             [~, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
             s_hat = stimulus(:);

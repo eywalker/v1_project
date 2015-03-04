@@ -3,6 +3,8 @@ classdef PoissonNoisePPCodec < handle
     % Poisson noise based coder-decoder (codec).
     properties
         baseEncoder; % underlying deterministic population code encoder
+        filterThreshold = -3;
+        unitFilter = ':'; % filter out bad units when computing likelihood distr
     end
     
     methods
@@ -21,9 +23,13 @@ classdef PoissonNoisePPCodec < handle
             spikeCounts = poissrnd(spikeCounts); % add Poisson noise
         end
         
-        function muLL = train(self, dataSet, nRepeats)
-            self.baseEncoder.train(dataSet, nRepeats);
-            muLL = self.getLogLikelihood(dataSet.stimulus, dataSet.contrast, dataSet.spikeCounts);
+        function muLL = train(self, dataSet)
+            self.baseEncoder.train(dataSet);
+            orientation = [dataSet.orientation];
+            contrast = [dataSet.contrast];
+            counts = [dataSet.counts];
+            muLL = mean(self.getLogLikelihood(orientation, contrast, counts), 2);
+            self.unitFilter = muLL > self.filterThreshold;
         end
         
 %         function muLL = train(self, stimulus, contrast, spikeCounts, nRepeats)
@@ -53,6 +59,7 @@ classdef PoissonNoisePPCodec < handle
             F = self.baseEncoder.encode(stimulus, contrast);
             %logLList = -F + log(F).* spikeCounts - gammaln(spikeCounts+1);
             logLList = log(poisspdf(spikeCounts, F));
+            
         end
         
         function L = getLikelihoodDistr(self, decodeOri, contrast, spikeCounts)
@@ -60,6 +67,10 @@ classdef PoissonNoisePPCodec < handle
             % over the range of orientation (decodeOri) for observing given
             % set of spikeCounts and contrast value for each trial
             F = self.baseEncoder.encode(decodeOri, contrast)'; % assumes that base encoder is deterministic
+            
+            F  = F(:, self.unitFilter);
+            spikeCounts = spikeCounts(self.unitFilter, :);
+            
             logL = bsxfun(@minus, bsxfun(@minus, log(F)*spikeCounts, sum(F,2)), sum(gammaln(spikeCounts+1) ,1));
             normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
             L = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
@@ -109,11 +120,15 @@ classdef PoissonNoisePPCodec < handle
             % model. This includes ALL (fixed and non-fixed) parameters,
             % fix map, bounds, and model name
             configSet = [];
+            configSet.filterThreshold = self.filterThreshold;
+            configSet.unitFilter = self.unitFilter;
             configSet.baseEncoder = class(self.baseEncoder);
             configSet.baseEncoderConfig = self.baseEncoder.getModelConfigs();
         end
         
-        function setModelConfigs(self, configSet)        
+        function setModelConfigs(self, configSet)
+            self.filterThreshold = configSet.filterThreshold;
+            self.unitFilter = configSet.unitFilter;
             self.baseEncoder = eval(configSet.baseEncoder);
             self.baseEncoder.setModelConfigs(configSet.baseEncoderConfig);
         end  
