@@ -57,6 +57,11 @@ classdef PSLLC < handle
             if nargin < 4
                 modelName = 'PSLLC';
             end
+            if nargin < 1
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
             obj.sigmaA = sigmaA;
             obj.sigmaB = sigmaB;
             obj.stimCenter = stimCenter;
@@ -207,11 +212,16 @@ classdef PSLLC < handle
             x0 = bsxfun(@plus, bsxfun(@times,(ub-lb),r), lb);
         end
         
+
         function configSet = getModelConfigs(self)
             % Returns a structure with all configurable component for the
             % model. This includes ALL (fixed and non-fixed) parameters,
             % fix map, bounds, and model name
+            
             configSet = [];
+            configSet.sigmaA = self.sigmaA;
+            configSet.sigmaB = self.sigmaB;
+            configSet.stimCenter = self.stimCenter;
             configSet.paramNames = self.params;
             configSet.paramValues = cellfun(@(x) self.(x), self.params);
             configSet.fixedParams = self.fixedParams;
@@ -222,6 +232,9 @@ classdef PSLLC < handle
         
         function setModelConfigs(self, configSet)
             % Load in the state of the model from a config set
+            self.sigmaA = configSet.sigmaA;
+            self.sigmaB = configSet.sigmaB;
+            self.stimCenter = configSet.stimCenter;
             paramNames = configSet.paramNames;
             paramValues = configSet.paramValues;
             for i = 1:length(paramNames)
@@ -231,7 +244,8 @@ classdef PSLLC < handle
             self.modelName = configSet.modelName;
             self.p_lb = configSet.lb;
             self.p_ub = configSet.ub;
-	end
+        end
+
     end
     
     %% Helper functions

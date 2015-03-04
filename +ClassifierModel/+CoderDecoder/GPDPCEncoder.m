@@ -5,8 +5,8 @@ classdef GPDPCEncoder < handle
     %   always elicit identical responses). To make this into a PPC
     %   encoder, wrap it with a noise model such as PoissonNoisePPCodec
     properties
-        sigma_obs=1; % baseline observation
-        sigma_kernel=10; % Covariance kernel smoothness parameter
+        sigma_obs=2; % baseline observation
+        sigma_kernel=20; % Covariance kernel smoothness parameter
         
         trainStimulus=[]; % Stimulus values on which GP was trained
         alpha; % weight vector (?)
@@ -16,6 +16,9 @@ classdef GPDPCEncoder < handle
     
     methods
         function obj=GPDPCEncoder(NUM_UNITS)
+            if nargin < 1
+                NUM_UNITS = 96; % default to Utah array
+            end
             % Constructer that takes in number of units
             obj.NUM_UNITS=NUM_UNITS;
             obj.alpha(NUM_UNITS)=0;
@@ -35,7 +38,15 @@ classdef GPDPCEncoder < handle
         
         function train(self, stimulus, contrast, spikeCounts)
             % TRAIN Fit the GP-based tuning curves onto the training set
-            % consisting of stimulus, contrast and recorded spikeCounts. 
+            % consisting of stimulus, contrast and recorded spikeCounts.
+            
+            if isstruct(stimulus) % if first argument is a structure
+                dataSet = stimulus;
+                stimulus = [dataSet.orientation];
+                contrast = [dataSet.contrast];
+                spikeCounts = [dataSet.counts];
+            end
+            
             sigma_obs = self.sigma_obs;
             sigma_kernel = self.sigma_kernel;
             x = stimulus(:);
@@ -124,6 +135,28 @@ classdef GPDPCEncoder < handle
             paramSet.upperBounds = [Inf * ones(1, 3 * self.NUM_UNITS)];
         end
         
+        function configSet = getModelConfigs(self)
+            % Returns a structure with all configurable component for the
+            % model. This includes ALL (fixed and non-fixed) parameters,
+            % fix map, bounds, and model name
+            
+            configSet = [];
+            configSet.sigma_obs = self.sigma_obs;
+            configSet.sigma_kernel = self.sigma_kernel;
+            configSet.trainStimulus = self.trainStimulus;
+            configSet.alpha = self.alpha;
+            configSet.y_bias = self.y_bias;
+            configSet.NUM_UNITS = self.NUM_UNITS;
+        end
+        
+        function setModelConfigs(self, configSet)
+            self.sigma_obs = configSet.sigma_obs;
+            self.sigma_kernel = configSet.sigma_kernel;
+            self.trainStimulus = configSet.trainStimulus;
+            self.alpha = configSet.alpha;
+            self.y_bias = configSet.y_bias;
+            self.NUM_UNITS = configSet.NUM_UNITS;
+        end
     end
 end
 

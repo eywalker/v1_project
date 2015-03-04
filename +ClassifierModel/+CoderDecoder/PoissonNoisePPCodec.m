@@ -9,7 +9,9 @@ classdef PoissonNoisePPCodec < handle
         function obj = PoissonNoisePPCodec(baseEncoder)
             % Constructer for PoissonNoisePPCWrapper that takes base
             % DPC encoder
-            obj.baseEncoder = baseEncoder;
+            if nargin > 0
+                obj.baseEncoder = baseEncoder;
+            end
         end
         
         function spikeCounts = encode(self, stimulus, contrast)
@@ -19,26 +21,31 @@ classdef PoissonNoisePPCodec < handle
             spikeCounts = poissrnd(spikeCounts); % add Poisson noise
         end
         
-        function muLL = train(self, stimulus, contrast, spikeCounts, nRepeats)
-            % TRAIN Trains the poisson noise codec by woring together with
-            % the underlying encoder.
-            if (nargin < 5)
-                nRepeats = 1; % number of times to randomize the initial condition
-            end
-            
-            paramSet = self.baseEncoder.getModelParameters();
-            x0 = paramSet.initValues;
-            lb = paramSet.lowerBounds;
-            ub = paramSet.upperBounds;
-            function cost = cf(x)
-                self.setModelParameters(x);
-                cost = -self.getLogLikelihood(stimulus, contrast, spikeCounts);
-            end
-            %[x, cost] = ga(@cf, numParam, [], [], [], [], lb, ub);
-            [x, cost] = fmincon(@cf, x0, [], [], [], [], lb, ub); 
-            self.setModelParameters(x);
-            muLL = -cost; % return final mean log likelihood
+        function muLL = train(self, dataSet, nRepeats)
+            self.baseEncoder.train(dataSet, nRepeats);
+            muLL = self.getLogLikelihood(dataSet.stimulus, dataSet.contrast, dataSet.spikeCounts);
         end
+        
+%         function muLL = train(self, stimulus, contrast, spikeCounts, nRepeats)
+%             % TRAIN Trains the poisson noise codec by woring together with
+%             % the underlying encoder.
+%             if (nargin < 5)
+%                 nRepeats = 1; % number of times to randomize the initial condition
+%             end
+%             
+%             paramSet = self.baseEncoder.getModelParameters();
+%             x0 = paramSet.initValues;
+%             lb = paramSet.lowerBounds;
+%             ub = paramSet.upperBounds;
+%             function cost = cf(x)
+%                 self.setModelParameters(x);
+%                 cost = -self.getLogLikelihood(stimulus, contrast, spikeCounts);
+%             end
+%             %[x, cost] = ga(@cf, numParam, [], [], [], [], lb, ub);
+%             [x, cost] = fmincon(@cf, x0, [], [], [], [], lb, ub); 
+%             self.setModelParameters(x);
+%             muLL = -cost; % return final mean log likelihood
+%         end
         
         function logLList = getLogLikelihood(self, stimulus, contrast, spikeCounts)
             % GETLOGLIKELIHOOD Evaluate the log likelihood of observing the 
@@ -96,5 +103,19 @@ classdef PoissonNoisePPCodec < handle
             % underlying model parameters needed for optimization/training
             paramSet=self.baseEncoder.getModelParameters();
         end
+        
+        function configSet = getModelConfigs(self)
+            % Returns a structure with all configurable component for the
+            % model. This includes ALL (fixed and non-fixed) parameters,
+            % fix map, bounds, and model name
+            configSet = [];
+            configSet.baseEncoder = class(self.baseEncoder);
+            configSet.baseEncoderConfig = self.baseEncoder.getModelConfigs();
+        end
+        
+        function setModelConfigs(self, configSet)        
+            self.baseEncoder = eval(configSet.baseEncoder);
+            self.baseEncoder.setModelConfigs(configSet.baseEncoderConfig);
+        end  
     end
 end
