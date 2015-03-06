@@ -48,4 +48,5 @@ for idx = 1:length(modelNames_d)
     hold on;
     errorbar(idx, mu_delta(idx), sem_delta(idx), '.');
 end
+pos = (2*width + space) * 1:N;
 legend(leg_list, modelNames_d);
