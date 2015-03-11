@@ -2,7 +2,7 @@
 class_discrimination.TrainedLikelihoodClassifiers (computed) # all trained likelihood classifiers
 ->class_discrimination.TrainedDecoder
 ->class_discrimination.LikelihoodClassifierModels
-->class_discrimination.LCTrainSets
+->class_discrimination.LCTrainSetPairs
 -----
 lc_class    : varchar(255)   # class name for the likelihood classifier
 lc_label='' : varchar(255)   # descriptor for the model
@@ -13,7 +13,7 @@ mu_logl   : double          # mean log likelihood
 classdef TrainedLikelihoodClassifiers < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = class_discrimination.TrainedDecoder * class_discrimination.LikelihoodClassifierModels * class_discrimination.LCTrainSets;
+		popRel = class_discrimination.TrainedDecoder * class_discrimination.LikelihoodClassifierModels * class_discrimination.LCTrainSetPairs;
 	end
 
 	methods(Access=protected)
