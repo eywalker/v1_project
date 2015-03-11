@@ -37,11 +37,16 @@ classdef PeakWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     
     methods (Access = protected)
         function logLRatio = getLogLRatio(self, dataStruct) %decodeOri, likelihood, stimulus)
-            decodeOri = dataStruct.decodeOri(:);
-            likelihood = dataStruct.likelihood;
-            stimulus = dataStruct.orientation;
+            if isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood')
+                decodeOri = dataStruct.decodeOri;
+                likelihood = dataStruct.likelihood;
+                [~, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
+            elseif isfield(dataStruct, 'width')
+                sigma = dataStruct.width;
+            end
             
-            [~, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
+            stimulus = dataStruct.orientation;
+
             s_hat = stimulus(:);
             sigma = sigma(:);
             logPrA = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaA^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaA^2);

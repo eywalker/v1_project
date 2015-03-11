@@ -83,8 +83,8 @@ classdef PSLLC < handle
         % class B. Note that this is a stochastic classifier and thus
         % its response varies from run to run.
             pA = self.pRespA(dataStruct);
-            nTrials = size(likelihood, 2);
-            n = rand(nTrials, 1);
+            nTrials = size(pA, 2);
+            n = rand(nTrials, 1); % potential error here!
             classResp = cell(nTrials, 1);
             for ind = 1:nTrials
                 if(pA(ind) > n(ind))

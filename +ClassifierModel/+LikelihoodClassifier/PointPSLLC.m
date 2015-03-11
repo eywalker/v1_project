@@ -37,9 +37,16 @@ classdef PointPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     
     methods (Access = protected)
         function logLRatio = getLogLRatio(self, dataStruct)
-            decodeOri = dataStruct.decodeOri;
-            likelihood = dataStruct.likelihood;
-            s_hat = self.pointExtractor(decodeOri, likelihood); % extract center of the likelihood function
+            if isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood')
+                decodeOri = dataStruct.decodeOri;
+                likelihood = dataStruct.likelihood;
+                s_hat = self.pointExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
+            elseif isfield(dataStruct, 'peak')
+                s_hat = dataStruct.peak;
+            end
+            
+            
+            
             s_hat = s_hat(:);
             sigma = 0;
             logPrA = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaA^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaA^2);
