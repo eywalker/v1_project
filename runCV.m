@@ -6,3 +6,6 @@ lc_trainset = pro(class_discrimination.SpikeCountSet * class_discrimination.Cros
 lc_testset = pro(class_discrimination.SpikeCountSet * class_discrimination.CrossValidationSets * class_discrimination.CVTestSets, ...
     'dataset_id -> lc_testset_id', 'cv_contrast -> contrast');
 cv_set = decoder_trainset * lc_trainset;
+
+
+cv_test_train = fetch(lc_trainset * lc_testset, '*');
