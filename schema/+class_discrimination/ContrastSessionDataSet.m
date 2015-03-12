@@ -37,6 +37,7 @@ classdef ContrastSessionDataSet < dj.Relvar & dj.AutoPopulate
         function dataSet = fetchDataSet(self)
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
             data = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials & self, '*');
+            data = dj.struct.sort(data, 'trial_num');
             contrast = fetchn(self, 'dataset_contrast');
             all_contrast = arrayfun(@num2str, [data.contrast], 'UniformOutput', false);
             pos = strcmp(all_contrast, contrast);

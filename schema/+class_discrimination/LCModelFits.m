@@ -1,7 +1,7 @@
 %{
 class_discrimination.LCModelFits (computed) # my newest table
 -> class_discrimination.TrainedLikelihoodClassifiers
--> class_discrimination.LCTestSets
+-> class_discrimination.LCTrainTestPairs
 -----
 lc_class : varchar(255)    # class name for the likelihood classifier
 lc_label='' : varchar(255) # descriptor for the model
@@ -13,7 +13,7 @@ n_trials     : int # number of trials
 classdef LCModelFits < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel  = class_discrimination.TrainedLikelihoodClassifiers * class_discrimination.LCTestSets
+		popRel  = class_discrimination.TrainedLikelihoodClassifiers * class_discrimination.LCTrainTestPairs
 	end
 
 	methods(Access=protected)
