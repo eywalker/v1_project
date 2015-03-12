@@ -5,9 +5,8 @@ class_discrimination.LCModelFits (computed) # my newest table
 -----
 lc_class : varchar(255)    # class name for the likelihood classifier
 lc_label='' : varchar(255) # descriptor for the model
-mu_logl  : float  # mean loglikelihood
-logl  :  float  # total log likelihood
-n_trials     : int # number of trials
+fit_mu_logl  : float  # mean loglikelihood
+fit_logl  :  float  # total log likelihood
 %}
 
 classdef LCModelFits < dj.Relvar & dj.AutoPopulate
@@ -35,9 +34,8 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
             dataSet.decodeOri = decodeOri;
             dataSet.likelihood = L;
             [muLL, logLList] = lc_model.getLogLikelihood(dataSet);
-            tuple.mu_logl = muLL;
-            tuple.logl = sum(logLList);
-            tuple.n_trials = length(logLList);
+            tuple.fit_mu_logl = muLL;
+            tuple.fit_logl = sum(logLList);
             
 			self.insert(tuple)
 		end
