@@ -5,7 +5,7 @@ class_discrimination.TrainedDecoder (computed) # set of trained decoder
 -----
 decoder_class    : varchar(255)        # class name for the decoder model
 decoder_label='' : varchar(255)        # descriptor for the model
-decoder_config   : longblob            # structure for configuring the model
+decoder_trained_config   : longblob            # structure for configuring the model
 %}
 
 classdef TrainedDecoder < dj.Relvar & dj.AutoPopulate
@@ -25,7 +25,7 @@ classdef TrainedDecoder < dj.Relvar & dj.AutoPopulate
             decoder = getDecoder(class_discrimination.DecoderModels & key);
             dataSet = fetchDataSet(class_discrimination.DecoderTrainSets & key);
             decoder.train(dataSet);
-            tuple.decoder_config = decoder.getModelConfigs();
+            tuple.decoder_trained_config = decoder.getModelConfigs();
             
 			self.insert(tuple)
 		end
@@ -36,7 +36,7 @@ classdef TrainedDecoder < dj.Relvar & dj.AutoPopulate
             assert(count(self)==1, 'You can only retrieve one decoder at a time');
             info = fetch(self, '*');
             model = eval(info.decoder_class);
-            model.setModelConfigs(info.decoder_config);
+            model.setModelConfigs(info.decoder_trained_config);
         end
     end
 

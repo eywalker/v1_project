@@ -6,7 +6,7 @@ class_discrimination.TrainedLikelihoodClassifiers (computed) # all trained likel
 -----
 lc_class    : varchar(255)   # class name for the likelihood classifier
 lc_label='' : varchar(255)   # descriptor for the model
-lc_config   : longblob       # structure for configuring the model
+lc_trained_config   : longblob       # structure for configuring the model
 mu_logl   : double          # mean log likelihood 
 %}
 
@@ -27,10 +27,10 @@ classdef TrainedLikelihoodClassifiers < dj.Relvar & dj.AutoPopulate
             
             lc_model = getLC(class_discrimination.LikelihoodClassifierModels & key);
             
-            muLL = self.train(lc_model, key, 50);
+            muLL = self.train(lc_model, key, 200);
             
             tuple.mu_logl = muLL;
-            tuple.lc_config = lc_model.getModelConfigs();
+            tuple.lc_trained_config = lc_model.getModelConfigs();
 			self.insert(tuple)
 		end
     end
@@ -40,7 +40,7 @@ classdef TrainedLikelihoodClassifiers < dj.Relvar & dj.AutoPopulate
             assert(count(self)==1, 'You can only retrieve one decoder at a time');
             info = fetch(self, '*');
             model = eval(info.lc_class);
-            model.setModelConfigs(info.lc_config);
+            model.setModelConfigs(info.lc_trained_config);
         end
         
         function muLL = train(self, lc_model, key, n)
@@ -61,10 +61,10 @@ classdef TrainedLikelihoodClassifiers < dj.Relvar & dj.AutoPopulate
             for i = 1:length(keys)
                 key = keys(i);
                 lc_model = getLC(self & key);
-                mu_logl = self.train(lc_model, key, 50);
-                lc_config = lc_model.getModelConfigs();
+                mu_logl = self.train(lc_model, key, 100);
+                lc_trained_config = lc_model.getModelConfigs();
                 update(self & key, 'mu_logl', mu_logl);
-                update(self & key, 'lc_config', lc_config);
+                update(self & key, 'lc_trained_config', lc_trained_config);
             end 
         end
     end

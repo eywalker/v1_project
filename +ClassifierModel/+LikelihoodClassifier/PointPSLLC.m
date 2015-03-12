@@ -41,8 +41,8 @@ classdef PointPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
                 decodeOri = dataStruct.decodeOri;
                 likelihood = dataStruct.likelihood;
                 s_hat = self.pointExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
-            elseif isfield(dataStruct, 'peak')
-                s_hat = dataStruct.peak;
+            elseif isfield(dataStruct, 'likelihood_peak')
+                s_hat = dataStruct.likelihood_peak;
             end
             
             

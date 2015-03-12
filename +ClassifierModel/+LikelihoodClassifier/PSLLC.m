@@ -83,7 +83,7 @@ classdef PSLLC < handle
         % class B. Note that this is a stochastic classifier and thus
         % its response varies from run to run.
             pA = self.pRespA(dataStruct);
-            nTrials = size(pA, 2);
+            nTrials = length(pA);
             n = rand(nTrials, 1); % potential error here!
             classResp = cell(nTrials, 1);
             for ind = 1:nTrials
@@ -149,6 +149,7 @@ classdef PSLLC < handle
                 x0 = x0set(:, i);
                 
                 [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds);
                 if (cost < minCost)
                     minCost = cost;
                     minX = x;
@@ -255,7 +256,7 @@ classdef PSLLC < handle
             % class B ( p(r | C = 'A') / p(r | C = 'B')) and returns the
             % probability of responding 'A' for each trial, incorporating
             % the accentuation (alpha) and lapse rate.
-            logPostRatio = logLRatio + log(self.priorA ./ (1 - self.priorA)) ;% log(p(C = 'A' | r) / p(C = 'B' | r))
+            logPostRatio = logLRatio + log(self.priorA)-log(1 - self.priorA);% log(p(C = 'A' | r) / p(C = 'B' | r))
             %expRespA = (logPostRatio > 1); % expected response A
             
             p = exp(self.alpha .* logPostRatio); % exponentiated posterior ratio [p(B|~)/p(A|~)]^alpha

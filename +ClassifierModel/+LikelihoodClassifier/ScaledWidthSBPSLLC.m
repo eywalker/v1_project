@@ -49,8 +49,8 @@ classdef ScaledWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
                 decodeOri = dataStruct.decodeOri;
                 likelihood = dataStruct.likelihood;
                 [~, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
-            elseif isfield(dataStruct, 'width')
-                sigma = dataStruct.width;
+            elseif isfield(dataStruct, 'likelihood_width')
+                sigma = dataStruct.likelihood_width;
             end
             stimulus = dataStruct.orientation;
             
