@@ -34,3 +34,11 @@ parpopulate(class_discrimination.PLCTestSets, ...
 parpopulate(class_discrimination.TrainedPLC);
 
 
+plcTrainTestPairs = pro(class_discrimination.ContrastSessionParameterizedLikelihoods, 'plset_id -> plc_trainset_id') * ...
+    pro(class_discrimination.ShuffledCSPL, 'plset_id -> plc_testset_id');
+missing = fetch(plcTrainTestPairs - class_discrimination.PLCTrainTestPairs, '*');
+for i = 1:length(missing)
+    registerPair(class_discrimination.PLCTrainTestPairs, missing(i).plc_trainset_id, missing(i).plc_testset_id);
+end
+
+parpopulate(class_discrimination.PLCTestFits);
