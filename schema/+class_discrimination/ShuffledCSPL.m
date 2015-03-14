@@ -10,7 +10,7 @@ shuffled_indices: longblob     # indiex for shuffled widths
 classdef ShuffledCSPL < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = class_discrimination.ContrastSessionParameterizedLikelihoods * class_discrimination.ShuffleCSPLParams
+		popRel = pro(class_discrimination.ContrastSessionParameterizedLikelihoods * class_discrimination.ShuffleCSPLParams);
     end
     
     methods

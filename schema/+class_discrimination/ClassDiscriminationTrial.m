@@ -1,7 +1,6 @@
 
 %{
 class_discrimination.ClassDiscriminationTrial (computed) # Contains information relavent for behavior classification
-
 -> class_discrimination.ClassDiscriminationExperiment
 -> stimulation.StimTrials
 ---
@@ -15,6 +14,7 @@ orientation                 : float                         # Orientation of the
 posterior_a                 : float                         # Posterior probability of A
 contrast                    : float                         # Contrast of stimulus
 classdiscriminationtrial_ts=CURRENT_TIMESTAMP: timestamp    # automatic timestamp. Do not edit
+stim_time=0                 : int                           # duration of stimulus presentation
 %}
 
 classdef ClassDiscriminationTrial < dj.Relvar

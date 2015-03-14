@@ -27,7 +27,7 @@ classdef TrainedLikelihoodClassifiers < dj.Relvar & dj.AutoPopulate
             
             lc_model = getLC(class_discrimination.LikelihoodClassifierModels & key);
             
-            muLL = self.train(lc_model, key, 200);
+            muLL = self.train(lc_model, key, 50);
             
             tuple.mu_logl = muLL;
             tuple.lc_trained_config = lc_model.getModelConfigs();
@@ -61,7 +61,7 @@ classdef TrainedLikelihoodClassifiers < dj.Relvar & dj.AutoPopulate
             for i = 1:length(keys)
                 key = keys(i);
                 lc_model = getLC(self & key);
-                mu_logl = self.train(lc_model, key, 100);
+                mu_logl = self.train(lc_model, key, 50);
                 lc_trained_config = lc_model.getModelConfigs();
                 update(self & key, 'mu_logl', mu_logl);
                 update(self & key, 'lc_trained_config', lc_trained_config);

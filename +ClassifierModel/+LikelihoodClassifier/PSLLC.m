@@ -128,7 +128,7 @@ classdef PSLLC < handle
                 
                 self.setModelParameters(param); % update parameter values
                 if ~self.precompLogLRatio
-                    logLRatio = self.getLogLRatio(trainSet);
+                    [logLRatio, trainSet] = self.getLogLRatio(trainSet);
                 end
                 cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.selected_class);
                 if(isnan(cost) || ~isreal(cost))

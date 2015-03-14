@@ -26,7 +26,7 @@ classdef TrainedPLC < dj.Relvar & dj.AutoPopulate
             
             plc_model = getPLC(class_discrimination.PLCModels & key);
             
-            muLL = self.train(plc_model, key, 200);
+            muLL = self.train(plc_model, key, 50);
             
             tuple.plc_mu_logl = muLL;
             tuple.plc_trained_config = plc_model.getModelConfigs();
@@ -56,7 +56,7 @@ classdef TrainedPLC < dj.Relvar & dj.AutoPopulate
             for i = 1:length(keys)
                 key = keys(i);
                 plc_model = getPLC(self & key);
-                plc_mu_logl = self.train(plc_model, key, 100);
+                plc_mu_logl = self.train(plc_model, key, 50);
                 plc_trained_config = plc_model.getModelConfigs();
                 update(self & key, 'plc_mu_logl', plc_mu_logl);
                 update(self & key, 'plc_trained_config', plc_trained_config);

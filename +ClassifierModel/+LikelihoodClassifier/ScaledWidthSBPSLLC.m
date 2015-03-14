@@ -44,11 +44,14 @@ classdef ScaledWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
     end
     
     methods (Access = protected)
-        function logLRatio = getLogLRatio(self, dataStruct) %decodeOri, likelihood, stimulus)
-            if isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood')
+        function [logLRatio, dataStruct] = getLogLRatio(self, dataStruct) %decodeOri, likelihood, stimulus)
+            if isfield(dataStruct, 'computed_width')
+                sigma = dataStruct.computed_width;
+            elseif isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood')
                 decodeOri = dataStruct.decodeOri;
                 likelihood = dataStruct.likelihood;
                 [~, sigma] = self.pwExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
+                dataStruct.computed_width = sigma;
             elseif isfield(dataStruct, 'likelihood_width')
                 sigma = dataStruct.likelihood_width;
             end
