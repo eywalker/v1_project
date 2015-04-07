@@ -153,30 +153,25 @@ dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 
 figure;
-for modelIdx = 1:10
-    subplot(2, 5, modelIdx);
+for modelIdx = 1:NUM_MODELS
+    subplot(1, 5, modelIdx);
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx) - dTrainLL(:, modelIdx), edges);
     h1=errorbar(binc, mu, s./sqrt(n), '-x', 'Color', [1, 0.3, 0]);
     x = logspace(-3,0,100);
     hold on;
     plot(x, zeros(size(x)), 'k-.');
-    h2=errorbar(binc, mu_fit, s_fit./sqrt(n_fit), '-o', 'Color', [0, 0.7,0]);
     set(gca, 'xscale', 'log');
     title(modelNames{modelIdx});
     xlabel('Contrast');
     ylabel(sprintf('Difference in loglikelihood relative to %s', modelNames{model_number}));
+    xlim([edges(1), edges(end)]);
 end
-legend([h1, h2], {'Test set (shuffled)', 'CV test set'});
+legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for difference in shuffle vs non-shuffle w.r.t. the first
-model_number = 2;
+model_number = 1;
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-dFits = bsxfun(@minus, fits, fits(:, model_number));
-
-edges = arrayfun(@(x) prctile(contrasts, x), linspace(0,100,11));
-edges = [0, unique(edges), 1];
-edges = 0.5*(edges(1:end-1) + edges(2:end));
 
 ddLL = dTestLL - dTrainLL;
 
@@ -215,59 +210,7 @@ right = (space + 2 * width) * N;
 pos = (2*width + space) * [0:N-1] + left + width/2;
 set(gca, 'xtick', pos);
 set(gca, 'xticklabel', modelNames);
-rotateXLabels(gca, 90);
 xlim([0, right]);
 legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
 ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{model_number}));
 
-%% bar plots for difference in non-shuffle vs cv test w.r.t. the first
-model_number = 2;
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
-dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-dFits = bsxfun(@minus, fits, fits(:, model_number));
-
-edges = arrayfun(@(x) prctile(contrasts, x), linspace(0,100,11));
-edges = [0, unique(edges), 1];
-edges = 0.5*(edges(1:end-1) + edges(2:end));
-
-ddLL = dFits - dTrainLL;
-
-muDFits = mean(dFits);
-stdDFits = std(dFits);
-semDFits = stdDFits/sqrt(size(dFits,1));
-
-muDTrainLL = mean(dTrainLL);
-stdDTrainLL = std(dTrainLL);
-semDTrainLL = stdDTrainLL/sqrt(size(dTrainLL,1));
-
-
-muDDLL = mean(ddLL);
-stdDDLL = std(ddLL);
-semDDLL = stdDDLL/sqrt(size(ddLL, 1));
-
-figure;
-width = 2;
-space = 0.5;
-N = length(modelNames);
-left = space/2 + width/2;
-for modelIdx = 1:N
-    pos = (modelIdx-1)*(2*width + space) + left;
-    h1=bar(pos, muDTrainLL(modelIdx), width);
-    hold on;
-    
-    h2=bar(pos+width, muDFits(modelIdx),width, 'FaceColor', [1, 0.7, 0]);
-    errorbar(pos+width, muDFits(modelIdx), semDDLL(modelIdx), 'k');
-    h = ttest(ddLL(:, modelIdx));
-    if ~isnan(h) && ttest(ddLL(:, modelIdx))
-        h = text(pos + width, muDFits(modelIdx) + 2*semDDLL(modelIdx), '*');
-        set(h, 'FontSize', 25);
-    end
-end
-right = (space + 2 * width) * N;
-pos = (2*width + space) * [0:N-1] + left + width/2;
-set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames);
-rotateXLabels(gca, 90);
-xlim([0, right]);
-legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
-ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{model_number}));

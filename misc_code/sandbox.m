@@ -1,11 +1,18 @@
-keys = fetch(pro(class_discrimination.ContrastSessionDataSet,'dataset_id -> decoder_trainset_id', 'dataset_contrast -> contrast') ...
-    * pro(class_discrimination.CVTrainSets, 'dataset_id -> lc_trainset_id','cv_contrast -> contrast'), '*');
-
-for i = 1:length(keys)
-    registerPair(class_discrimination.LCTrainSetPairs, keys(i).decoder_trainset_id, keys(i).lc_trainset_id);
+keys = fetch(class_discrimination.FullSessionDataSet);
+data = fetchDataSet(class_discrimination.FullSessionDataSet & keys(1), false);
+for i = 2:length(keys)
+    dataNew = fetchDataSet(class_discrimination.FullSessionDataSet & keys(i), false);
+    data = [data; dataNew];
 end
 
-keys = fetch(pro(class_discrimination.CVTestSets, 'dataset_id->lc_testset_id') * pro(class_discrimination.CVTrainSets, 'dataset_id -> lc_trainset_id'),'*');
-for i = 1:length(keys)
-    registerPair(class_discrimination.LCTrainTestPairs, keys(i).lc_trainset_id, keys(i).lc_testset_id);
-end
+data = packData(data);
+
+%%
+dataSet = struct();
+ra = respA(valid);
+rr = {};
+[rr{ra}] = deal('A');
+[rr{~ra}] = deal('B');
+dataSet.selected_class = rr;
+dataSet.contrast = contrasts(valid);
+dataSet.orientation = ori(valid);
