@@ -121,6 +121,37 @@ set(gca, 'xticklabel', modelNames);
 xlim([0, right]);
 ylabel('Mean loglikelihood');
 
+%% Plot specific models w.r.t. another one
+model_number = 1; % model to compare against
+modelIdx = 2; % model to plot
+dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
+dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
+edges = arrayfun(@(x) prctile(all_contrasts, x), linspace(0,100,11));
+edges = [0, unique(edges), 1];
+edges = 0.5*(edges(1:end-1) + edges(2:end));
+%edges = [0,0.02, 0.05, 0.1, 0.15, 0.85,1];
+edges=edges(2:end);
+figure;
+
+subplot(1, 1, 1);
+[mu_train, s_train, n_train, binc] = nanBinnedStats(all_contrasts, dTrainLL(:, modelIdx), edges);
+[mu_test, s_test, n_test, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx), edges);
+h1=errorbar(binc, mu_train, s_train./sqrt(n_train));
+hold on;
+h2=errorbar(binc, mu_test, s_test./sqrt(n_test), '-x', 'Color', [1,0.3,0]);
+%errorbar(binc, mu_fit, s_fit ./sqrt(n_fit), 'o-r');
+set(gca, 'xscale', 'log');
+title(modelNames{modelIdx});
+xlabel('Contrast');
+ylabel(sprintf('Log likelihood relative to %s', modelNames{model_number}));
+xlim([edges(1), 1]);
+x=logspace(-3,2,100);
+plot(x, zeros(size(x)), 'k--');
+set(gca, 'xtick', [0.01, 0.1, 1]);
+set(gca, 'xticklabel', {'1','10','100'});
+
+legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
+
 
 
 
@@ -128,11 +159,14 @@ ylabel('Mean loglikelihood');
 model_number = 1;
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-
-
+edges = arrayfun(@(x) prctile(all_contrasts, x), 0:10:100);
+edges = [0, unique(edges), 1];
+edges = 0.5*(edges(1:end-1) + edges(2:end));
+%edges = [0,0.02, 0.05, 0.1, 0.15, 0.85,1];
+edges=edges(2:end);
 figure;
 for modelIdx = 1:NUM_MODELS
-    subplot(1, 5, modelIdx);
+    subplot(1, NUM_MODELS, modelIdx);
     [mu_train, s_train, n_train, binc] = nanBinnedStats(all_contrasts, dTrainLL(:, modelIdx), edges);
     [mu_test, s_test, n_test, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx), edges);
     h1=errorbar(binc, mu_train, s_train./sqrt(n_train));
