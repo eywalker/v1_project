@@ -24,14 +24,19 @@ classdef CVTestSets < dj.Relvar
             self.restrict(varargin{:});
         end
         
-        function dataSet = fetchDataSet(self)
+        function dataSet = fetchDataSet(self, pack)
+            if nargin < 2
+                pack = true;
+            end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
             data = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials & self, '*');
             data = dj.struct.sort(data, 'trial_num');
             info = fetch(self, '*');
             test_indices = info.test_indices;
             dataSet = data(test_indices);
-            dataSet = packData(dataSet);
+            if pack
+                dataSet = packData(dataSet);
+            end
         end
     end
 

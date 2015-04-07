@@ -20,10 +20,15 @@ classdef FullSessionDataSet < dj.Relvar & dj.AutoPopulate
         end
     end
     methods
-        function dataSet = fetchDataSet(self)
+        function dataSet = fetchDataSet(self, pack)
+            if nargin < 2
+                pack = true;
+            end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
             dataSet = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials & self, '*');
-            dataSet = packData(dataSet);
+            if pack
+                dataSet = packData(dataSet);
+            end
         end
 	end
 

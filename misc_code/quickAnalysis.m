@@ -9,7 +9,6 @@ condRight = find(targetSetup == cueClass); % target setup: 1 = red left green ri
 
 
 ori = {stim.params.trials.trialDirection}; % has to be cell array because some entries will be empty
-
 check = cellfun(@isempty, ori);
 [ori{check}] = deal(NaN);
 ori = [ori{:}];
@@ -62,12 +61,14 @@ performance = zeros(size(contrastLevels));
 fitLapseRate = zeros(1, N);
 fitPriorA = zeros(1, N);
 fitSigma = zeros(1, N);
+logl = zeros(1, N);
+contrasts = zeros(size(ori));
 model = ClassifierModel.BehavioralClassifier.BPLClassifier(3, 15, 270);
 for idx = 1:N
     contVal = contrastLevels(idx);
     condNums = find(abs([stim.params.conditions.contrast] - contVal) < 0.001);
     trials = ismember(conditions, condNums);
-    
+    contrasts(trials) = contVal;
     perc = sum(valid & correct & trials) / sum(valid & trials);
     performance(idx) = perc;
     fprintf('For %5.1f%% contrast, performed %3.1f%% correct over %d trials\n', contVal, perc*100, sum(valid&trials));
@@ -78,7 +79,7 @@ for idx = 1:N
     rr = {};
     [rr{ra}] = deal('A');
     [rr{~ra}] = deal('B');
-    model.train(orid, [], rr, 4000);
+    logl(idx) = model.train(orid, [], rr, 4000);
     fitLapseRate(idx) = model.lapseRate;
     fitPriorA(idx) = model.priorA;
     fitSigma(idx) = model.sigma;
@@ -146,6 +147,111 @@ for idx = 1:N
     
 
 end
+%% fit across all contrasts
+
+contrastLevels = sort(unique([stim.params.conditions.contrast]));
+
+N = length(contrastLevels);
+figure;
+performance = zeros(size(contrastLevels));
+fitLapseRate = zeros(1, N);
+fitPriorA = zeros(1, N);
+fitSigma = zeros(1, N);
+contrasts = zeros(size(ori));
+modelAll = ClassifierModel.BehavioralClassifier.GeneralBPLClassifier(3, 15, 270);
+modelAll.fixParameterByName('alpha');
+modelAll.alpha = 100;
+
+for idx = 1:N
+    contVal = contrastLevels(idx);
+    condNums = find(abs([stim.params.conditions.contrast] - contVal) < 0.001);
+    trials = ismember(conditions, condNums);
+    contrasts(trials) = contVal;
+    perc = sum(valid & correct & trials) / sum(valid & trials);
+    performance(idx) = perc;
+    fprintf('For %5.1f%% contrast, performed %3.1f%% correct over %d trials\n', contVal, perc*100, sum(valid&trials));
+end
+
+dataSet = struct();
+ra = respA(valid);
+rr = {};
+[rr{ra}] = deal('A');
+[rr{~ra}] = deal('B');
+dataSet.selected_class = rr;
+dataSet.contrast = contrasts(valid);
+dataSet.orientation = ori(valid);
+
+modelAll.train(dataSet, 50);
+    
+    
+for idx = 1:N 
+    contVal = contrastLevels(idx);
+    condNums = find(abs([stim.params.conditions.contrast] - contVal) < 0.001);
+    trials = ismember(conditions, condNums);
+    % looking at the rate of response 'A' for trials with class 'A' over
+    % orientations
+    binEdges = linspace(230,310,40);
+    [mu_A,s_A,ct_A,binc] = nanBinnedStats(ori(valid&trials&expA), respA(valid&trials&expA), binEdges);
+    subplot(3,N,idx);
+    
+    xc = linspace(230, 310, 1000);
+    c = ones(size(xc)) * contVal;
+    d.orientation = xc;
+    d.contrast = c;
+    pRespA = modelAll.pRespA(d);
+    
+    %plot(binc, mu_A, 'r');
+    
+    errorbar(binc, mu_A, s_A./sqrt(ct_A), 'r');
+    hold on;
+    plot(xc, pRespA, 'k--');
+    title(sprintf('%5.1f%% Contrast: Class A(red) Trials ', contVal));
+    if(idx==1)
+        ylabel('Proportion A(red) response');
+    end
+    xlim([230, 310]);
+    ylim([0,1]);
+    
+    binEdges = linspace(230,310,40);
+    [mu_B,s_B,ct_B,binc] = nanBinnedStats(ori(valid&trials&~expA), respA(valid&trials&~expA), binEdges);
+    
+    
+    % looking at the rate of response 'A' for trials with class 'A' over
+    % orientations
+    subplot(3,N,idx+N);
+    %plot(binc, mu_B, 'g');
+    errorbar(binc, mu_B, s_B./sqrt(ct_B), 'g');
+    hold on;
+    plot(xc, pRespA, 'k--');
+    title(sprintf('%5.1f%% Contrast: Class B(green) Trials', contVal));
+    if(idx==1)
+        ylabel('Proportion A(red) response');
+    end
+    xlabel('Stimulus orientation (deg)');
+    xlim([230, 310]);
+    ylim([0,1]);
+    
+    
+    binEdges = linspace(230,310,40);
+    [mu,s,ct,binc] = nanBinnedStats(ori(valid&trials), respA(valid&trials), binEdges);
+    
+    subplot(3,N,idx+2*N);
+    %plot(binc, mu, 'b');
+    errorbar(binc, mu, s./sqrt(ct), 'b');
+    hold on;
+    plot(xc, pRespA, 'k--');
+    title(sprintf('%5.1f%% Contrast: All Trials', contVal));
+    if(idx==1)
+        ylabel('Proportion A(red) response');
+    end
+    xlabel('Stimulus orientation (deg)');
+    xlim([230, 310]);
+    ylim([0,1]);
+    
+
+end
+
+
 %%
 figure;
 subplot(4,1,1);

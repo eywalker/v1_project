@@ -1,0 +1,272 @@
+classdef GeneralBPLClassifier < handle
+    % BPLCLASSIFIER Full Bayesian Classifier with free prior
+    % and lapse rate (BP-L model)
+    %   This class represents Bayesian behavioral orientation stimulus
+    %   classifier with free prior over stimulus category and lapse rate.
+    properties
+        priorA = 0.5; % prior over category 'A'
+        sigmaA; % standard devation of category 'A'
+        sigmaB; % standard deviation of category 'B'
+        modelName; % name of the model
+        stimCenter = 0; % center of stimulus distribution for both category
+        alpha = 1; % exponent factor for log-likelihood
+        lapseRate = 0; % lapse rate for stimulus category classification
+        beta0 = 0; % parameters for logistic fit to sigma = exp(beta0 + beta1 * contrast)/(1 + exp(beta0 + beta1 * contrast)
+        beta1 = -1;
+        sigma = 1;
+        base = 0;
+        
+        
+        params = {'priorA', 'lapseRate', 'alpha', 'beta0', 'beta1', 'sigma', 'base'};
+        fixedParams = false(1, 7);
+        p_lb = [0, 0, 0, -Inf, -Inf, 0, 0]; % lower bound for parameters
+        p_ub = [1, 1, Inf, Inf, 0, Inf, Inf]; % upper bound for parameters
+        precompLogLRatio = false;
+    end
+    
+   
+    methods
+        
+        
+        
+        function obj = GeneralBPLClassifier(sigmaA, sigmaB, stimCenter, modelName)
+            % BAYESIANBEHAVIORALCLASSIFIER Constructer that takes in sigmaA,
+            % sigmaB and stimCenter describing the experiment
+            if nargin < 4
+                modelName = 'BPLClassifier';
+            end
+            if nargin < 1
+                sigmaA = 3;
+                sigmaB = 15;
+                stimCenter = 270;
+            end
+            
+            obj.sigmaA = sigmaA;
+            obj.sigmaB = sigmaB;
+            obj.stimCenter = stimCenter;
+            obj.modelName = modelName;
+        end
+        
+        function sigma = mapContrast(self, contrast)
+             sigma = self.sigma * exp(self.beta0 + self.beta1 * contrast)./(1 + exp(self.beta0 + self.beta1 * contrast)) + self.base;
+        end
+        
+        function [logLRatio, dataStruct] = getLogLRatio(self, dataStruct) %decodeOri, likelihood)
+            stimulus = dataStruct.orientation;
+            contrast = dataStruct.contrast;
+            contrast = contrast(:);
+            s_hat = stimulus(:);
+            sigma = self.mapContrast(contrast);
+            
+            logPrA = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaA^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaA^2);
+            logPrB = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaB^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaB^2);
+            logLRatio = logPrA - logPrB;
+        end
+        
+        
+        function pA = pRespA(self, dataStruct)
+            % PRESPAGIVENS Returns the probability of responding class 'A'
+            % given the stimulus
+            logLRatio = self.getLogLRatio(dataStruct);
+            pA = self.pRespAHelper(logLRatio);
+        end
+        
+        function [muLL, logLList] = getLogLikelihood(self, dataStruct)
+            logLRatio = self.getLogLRatio(dataStruct);
+            [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.selected_class);
+        end
+        
+        function response = classify(self, dataStruct)
+            % CLASSIFY Runs simulated classification of stimulus according to
+            % the current model parameters
+            pA = self.pRespA(dataStruct);
+            n = rand(size(stimulus));
+            response = cell(size(stimulus));
+            for ind = 1:length(response)
+                if(pA(ind) > n(ind))
+                    response{ind} = 'A';
+                else
+                    response{ind} = 'B';
+                end
+            end
+        end
+        
+        function muLL = train(self, trainSet, nReps)%decodeOri, likelihood, classResp, nReps)
+        % train Trains the model using the training dataset.
+        % 
+        % Note that this train method will only train three parameters
+        % of priorA, alpha and lapseRate. If your specific model
+        % requires additional parameters whose value has to be
+        % optimized based on the dataset, then the model specific train
+        % method must be prepared and utilized.
+        %
+            fprintf('Training %s', self.modelName);
+            % TRAIN Trains the likelihood classifier to learn the model
+            if nargin < 3
+                nReps = 10; % defaults to 10 repetitions of training
+            end
+            
+            if self.precompLogLRatio
+                logLRatio = self.getLogLRatio(trainSet); % precompute the log-likelihood ratio
+            end
+            
+            function cost = cf(param)
+            % cost function for optimization - defined as the negative log
+            % likelihood.
+                
+                self.setModelParameters(param); % update parameter values
+                if ~self.precompLogLRatio
+                    [logLRatio, trainSet] = self.getLogLRatio(trainSet);
+                end
+                cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.selected_class);
+                if(isnan(cost) || ~isreal(cost))
+                    cost = Inf;
+                end
+            end
+            
+            paramSet = self.getModelParameters;
+            minX = paramSet.values;
+            minCost = min(cf(minX), Inf); % this step necessary in case cf evalutes to NaN
+            
+            options=optimset('Display','off','Algorithm','interior-point');%'MaxFunEvals',500,'FunValCheck','on');
+            
+            x0set = self.getInitialGuess(nReps);
+            
+            for i = 1 : nReps
+                fprintf('.');
+                x0 = x0set(:, i);
+                
+                [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds);
+                if (cost < minCost)
+                    minCost = cost;
+                    minX = x;
+                end
+            end
+            self.setModelParameters(minX);
+            muLL = -minCost;
+            fprintf('%2.3f\n',muLL);
+        end
+        
+        function fixParameterByName(self, field)
+            pos = find(strcmp(field, self.params));
+            if ~isempty(pos)
+                self.fixedParams(pos) = true;
+            end
+        end
+        
+        function releaseParameterByName(self, field)
+            pos = find(strcmp(field, self.params));
+            if ~isempty(pos)
+                self.fixedParams(pos) = false;
+            end
+        end
+            
+        function setParameterFixMap(self, fmap)
+            assert(length(fmap) == length(self.params), 'Parameter fix map size must match the number of parameters!');
+            self.fixedParams = logical(fmap);
+        end
+        
+        function setModelParameters(self, paramValues)
+            % SETMODELPARAMETERS Immeidately sets the model parameters to the
+            % specified values.
+            %   WARNING: You have to know the correct number and condition of
+            %   the parameters before setting them.
+            p_set = self.params(~self.fixedParams);
+            for i = 1:length(p_set)
+                self.(p_set{i}) = paramValues(i);
+            end
+        end
+        
+        function paramSet = getModelParameters(self)
+            % GETMODELPARAMETERS Returns a structure containing information about
+            % model parameters needed for optimization/training
+            paramSet = [];
+            p_set = self.params(~self.fixedParams);
+            paramSet.numParameters = length(p_set);
+            paramSet.values = cellfun(@(x) self.(x), p_set);
+            paramSet.lowerBounds = self.p_lb(~self.fixedParams);
+            paramSet.upperBounds = self.p_ub(~self.fixedParams);
+        end
+        
+        function x0 = getInitialGuess(self, nreps)
+            paramSet = self.getModelParameters();
+            np = paramSet.numParameters;
+            r = rand(np, nreps);
+            lb = paramSet.lowerBounds(:);
+            ub = paramSet.upperBounds(:);
+            ub(isinf(ub))=100;
+            lb(isinf(lb))=-100;
+
+            x0 = bsxfun(@plus, bsxfun(@times,(ub-lb),r), lb);
+        end
+        
+
+        function configSet = getModelConfigs(self)
+            % Returns a structure with all configurable component for the
+            % model. This includes ALL (fixed and non-fixed) parameters,
+            % fix map, bounds, and model name
+            
+            configSet = [];
+            configSet.sigmaA = self.sigmaA;
+            configSet.sigmaB = self.sigmaB;
+            configSet.stimCenter = self.stimCenter;
+            configSet.paramNames = self.params;
+            configSet.paramValues = cellfun(@(x) self.(x), self.params);
+            configSet.fixedParams = self.fixedParams;
+            configSet.modelName = self.modelName;
+            configSet.lb = self.p_lb;
+            configSet.ub = self.p_ub;
+        end
+        
+        function setModelConfigs(self, configSet)
+            % Load in the state of the model from a config set
+            self.sigmaA = configSet.sigmaA;
+            self.sigmaB = configSet.sigmaB;
+            self.stimCenter = configSet.stimCenter;
+            paramNames = configSet.paramNames;
+            paramValues = configSet.paramValues;
+            for i = 1:length(paramNames)
+                self.(paramNames{i}) = paramValues(i);
+            end
+            self.fixedParams = configSet.fixedParams;
+            self.modelName = configSet.modelName;
+            self.p_lb = configSet.lb;
+            self.p_ub = configSet.ub;
+        end
+        
+        
+        
+        
+        
+        
+    end
+    %% Helper functions
+    methods (Access = protected)
+        function pA = pRespAHelper(self, logLRatio)
+            logPostRatio = logLRatio + log(self.priorA) - log(1-self.priorA);
+            p = exp(self.alpha .* logPostRatio);
+            pos = isinf(p);
+            expRespA = p ./ (1 + p);
+            expRespA(pos) = 1;
+            pA = expRespA .* (1 - self.lapseRate) + self.lapseRate * 0.5;
+        end
+        
+        function [muLL, logLList] = getLogLikelihoodHelper(self, logLRatio, classResp)
+            classResp = classResp(:);
+            
+            respA = strcmp(classResp, 'A');
+            respB = ~respA;
+            
+            pRespA = self.pRespAHelper(logLRatio);
+            pRespA = pRespA(:);
+            pRespTotal = respA .* pRespA + respB .* (1-pRespA);
+            logLList = log(pRespTotal);
+            muLL = mean(logLList);
+        end
+        
+
+    end
+
+end
+
