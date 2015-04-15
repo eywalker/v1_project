@@ -1,4 +1,4 @@
-classdef GeneralBPLClassifier < handle
+classdef BehavioralBPLClassifier < handle
     % BPLCLASSIFIER Full Bayesian Classifier with free prior
     % and lapse rate (BP-L model)
     %   This class represents Bayesian behavioral orientation stimulus
@@ -9,17 +9,17 @@ classdef GeneralBPLClassifier < handle
         sigmaB; % standard deviation of category 'B'
         modelName; % name of the model
         stimCenter = 0; % center of stimulus distribution for both category
-        alpha = 1; % exponent factor for log-likelihood
+       
         lapseRate = 0; % lapse rate for stimulus category classification
         a = 1; % parameters for logistic fit to sigma = exp(beta0 + beta1 * contrast)/(1 + exp(beta0 + beta1 * contrast)
         beta = 1;
-        sigma = 0;
+        gamma = 0;
         
         
-        params = {'priorA', 'lapseRate', 'alpha', 'a', 'beta', 'sigma'};
-        fixedParams = false(1, 6);
-        p_lb = [0, 0, 0, 0, 0, 0]; % lower bound for parameters
-        p_ub = [1, 1, Inf, Inf, Inf, Inf]; % upper bound for parameters
+        params = {'priorA', 'lapseRate', 'a', 'beta', 'gamma'};
+        fixedParams = false(1, 5);
+        p_lb = [0.25, 0, 0, 0, 0, ]; % lower bound for parameters
+        p_ub = [0.75, 0.5, 50, 8, 30]; % upper bound for parameters
         precompLogLRatio = false;
     end
     
@@ -28,7 +28,7 @@ classdef GeneralBPLClassifier < handle
         
         
         
-        function obj = GeneralBPLClassifier(sigmaA, sigmaB, stimCenter, modelName)
+        function obj = BehavioralBPLClassifier(sigmaA, sigmaB, stimCenter, modelName)
             % BAYESIANBEHAVIORALCLASSIFIER Constructer that takes in sigmaA,
             % sigmaB and stimCenter describing the experiment
             if nargin < 4
@@ -47,34 +47,45 @@ classdef GeneralBPLClassifier < handle
         end
         
         function sigma = mapContrast(self, contrast)
-            sigma = (contrast * self.a).^-self.beta + self.sigma;
+            sigma = (contrast * self.a).^-self.beta + self.gamma;
             sigma(isinf(sigma)) = 100; % deal with contrast of 0...wtf
             %sigma = self.sigma * exp(self.beta0 + self.beta1 * contrast)./(1 + exp(self.beta0 + self.beta1 * contrast)) + self.base;
-        end
-        
-        function [logLRatio, dataStruct] = getLogLRatio(self, dataStruct) %decodeOri, likelihood)
-            stimulus = dataStruct.orientation;
-            contrast = dataStruct.contrast;
-            contrast = contrast(:);
-            s_hat = stimulus(:);
-            sigma = self.mapContrast(contrast);
-            
-            logPrA = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaA^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaA^2);
-            logPrB = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaB^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaB^2);
-            logLRatio = logPrA - logPrB;
         end
         
         
         function pA = pRespA(self, dataStruct)
             % PRESPAGIVENS Returns the probability of responding class 'A'
             % given the stimulus
-            logLRatio = self.getLogLRatio(dataStruct);
-            pA = self.pRespAHelper(logLRatio);
+            
+            stimulus = dataStruct.orientation;
+            contrast = dataStruct.contrast;
+            contrast = contrast(:);
+            s_hat = stimulus(:) - self.stimCenter;
+            sigma = self.mapContrast(contrast);
+            
+            k1 = 1/2*log((sigma.^2 + self.sigmaB.^2)./(sigma.^2 + self.sigmaA.^2)) + log(self.priorA./(1-self.priorA));
+            k2 = 1/2*(self.sigmaB.^2 - self.sigmaA.^2) ./ ((sigma.^2 + self.sigmaA.^2) .* (sigma.^2 + self.sigmaB.^2));
+            k = sqrt(k1./k2);
+            
+            unreal_k = ~arrayfun(@isreal, k);
+            k(unreal_k) = 0; % give 0 to pass by erf function
+            LCA = ((1/2)*(erf((s_hat+k)./sigma./sqrt(2)) - erf((s_hat-k)./sigma./sqrt(2)))); % p(C='A'|s)
+            LCA(unreal_k) = 0;
+            pA = LCA * (1-self.lapseRate) + self.lapseRate * 0.5;
+
         end
         
         function [muLL, logLList] = getLogLikelihood(self, dataStruct)
-            logLRatio = self.getLogLRatio(dataStruct);
-            [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.selected_class);
+            classResp = dataStruct.selected_class;
+            classResp = classResp(:);
+            respA = strcmp(classResp, 'A');
+            respB = ~respA;
+            
+            pRespA = self.pRespA(dataStruct);
+            pRespA = pRespA(:);
+            pRespTotal = respA .* pRespA + respB .* (1-pRespA);
+            logLList = log(pRespTotal);
+            muLL = mean(logLList);
         end
         
         function response = classify(self, dataStruct)
@@ -107,19 +118,13 @@ classdef GeneralBPLClassifier < handle
                 nReps = 10; % defaults to 10 repetitions of training
             end
             
-            if self.precompLogLRatio
-                logLRatio = self.getLogLRatio(trainSet); % precompute the log-likelihood ratio
-            end
             
             function cost = cf(param)
             % cost function for optimization - defined as the negative log
             % likelihood.
                 
                 self.setModelParameters(param); % update parameter values
-                if ~self.precompLogLRatio
-                    [logLRatio, trainSet] = self.getLogLRatio(trainSet);
-                end
-                cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.selected_class);
+                cost = -self.getLogLikelihood(trainSet);
                 if(isnan(cost) || ~isreal(cost))
                     cost = Inf;
                 end
@@ -242,32 +247,6 @@ classdef GeneralBPLClassifier < handle
         
         
     end
-    %% Helper functions
-    methods (Access = protected)
-        function pA = pRespAHelper(self, logLRatio)
-            logPostRatio = logLRatio + log(self.priorA) - log(1-self.priorA);
-            p = exp(self.alpha .* logPostRatio);
-            pos = isinf(p);
-            expRespA = p ./ (1 + p);
-            expRespA(pos) = 1;
-            pA = expRespA .* (1 - self.lapseRate) + self.lapseRate * 0.5;
-        end
-        
-        function [muLL, logLList] = getLogLikelihoodHelper(self, logLRatio, classResp)
-            classResp = classResp(:);
-            
-            respA = strcmp(classResp, 'A');
-            respB = ~respA;
-            
-            pRespA = self.pRespAHelper(logLRatio);
-            pRespA = pRespA(:);
-            pRespTotal = respA .* pRespA + respB .* (1-pRespA);
-            logLList = log(pRespTotal);
-            muLL = mean(logLList);
-        end
-        
-
-    end
-
+ 
 end
 
