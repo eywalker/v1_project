@@ -61,9 +61,15 @@ performance = zeros(size(contrastLevels));
 fitLapseRate = zeros(1, N);
 fitPriorA = zeros(1, N);
 fitSigma = zeros(1, N);
+fitAlpha = zeros(1, N);
 logl = zeros(1, N);
 contrasts = zeros(size(ori));
-model = ClassifierModel.BehavioralClassifier.BPLClassifier(3, 15, 270);
+%model = ClassifierModel.BehavioralClassifier.BPLClassifier(3, 15, 270);
+model = ClassifierModel.BehavioralClassifier.BehavioralBPLClassifier(3, 15, 270);
+model.fixParameterByName('a');
+model.fixParameterByName('beta');
+model.beta = -1
+model.a = 0
 for idx = 1:N
     contVal = contrastLevels(idx);
     condNums = find(abs([stim.params.conditions.contrast] - contVal) < 0.001);
@@ -73,16 +79,20 @@ for idx = 1:N
     performance(idx) = perc;
     fprintf('For %5.1f%% contrast, performed %3.1f%% correct over %d trials\n', contVal, perc*100, sum(valid&trials));
     
-    
+    dataSet = struct();
     orid = ori(valid & trials);
+    dataSet.orientation = orid;
     ra = respA(valid & trials);
     rr = {};
     [rr{ra}] = deal('A');
     [rr{~ra}] = deal('B');
-    logl(idx) = model.train(orid, [], rr, 4000);
+    dataSet.selected_class = rr;
+    dataSet.contrast = ones(size(orid)) * contVal;
+    logl(idx) = model.train(dataSet, 30);
     fitLapseRate(idx) = model.lapseRate;
     fitPriorA(idx) = model.priorA;
-    fitSigma(idx) = model.sigma;
+    fitSigma(idx) = model.gamma;
+
     
     
     % looking at the rate of response 'A' for trials with class 'A' over
@@ -92,10 +102,10 @@ for idx = 1:N
     subplot(3,N,idx);
     
     xc = linspace(230, 310, 1000);
-    da = normpdf(xc, 270, sqrt(3^2 + model.sigma^2));
-    db = normpdf(xc, 270, sqrt(15^2 + model.sigma^2));
-    dr = (1-model.lapseRate) *(da ./ (da + db)) + 0.5*(model.lapseRate);
-    pRespA = model.pRespAGivenS(xc);
+    c = ones(size(xc)) * contVal;
+    d.orientation = xc;
+    d.contrast = c;
+    pRespA = model.pRespA(d);
     
     %plot(binc, mu_A, 'r');
     
@@ -147,6 +157,25 @@ for idx = 1:N
     
 
 end
+%% plot fitted parameters across contrasts
+figure;
+subplot(4,1,1);
+plot(contrastLevels, performance * 100, 'o-');
+title('Performance (%)');
+
+subplot(4,1,2);
+plot(contrastLevels, fitSigma,'o-');
+title('Fitted sigma (noise)');
+
+subplot(4,1,3);
+plot(contrastLevels, 100*fitLapseRate, 'o-');
+title('Fitted lapse rate (%)');
+
+subplot(4,1,4);
+plot(contrastLevels, fitPriorA, 'o-');
+title('Prior over "A"');
+xlabel('Contrast (%)');
+
 %% fit across all contrasts
 
 contrastLevels = sort(unique([stim.params.conditions.contrast]));
@@ -154,13 +183,10 @@ contrastLevels = sort(unique([stim.params.conditions.contrast]));
 N = length(contrastLevels);
 figure;
 performance = zeros(size(contrastLevels));
-fitLapseRate = zeros(1, N);
-fitPriorA = zeros(1, N);
-fitSigma = zeros(1, N);
 contrasts = zeros(size(ori));
-modelAll = ClassifierModel.BehavioralClassifier.GeneralBPLClassifier(3, 15, 270);
-modelAll.fixParameterByName('alpha');
-modelAll.alpha = 100;
+modelAll = ClassifierModel.BehavioralClassifier.BehavioralBPLClassifier(3, 15, 270);
+% modelAll.fixParameterByName('alpha');
+% modelAll.alpha = 100;
 
 for idx = 1:N
     contVal = contrastLevels(idx);
@@ -252,24 +278,7 @@ for idx = 1:N
 end
 
 
-%%
-figure;
-subplot(4,1,1);
-plot(contrastLevels, performance * 100, 'o-');
-title('Performance (%)');
 
-subplot(4,1,2);
-plot(contrastLevels, fitSigma,'o-');
-title('Fitted sigma (noise)');
-
-subplot(4,1,3);
-plot(contrastLevels, 100*fitLapseRate, 'o-');
-title('Fitted lapse rate (%)');
-
-subplot(4,1,4);
-plot(contrastLevels, fitPriorA, 'o-');
-title('Prior over "A"');
-xlabel('Contrast (%)');
 
 
 
