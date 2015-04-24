@@ -13,6 +13,10 @@ classdef LCTrainTestPairs < dj.Relvar
         function registerPair(self, lcTrainsetID, lcTestsetID)
             tuple.lc_trainset_id = lcTrainsetID;
             tuple.lc_testset_id = lcTestsetID;
+            if count(self & tuple)
+                % pair already exists, skip!
+                return;
+            end
             fprintf('Registering lc_trainset_id=%d and lc_testset_id=%d...\n', lcTrainsetID, lcTestsetID);
             inserti(self, tuple);
         end
