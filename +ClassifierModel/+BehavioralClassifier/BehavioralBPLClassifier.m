@@ -92,6 +92,7 @@ classdef BehavioralBPLClassifier < handle
             % CLASSIFY Runs simulated classification of stimulus according to
             % the current model parameters
             pA = self.pRespA(dataStruct);
+            stimulus = dataStruct.orientation;
             n = rand(size(stimulus));
             response = cell(size(stimulus));
             for ind = 1:length(response)

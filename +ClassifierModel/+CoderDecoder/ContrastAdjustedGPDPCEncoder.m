@@ -18,9 +18,6 @@ classdef ContrastAdjustedGPDPCEncoder < handle
     % always elicit identical responses). To make this into a PPC
     % encoder, wrap it with a noise model such as PoissonNoisePPCodec
     %
-    % Author: Edgar Y. Walker
-    % e-mail: edgar.walker@gmail.com
-    % Last modified: Feb 16, 2014
     %
     properties
         contList; % list of contrasts for which tuning function is trained and thus defined
@@ -37,11 +34,13 @@ classdef ContrastAdjustedGPDPCEncoder < handle
     
     methods
         function obj=ContrastAdjustedGPDPCEncoder(NUM_UNITS)
+            if nargin < 1
+                NUM_UNITS = 96; % default to Utah array
+            end
             % Constructer that takes in number of units
             obj.NUM_UNITS=NUM_UNITS;
             obj.alpha(NUM_UNITS)=0;
-            obj.y_bias(NUM_UNITS, 1)=0;
-            
+            obj.y_bias(NUM_UNITS, 1)=0;      
         end
         
         function obj = restrict(self, units)
@@ -59,6 +58,14 @@ classdef ContrastAdjustedGPDPCEncoder < handle
         function train(self, stimulus, contrast, spikeCounts)
             % TRAIN Fit the GP-based tuning curves onto the training set
             % consisting of stimulus, contrast and recorded spikeCounts. 
+            if isstruct(stimulus) % if first argument is a structure
+                dataSet = stimulus;
+                stimulus = dataSet.orientation;
+                contrast = dataSet.contrast;
+                spikeCounts = dataSet.counts;
+            end
+
+            
             sigma_obs = self.sigma_obs;
             sigma_kernel = self.sigma_kernel;
             
@@ -69,7 +76,8 @@ classdef ContrastAdjustedGPDPCEncoder < handle
                 pos = contrast == contVal; % select trials with specific contrast
                 contBias(:, ind) = mean(spikeCounts(:, pos),2);
             end
-            normBias=bsxfun(@rdivide , contBias, contBias(:,1));
+            % all bias expressed as ratio w.r.t. to the first (lowest contrast)
+            normBias = bsxfun(@rdivide , contBias, contBias(:,1)); 
             
             contInd = arrayfun(@(x) find(contList == x), contrast);
             bias = normBias(:, contInd);
@@ -77,19 +85,17 @@ classdef ContrastAdjustedGPDPCEncoder < handle
             spikeCounts = spikeCounts ./ bias;
             
             x = stimulus(:);
+            K = cov_kernel(x, x, 1/sigma_kernel^2);
             self.trainStimulus = stimulus;
-            self.alpha = zeros(self.NUM_UNITS,length(stimulus));
+            self.alpha = zeros(self.NUM_UNITS, length(stimulus));
             for indUnit = 1:self.NUM_UNITS
                 y = spikeCounts(indUnit,:);
                 
                 
-                self.y_bias(indUnit) = 0; %mean(y(y < prctile(y, 5)));
-
-                K = cov_kernel(x, x, 1/sigma_kernel^2);
+                self.y_bias(indUnit) = mean(y);
 
                 L = chol(K+sigma_obs^2*eye(size(K,1)),'lower');
                 alpha = L'\(L\(y'-self.y_bias(indUnit)));
-                %alpha = L'\(L\y');
                 self.alpha(indUnit,:) = alpha;
             end
             
@@ -158,26 +164,34 @@ classdef ContrastAdjustedGPDPCEncoder < handle
             end
         end
         
-        function setModelParameters(self, paramValues)
-            % SETPARAMETERS Immeidately sets the model parameters to the
-            % specified values.
-            %   WARNING: You have to know the correct number and condition of
-            %   the parameters before setting them.
-            self.mu = paramValues(1 : self.NUM_UNITS);
-            self.sigma = paramValues(self.NUM_UNITS + 1 : 2 * self.NUM_UNITS);
-            self.gain = paramValues(2 * self.NUM_UNITS + 1 : 3 * self.NUM_UNITS);
+        
+        
+        
+        function configSet = getModelConfigs(self)
+            % Returns a structure with all configurable component for the
+            % model. This includes ALL (fixed and non-fixed) parameters,
+            % fix map, bounds, and model name
+            
+            configSet = [];
+            configSet.sigma_obs = self.sigma_obs;
+            configSet.sigma_kernel = self.sigma_kernel;
+            configSet.trainStimulus = self.trainStimulus;
+            configSet.alpha = self.alpha;
+            configSet.y_bias = self.y_bias;
+            configSet.NUM_UNITS = self.NUM_UNITS;
+            configSet.contList = self.contList;
+            configSet.normBias = self.normBias;
         end
         
-        function paramSet = getModelParameters(self)
-            % GETPARAMETERS Returns a structure containing information about
-            % model parameters needed for optimization/training
-            paramSet = [];
-            paramSet.numParameters = 3 * self.NUM_UNITS;
-            paramSet.initValues = [self.mu, self.sigma, self.gain];
-            paramSet.lowerBounds = [-Inf * ones(1, self.NUM_UNITS), ...
-                                    zeros(1, self.NUM_UNITS), ...
-                                    zeros(1, self.NUM_UNITS)];
-            paramSet.upperBounds = [Inf * ones(1, 3 * self.NUM_UNITS)];
+        function setModelConfigs(self, configSet)
+            self.sigma_obs = configSet.sigma_obs;
+            self.sigma_kernel = configSet.sigma_kernel;
+            self.trainStimulus = configSet.trainStimulus;
+            self.alpha = configSet.alpha;
+            self.y_bias = configSet.y_bias;
+            self.normBias = configSet.normBias;
+            self.contList = configSet.contList;
+            self.NUM_UNITS = configSet.NUM_UNITS;
         end
         
     end
