@@ -18,11 +18,13 @@ function shuffledDataSet = shuffleSpikes(dataSet, binWidth, seed, binCenter)
 
     for i = 1:length(ori)
         pos = find(binnedOri == ori(i));
+        fprintf('%d,',length(pos));
         for j=1:N
             randpos = pos(randperm(length(pos)));
             shuffledCounts(j, pos) = counts(j, randpos);
         end
     end
+    fprintf('\n');
     
     shuffledDataSet = struct(dataSet); % make explicit copy
     shuffledDataSet.counts = shuffledCounts;

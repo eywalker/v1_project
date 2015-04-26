@@ -2,7 +2,7 @@
 
 trainTestPairs = (pro(class_discrimination.ContrastSessionDataSet, 'dataset_contrast -> contrast', 'dataset_id -> lc_trainset_id') * pro(class_discrimination.SCGroupedShuffledDataSets, '*', 'dataset_id -> lc_testset_id'));
 allFits = class_discrimination.TrainedLikelihoodClassifiers * class_discrimination.LikelihoodClassifierModels * class_discrimination.LCModelFits * trainTestPairs;
-fits = fetch(allFits & 'shuffle_binwidth = 3', '*');
+fits = fetch(allFits & 'shuffle_binwidth >10', '*');
 
 %%
 [test_ll, v1, v2]=dj.struct.tabulate(fits, 'fit_mu_logl', 'lc_trainset_id', 'lc_label');

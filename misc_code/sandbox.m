@@ -1,18 +1,21 @@
-keys = fetch(class_discrimination.FullSessionDataSet);
-data = fetchDataSet(class_discrimination.FullSessionDataSet & keys(1), false);
-for i = 2:length(keys)
-    dataNew = fetchDataSet(class_discrimination.FullSessionDataSet & keys(i), false);
-    data = [data; dataNew];
-end
+keys = fetch(class_discrimination.ContrastSessionDataSet, '*');
+N = 145
+data = fetchDataSet(class_discrimination.ContrastSessionDataSet & keys(N));
+model = ClassifierModel.BehavioralClassifier.BehavioralBPLClassifier();
+model.train(data)
+class_discrimination.TrainedLikelihoodClassifiers & sprintf('lc_trainset_id = %d', keys(N).dataset_id)
 
-data = packData(data);
 
 %%
-dataSet = struct();
-ra = respA(valid);
-rr = {};
-[rr{ra}] = deal('A');
-[rr{~ra}] = deal('B');
-dataSet.selected_class = rr;
-dataSet.contrast = contrasts(valid);
-dataSet.orientation = ori(valid);
+keys = fetch(class_discrimination.TrainedLikelihoodClassifiers & 'lc_id = 6');
+pa = zeros(1, length(keys));
+for i = 1:length(keys)
+    if mod(i, 10)==0
+        fprintf('.');
+    end
+    model = getLC(class_discrimination.TrainedLikelihoodClassifiers & keys(i));
+    pa(i) = model.priorA;
+end
+fprintf('\n');
+figure;
+hist(pa, 50);
