@@ -3,7 +3,7 @@ classdef PoissonNoisePPCodec < handle
     % Poisson noise based coder-decoder (codec).
     properties
         baseEncoder; % underlying deterministic population code encoder
-        filterThreshold = -3;
+        filterThreshold = -3.5;
         unitFilter = ':'; % filter out bad units when computing likelihood distr
     end
     
@@ -66,14 +66,27 @@ classdef PoissonNoisePPCodec < handle
             % GETLIKELIHOODDISTR Calculates the likelihood distribution
             % over the range of orientation (decodeOri) for observing given
             % set of spikeCounts and contrast value for each trial
-            F = self.baseEncoder.encode(decodeOri, contrast)'; % assumes that base encoder is deterministic
-            
-            F  = F(:, self.unitFilter);
             spikeCounts = spikeCounts(self.unitFilter, :);
-            
-            logL = bsxfun(@minus, bsxfun(@minus, log(F)*spikeCounts, sum(F,2)), sum(gammaln(spikeCounts+1) ,1));
-            normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
-            L = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
+            if length(contrast) > 1 && length(contrast) == size(spikeCounts, 2)
+                contList = unique(contrast);
+                L = zeros(length(decodeOri), length(contrast));
+                for i = 1:length(contList)
+                    contVal = contList(i);
+                    pos = contrast == contVal;
+                    F = self.baseEncoder.encode(decodeOri, contVal)';
+                    F = F(:, self.unitFilter);
+                    counts = spikeCounts(:, pos);
+                    logL = bsxfun(@minus, bsxfun(@minus, log(F)*counts, sum(F,2)), sum(gammaln(counts+1) ,1));
+                    normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
+                    L(:, pos) = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
+                end   
+            else
+                F = self.baseEncoder.encode(decodeOri, contrast)'; % assumes that base encoder is deterministic
+                F  = F(:, self.unitFilter);
+                logL = bsxfun(@minus, bsxfun(@minus, log(F)*spikeCounts, sum(F,2)), sum(gammaln(spikeCounts+1) ,1));
+                normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
+                L = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
+            end
         end
         
         function L = getLikelihoodDistrWithContrastPrior(self, decodeOri, contValues, contPrior, spikeCounts)

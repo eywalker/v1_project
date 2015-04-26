@@ -1,5 +1,5 @@
 %{
-class_discrimination.DecoderModels (manual) # list of population decoder models
+cd_decoder.DecoderModels (manual) # list of population decoder models
 decoder_id       : int                 # unique id for the decoder model
 -----
 decoder_class    : varchar(255)        # class name for the decoder model
@@ -18,7 +18,7 @@ classdef DecoderModels < dj.Relvar
                 label = '';
             end
             
-            last_id = max(fetchn(class_discrimination.DecoderModels, 'decoder_id'));
+            last_id = max(fetchn(cd_decoder.DecoderModels, 'decoder_id'));
             if isempty(last_id)
                 last_id = 0;
             end
@@ -33,6 +33,8 @@ classdef DecoderModels < dj.Relvar
             tuple.decoder_label = label;
             insert(self, tuple);
         end
+            
+            
         
         function model=getDecoder(self)
             assert(count(self)==1, 'You can only retrieve one decoder at a time');
