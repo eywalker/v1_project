@@ -74,7 +74,8 @@ classdef GPDPCEncoder < handle
                 f = K_test * alpha+self.y_bias(indUnit);
                 spikeCounts(indUnit,:)=f;
             end
-            spikeCounts(spikeCounts(:)<0)=0.1; % give base line firing rate: all rate<0 is set to this value
+            
+            spikeCounts(spikeCounts(:)<0.01)=0.01; % give base line firing rate: all rate<0 is set to this value
         end
         
         function plot(self)

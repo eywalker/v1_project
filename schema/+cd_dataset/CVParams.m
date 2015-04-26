@@ -9,5 +9,18 @@ classdef CVParams < dj.Relvar
         function self=CVParams(varargin)
             self.restrict(varargin{:});
         end
+        
+        function makeNew(self, cv_n, n)
+            if nargin < 4
+                n = 1;
+            end
+            seeds = randi(1000000, n, 1);
+            tuple.cv_n = cv_n;
+
+            for i=1:n
+                tuple.cv_seed = seeds(i);
+                insert(self, tuple);
+            end
+        end
     end
 end

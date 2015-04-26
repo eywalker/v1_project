@@ -124,7 +124,7 @@ classdef ContrastAdjustedGPDPCEncoder < handle
             end
             bias = self.normBias(:, contInd);
             spikeCounts = spikeCounts .* bias;
-            spikeCounts(spikeCounts(:)<0.1)=0.1; % give base line firing rate: all rate<0.1 is set to this value
+            spikeCounts(spikeCounts(:)<0.01)=0.01; % give base line firing rate: all rate<0.1 is set to this value
         end
         
         function plot(self)

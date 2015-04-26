@@ -12,5 +12,20 @@ classdef ShuffleParams < dj.Relvar
         function self=ShuffleParams(varargin)
             self.restrict(varargin{:});
         end
+        
+        function makeNew(self, method, binwidth, description, n)
+            if nargin < 4
+                n = 1;
+            end
+            seeds = randi(1000000, n, 1);
+            tuple.shuffle_method = method;
+            tuple.shuffle_binwidth = binwidth;
+            tuple.shuffle_method_description = description;
+            
+            for i=1:n
+                tuple.shuffle_seed = seeds(i);
+                insert(self, tuple);
+            end
+        end
     end
 end
