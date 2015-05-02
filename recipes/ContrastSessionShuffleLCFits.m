@@ -29,7 +29,7 @@ registerPair(cd_lc.LCTrainSetPairs, rel_shuffle);
 
 % train all decoders
 parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.ContrastSessionDataSet"');
-
+%%
 % train all LC models
 parpopulate(cd_lc.TrainedLC, rel);
 parpopulate(cd_lc.TrainedLC, rel_shuffle);
