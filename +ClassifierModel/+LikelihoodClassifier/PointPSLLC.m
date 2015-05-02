@@ -45,8 +45,6 @@ classdef PointPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
                 s_hat = dataStruct.likelihood_peak;
             end
             
-            
-            
             s_hat = s_hat(:);
             sigma = 0;
             logPrA = -1/2 * log(2*pi) - 1 / 2 * log(sigma.^2 + self.sigmaA^2) - (s_hat-self.stimCenter).^2 ./ 2 ./ (sigma.^2 + self.sigmaA^2);

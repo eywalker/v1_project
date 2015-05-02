@@ -28,7 +28,7 @@ classdef CVTestSets < dj.Relvar
                 pack = true;
             end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
-            data = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials & self, '*');
+            data = fetch(self * class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials, '*');
             data = dj.struct.sort(data, 'trial_num');
             info = fetch(self, '*');
             test_indices = info.test_indices;

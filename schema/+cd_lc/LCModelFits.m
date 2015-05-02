@@ -40,6 +40,7 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
             dataSet.decodeOri = decodeOri;
             dataSet.likelihood = L;
             [muLL, logLList] = lc_model.getLogLikelihood(dataSet);
+            fprintf('%s model fit mu_logl = %.3f\n', lc_model.modelName, muLL);
             tuple.lc_test_mu_logl = muLL;
             tuple.lc_testset_size = length(logLList);
             

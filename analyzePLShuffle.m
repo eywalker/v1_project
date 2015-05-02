@@ -32,7 +32,7 @@ edges = 0.5*(edges(1:end-1) + edges(2:end));
 %% Contrast vs mean logL plot for non-shuffled and shuffled
 line_color = lines(length(modelNames));
 figure;
-
+all_contrasts = contrasts;
 x = logspace(-3, 0, 100);
 for idxModel = 1:size(trainLL, 2)
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, trainLL(:, idxModel), edges);
@@ -71,7 +71,7 @@ ylabel('Mean log likelihood');
 %% Plot the difference between non-shuffle(train) and shuffle(test)
 figure;
 delta = testLL - trainLL;
-
+NUM_MODELS=5;
 for modelIdx = 1:NUM_MODELS
     subplot(1, 5, modelIdx);
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta(:, modelIdx), edges);
@@ -123,7 +123,7 @@ ylabel('Mean loglikelihood');
 
 %% Plot specific models w.r.t. another one
 model_number = 1; % model to compare against
-modelIdx = 2; % model to plot
+modelIdx = 5; % model to plot
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 edges = arrayfun(@(x) prctile(all_contrasts, x), linspace(0,100,11));
@@ -234,6 +234,7 @@ for modelIdx = 1:N
     
     h2=bar(pos+width, muDTestLL(modelIdx),width, 'FaceColor', [1, 0.7, 0]);
     errorbar(pos+width, muDTestLL(modelIdx), semDDLL(modelIdx), 'k');
+    ttest(dTestLL(:, modelIdx))
     h = ttest(ddLL(:, modelIdx));
     if ~isnan(h) && ttest(ddLL(:, modelIdx))
         h = text(pos + width, muDTestLL(modelIdx) + 2*semDDLL(modelIdx), '*');

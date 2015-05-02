@@ -6,8 +6,8 @@ assert(length(key)==1, 'Should only look at one shuffling condition at a time')
 
 
 dataSet = fetchDataSet(class_discrimination.ContrastSessionDataSet & keys(n));
-dataSet_shuffle = shuffleSpikes(dataSet, 3);
-%dataSet_shuffle = randomWalkShuffle(dataSet, 5, 319);
+%dataSet_shuffle = shuffleSpikes(dataSet, 3);
+dataSet_shuffle = randomWalkShuffle(dataSet, 3);
 %dataSet_shuffle = randomIndexWalkShuffle(dataSet, 3);
 decoder = getDecoder(class_discrimination.TrainedDecoder & pro(class_discrimination.ContrastSessionDataSet & keys(n), 'dataset_id -> decoder_trainset_id'));
 decoder.train(dataSet);
