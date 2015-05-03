@@ -26,7 +26,7 @@ classdef PLCRetrainer < dj.Relvar & dj.AutoPopulate
             
             [new_mu_logl, ~] = train(cd_plc.TrainedPLC, plc_model, key, 50);
             
-            if new_mu_logl > old_mu_logl
+            if (new_mu_logl - old_mu_logl) > 0.001
                 plc_trained_config = plc_model.getModelConfigs();
                 update(cd_plc.TrainedPLC & key, 'plc_train_mu_logl', new_mu_logl);
                 update(cd_plc.TrainedPLC & key, 'plc_trained_config', plc_trained_config);

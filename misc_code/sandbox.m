@@ -1,21 +1,31 @@
-keys = fetch(class_discrimination.ContrastSessionDataSet, '*');
-N = 145
-data = fetchDataSet(class_discrimination.ContrastSessionDataSet & keys(N));
-model = ClassifierModel.BehavioralClassifier.BehavioralBPLClassifier();
-model.train(data)
-class_discrimination.TrainedLikelihoodClassifiers & sprintf('lc_trainset_id = %d', keys(N).dataset_id)
-
+all_peaks = [];
+all_widths = [];
+all_ori = [];
+all_contrast = [];
+keys = fetch(cd_plset.ContrastSessionPLSet);
+for i=1:length(keys)
+    key = keys(i);
+    plset = fetchPLSet(cd_plset.ContrastSessionPLSet & key);
+    all_peaks = [all_peaks, plset.likelihood_peak];
+    all_widths = [all_widths, plset.likelihood_width];
+    all_ori = [all_ori, plset.orientation];
+    all_contrast = [all_contrast, plset.contrast];
+    
+end
 
 %%
-keys = fetch(class_discrimination.TrainedLikelihoodClassifiers & 'lc_id = 6');
-pa = zeros(1, length(keys));
-for i = 1:length(keys)
-    if mod(i, 10)==0
-        fprintf('.');
-    end
-    model = getLC(class_discrimination.TrainedLikelihoodClassifiers & keys(i));
-    pa(i) = model.priorA;
-end
-fprintf('\n');
 figure;
-hist(pa, 50);
+for i = 1:197
+    clf;
+plset = fetchPLSet(cd_plset.ContrastSessionPLSet & keys(i));
+
+subplot(2,1,1);
+plot(plset.orientation, plset.likelihood_peak,'ro');
+hold on;
+plot(x, x, 'k--');
+title(sprintf('Contrast = %.4f', plset.contrast(1)));
+
+subplot(2,1,2);
+plot(plset.orientation, plset.likelihood_width, 'bx');
+pause();
+end

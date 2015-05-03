@@ -1,23 +1,25 @@
-original_fits=fetch((cd_plc.PLCTrainSets * cd_plset.ContrastSessionPLSet) * cd_plc.TrainedPLC, '*');
-[data_original,v_plc_id, v_trainset_hash]  = dj.struct.tabulate(original_fits, 'plc_train_mu_logl', 'plc_id' , 'plc_trainset_hash');
-[contrasts, v_hash] = dj.struct.tabulate(original_fits, 'dataset_contrast', 'plc_trainset_hash');
+original_fits=fetch((cd_lc.LCTrainSets * cd_dataset.ContrastSessionDataSet) * cd_lc.TrainedLC, '*');
+[data_original,v_plc_id, v_trainset_hash]  = dj.struct.tabulate(original_fits, 'lc_train_mu_logl', 'lc_id' , 'lc_trainset_hash');
+[contrasts, v_hash] = dj.struct.tabulate(original_fits, 'dataset_contrast', 'lc_trainset_hash');
 all_contrasts = cellfun(@str2num, contrasts(:,1));
-shuffled_fits = fetch((cd_plc.PLCTrainSets * cd_plset.ShuffledPLSets) * cd_plc.TrainedPLC, '*');
-[data_shuffled, ~, ~, v_seed] = dj.struct.tabulate(shuffled_fits, 'plc_train_mu_logl', 'plc_id', 'source_plset_hash', 'plshuffle_seed');
-mu_shuffled_kinds = mean(data_shuffled, 3);
+%%
+shuffled_fits = fetch((cd_lc.LCTrainSets * pro(cd_dataset.ContrastSessionDataSet, 'dataset_hash -> source_dataset_hash', 'dataset_owner -> source_dataset_owner') * ...
+    cd_dataset.SCGroupedShuffledDataSets) * cd_lc.TrainedLC, '*');
+%%
+[data_shuffled, v_lc_id, v_hash, v_shuffle] = dj.struct.tabulate(shuffled_fits, 'lc_train_mu_logl', 'lc_id', 'source_dataset_hash', 'shuffle_method');
+%%
+mu_shuffled_kinds = nanmean(data_shuffled, 4);
+counts = nansum(~isnan(data_shuffled), 4);
+%%
 
-modelNames = fetchn(cd_plc.PLCModels, 'plc_label');
+modelNames = fetchn(cd_lc.LCModels, 'lc_label');
 trainLL = data_original';
-testLL = mu_shuffled_kinds';
-%testLL(:, 1) = trainLL(:, 1);
-
-edges = arrayfun(@(x) prctile(all_contrasts, x), 0:10:100);
-edges = [0, unique(edges), 1];
-edges = 0.5*(edges(1:end-1) + edges(2:end));
+testLL = mu_shuffled_kinds(:,:,3)';
 
 %% Contrast vs mean logL plot for non-shuffled and shuffled
 line_color = lines(length(modelNames));
 figure;
+
 x = logspace(-3, 0, 100);
 for idxModel = 1:size(trainLL, 2)
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, trainLL(:, idxModel), edges);
@@ -56,7 +58,7 @@ ylabel('Mean log likelihood');
 %% Plot the difference between non-shuffle(train) and shuffle(test)
 figure;
 delta = testLL - trainLL;
-NUM_MODELS=5;
+NUM_MODELS=11;
 for modelIdx = 1:NUM_MODELS
     subplot(1, 5, modelIdx);
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta(:, modelIdx), edges);
@@ -70,6 +72,7 @@ for modelIdx = 1:NUM_MODELS
     ylabel('Mean log likelihood relative to train set (non-shuffled)');
     xlabel('Contrast');
 end
+
 %legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for average log likelihood across contrast
@@ -105,6 +108,7 @@ set(gca, 'xtick', pos);
 set(gca, 'xticklabel', modelNames);
 xlim([0, right]);
 ylabel('Mean loglikelihood');
+rotateXLabels(gca, 90)
 
 %% Plot specific models w.r.t. another one
 model_number = 1; % model to compare against
@@ -188,7 +192,7 @@ end
 legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for difference in shuffle vs non-shuffle w.r.t. the first
-model_number = 1;
+model_number = 3;
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 
