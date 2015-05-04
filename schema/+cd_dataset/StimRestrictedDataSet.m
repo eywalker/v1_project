@@ -1,16 +1,16 @@
 %{
-cd_plset.ShuffledPLSets (computed) # shuffled PL sets
--> cd_plset.PLShuffleParams
-source_plset_owner    : varchar(255)       # name of the table that owns the source plset
-source_plset_hash     : varchar(255)       # SHA-1 hash for the primary key of the source entry in its table
+cd_dataset.StimRestrictedDataSet (computed) # dataset using stimulus only presented within certain bounds
+-> cd_dataset.StimRestrictionParams
+source_dataset_owner    : varchar(255)       # name of the table that owns the source dataset
+source_dataset_hash     : varchar(255)       # SHA-1 hash for the primary key of the source entry in its table
 -----
 -> cd_plset.PLSets
 %}
 
-classdef ShuffledPLSets < dj.Relvar & dj.AutoPopulate
+classdef StimRestrictedDataSet < dj.Relvar & dj.AutoPopulate
 
 	properties
-        popRel = pro(cd_plset.PLSets & cd_plset.ContrastSessionPLSet, 'plset_owner -> source_plset_owner', 'plset_hash -> source_plset_hash') * cd_plset.PLShuffleParams;
+        popRel = pro(cd_dataset.DataSets, 'dataset_owner -> source_dataset_owner', 'plset_hash -> source_plset_hash') * cd_plset.PLShuffleParams;
     end
     
     methods

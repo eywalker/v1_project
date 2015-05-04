@@ -24,7 +24,7 @@ classdef PLCRetrainer < dj.Relvar & dj.AutoPopulate
             tuple.plc_class = plc_info.plc_class;
             tuple.plc_label = plc_info.plc_label;
             
-            [new_mu_logl, ~] = train(cd_plc.TrainedPLC, plc_model, key, 50);
+            [new_mu_logl, ~] = train(cd_plc.TrainedPLC, plc_model, key, 200);
             
             if (new_mu_logl - old_mu_logl) > 0.001
                 plc_trained_config = plc_model.getModelConfigs();

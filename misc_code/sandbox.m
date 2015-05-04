@@ -19,13 +19,24 @@ for i = 1:197
     clf;
 plset = fetchPLSet(cd_plset.ContrastSessionPLSet & keys(i));
 
-subplot(2,1,1);
+subplot(3,1,1);
 plot(plset.orientation, plset.likelihood_peak,'ro');
 hold on;
 plot(x, x, 'k--');
+xlim([220, 320]);
 title(sprintf('Contrast = %.4f', plset.contrast(1)));
 
-subplot(2,1,2);
+subplot(3,1,2);
 plot(plset.orientation, plset.likelihood_width, 'bx');
+xlim([220, 320]);
+
+subplot(3,1,3);
+edges = linspace(220, 320, 10);
+[mu, sigma, n, binc] = nanBinnedStats(plset.orientation, plset.likelihood_width, edges);
+plot(binc, mu, 'b');
+hold on;
+errorShade(binc, mu, sigma./sqrt(n), 'r', 0.5);
+xlim([220, 320]);
+
 pause();
 end
