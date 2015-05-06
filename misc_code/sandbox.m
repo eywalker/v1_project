@@ -1,42 +1,27 @@
-all_peaks = [];
-all_widths = [];
-all_ori = [];
-all_contrast = [];
-keys = fetch(cd_plset.ContrastSessionPLSet);
-for i=1:length(keys)
-    key = keys(i);
-    plset = fetchPLSet(cd_plset.ContrastSessionPLSet & key);
-    all_peaks = [all_peaks, plset.likelihood_peak];
-    all_widths = [all_widths, plset.likelihood_width];
-    all_ori = [all_ori, plset.orientation];
-    all_contrast = [all_contrast, plset.contrast];
-    
-end
 
-%%
+
+
+sigmas = linspace(0,30,10);
+sigmaA = 3;
+sigmaB = 15;
+priorA = 0.45;
+lapseRate = 0.0;
+s_hat = linspace(-20, 20,100);
+l_color = lines(length(sigmas));
 figure;
-for i = 1:197
-    clf;
-plset = fetchPLSet(cd_plset.ContrastSessionPLSet & keys(i));
+for i = 1:length(sigmas)
+    sigma = sigmas(i);
+    k1 = 1/2*log((sigma.^2 + sigmaB.^2)./(sigma.^2 + sigmaA.^2)) + log(priorA./(1-priorA));
+    k2 = 1/2*(sigmaB.^2 - sigmaA.^2) ./ ((sigma.^2 + sigmaA.^2) .* (sigma.^2 + sigmaB.^2));
+    k = sqrt(k1./k2);
 
-subplot(3,1,1);
-plot(plset.orientation, plset.likelihood_peak,'ro');
-hold on;
-plot(x, x, 'k--');
-xlim([220, 320]);
-title(sprintf('Contrast = %.4f', plset.contrast(1)));
-
-subplot(3,1,2);
-plot(plset.orientation, plset.likelihood_width, 'bx');
-xlim([220, 320]);
-
-subplot(3,1,3);
-edges = linspace(220, 320, 10);
-[mu, sigma, n, binc] = nanBinnedStats(plset.orientation, plset.likelihood_width, edges);
-plot(binc, mu, 'b');
-hold on;
-errorShade(binc, mu, sigma./sqrt(n), 'r', 0.5);
-xlim([220, 320]);
-
-pause();
+    unreal_k = ~arrayfun(@isreal, k);
+    k(unreal_k) = 0; % give 0 to pass by erf function
+    LCA = ((1/2)*(erf((s_hat+k)./sigma./sqrt(2)) - erf((s_hat-k)./sigma./sqrt(2)))); % p(C='A'|s)
+    LCA(unreal_k) = 0;
+    pA = LCA * (1-lapseRate) + lapseRate * 0.5;
+    hold off;
+    plot(s_hat, pA, 'color', l_color(i,:));
+    ylim([0, 1]);
+    pause();
 end
