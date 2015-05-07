@@ -107,10 +107,10 @@ for idx = 1:N
     d.contrast = c;
     pRespA = model.pRespA(d);
     
-    plot(binc, mu_A, 'r');
+    plot(binc, mu_A, 'ro-');
     
-    %errorbar(binc, mu_A, s_A./sqrt(ct_A), 'r');
     hold on;
+    %errorbar(binc, mu_A, s_A./sqrt(ct_A), 'r');
     plot(xc, pRespA, 'k--');
     title(sprintf('LOC(%d, %d)\n%5.1f%% Contrast: Class A(red) Trials ',loc(1), loc(2),  contVal));
     if(idx==1)
@@ -126,7 +126,7 @@ for idx = 1:N
     % looking at the rate of response 'A' for trials with class 'A' over
     % orientations
     subplot(3,N,idx+N);
-    plot(binc, mu_B, 'g');
+    plot(binc, mu_B, 'go-');
     %errorbar(binc, mu_B, s_B./sqrt(ct_B), 'g');
     hold on;
     plot(xc, pRespA, 'k--');
@@ -143,7 +143,7 @@ for idx = 1:N
     [mu,s,ct,binc] = nanBinnedStats(ori(valid&trials), respA(valid&trials), binEdges);
     
     subplot(3,N,idx+2*N);
-    plot(binc, mu, 'b');
+    plot(binc, mu, 'bo-');
     %errorbar(binc, mu, s./sqrt(ct), 'b');
     hold on;
     plot(xc, pRespA, 'k--');

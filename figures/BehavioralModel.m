@@ -43,7 +43,7 @@ edges = arrayfun(@(x) prctile(pdata.contrast, x), 0:10:100);
 edges = [0, unique(edges), 1];
 edges = 0.5*(edges(1:end-1) + edges(2:end));
 select_a = strcmp(pdata.selected_class,'A');
-select_b = strcmp(pdata.selected_class, 'B');
+posA = strcmp(pdata.correct_response
 [muA, sigmaA, nA, binc] = nanBinnedStats(pdata.contrast, select_a, edges);
 [muB, sigmaB, nB, binc] = nanBinnedStats(pdata.contrast, select_b, edges);
 figure;
@@ -55,17 +55,18 @@ errorbar(binc, muB*100, semB*100, 'g');
 
 %%
 
-sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2015-04-01"');
+sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & tomkeys(end-45:end-33); %acq.Sessions('session_datetime > "2015-04-01"');
 data = fetch(class_discrimination.ClassDiscriminationTrial & sessions, '*');
 pdata = packData(data);
 %% Look how re
 
 %%
 model_bayes = ClassifierModel.BehavioralClassifier.BehavioralBPLClassifier();
-model_bayes.train(pdata, 10);
+model_bayes.p_ub = [1, 0.5, 50, 8, 30]
+model_bayes.train(pdata, 3);
 %%
 model_nb = ClassifierModel.BehavioralClassifier.FixedCriterionClassifier();
-model_nb.train(pdata, 10);
+model_nb.train(pdata, 5);
 %% plot bayesian model
 test_data = struct();
 test_ori = linspace(250, 290, 1000);
@@ -76,9 +77,10 @@ ori_edges = linspace(250,290,21);
 
 cont = unique(pdata.contrast);
 figure;
+subplot(1,2,1);
 selected_a = strcmp(pdata.selected_class, 'A');
 line_c = lines(length(cont));
-subset = [0.005, 0.01, 0.02, 0.04, 0.06, 0.1];
+subset = [0.005, 0.01, 0.02, 0.05, 0.1];
 labels = {}
 handles = [];
 for i = 1:length(subset)
@@ -87,12 +89,13 @@ for i = 1:length(subset)
     select = selected_a(pos);
     ori = pdata.orientation(pos);
     [mu, sigma, n, binc] = nanBinnedStats(ori, select, ori_edges);
-    h=plot(binc, mu, 'o', 'color', line_c(i,:));
+    h=plot(binc, mu, 'o', 'markersize', 7, 'color', line_c(i,:));
     handles = [handles h];
     hold on;
     labels = [labels {sprintf('contrast = %.2f%', cont_val * 100)}];
     
-    
+    xlabel('Stimulus orientation (deg)');
+    ylabel('Probability of responding C=1');
     test_data.contrast = base * cont_val;
     pA = model_bayes.pRespA(test_data);
     plot(test_ori, pA, 'color', line_c(i,:));
@@ -107,10 +110,10 @@ base = ones(size(test_data.orientation));
 ori_edges = linspace(250,290,21);
 
 cont = unique(pdata.contrast);
-figure;
+subplot(1,2,2);
 selected_a = strcmp(pdata.selected_class, 'A');
 line_c = lines(length(cont));
-subset = [0.005, 0.01, 0.02, 0.04, 0.06, 0.1];
+subset = [0.005, 0.01, 0.02, 0.05, 0.1];
 labels = {}
 handles = [];
 for i = 1:length(subset)
@@ -119,7 +122,7 @@ for i = 1:length(subset)
     select = selected_a(pos);
     ori = pdata.orientation(pos);
     [mu, sigma, n, binc] = nanBinnedStats(ori, select, ori_edges);
-    h=plot(binc, mu, 'o', 'color', line_c(i,:));
+    h=plot(binc, mu, 'o', 'markersize', 7, 'color', line_c(i,:));
     handles = [handles h];
     hold on;
     labels = [labels {sprintf('contrast = %.2f%', cont_val * 100)}];

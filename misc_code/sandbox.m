@@ -4,7 +4,7 @@
 sigmas = linspace(0,30,10);
 sigmaA = 3;
 sigmaB = 15;
-priorA = 0.45;
+priorA = 0.73;
 lapseRate = 0.0;
 s_hat = linspace(-20, 20,100);
 l_color = lines(length(sigmas));
