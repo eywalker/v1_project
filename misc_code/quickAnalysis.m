@@ -54,7 +54,7 @@ fprintf('\n');
 
 %% Check by contrasts
 contrastLevels = sort(unique([stim.params.conditions.contrast]));
-N_train = 5;
+N_train = 20;
 N = length(contrastLevels);
 figure;
 performance = zeros(size(contrastLevels));
