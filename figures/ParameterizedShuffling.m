@@ -1,8 +1,10 @@
-original_fits=fetch((cd_plc.PLCTrainSets * cd_plset.ContrastSessionPLSet) * cd_plc.TrainedPLC, '*');
+key = 'subject_id = 21'
+original_fits=fetch((cd_plc.PLCTrainSets * cd_plset.ContrastSessionPLSet & key) * cd_plc.TrainedPLC, '*');
 [data_original,v_plc_id, v_trainset_hash]  = dj.struct.tabulate(original_fits, 'plc_train_mu_logl', 'plc_id' , 'plc_trainset_hash');
 [contrasts, v_hash] = dj.struct.tabulate(original_fits, 'dataset_contrast', 'plc_trainset_hash');
 all_contrasts = cellfun(@str2num, contrasts(:,1));
-shuffled_fits = fetch((cd_plc.PLCTrainSets * cd_plset.ShuffledPLSets) * cd_plc.TrainedPLC, '*');
+selection = pro(cd_plset.ContrastSessionPLSet & key, 'plset_hash -> source_plset_hash');
+shuffled_fits = fetch((cd_plc.PLCTrainSets * cd_plset.ShuffledPLSets & selection) * cd_plc.TrainedPLC, '*');
 [data_shuffled, ~, ~, v_seed] = dj.struct.tabulate(shuffled_fits, 'plc_train_mu_logl', 'plc_id', 'source_plset_hash', 'plshuffle_seed');
 mu_shuffled_kinds = mean(data_shuffled, 3);
 
