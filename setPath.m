@@ -7,6 +7,7 @@ function setPath
     addpath(fullfile(base, 'misc_code'))
     addpath(fullfile(base, 'recipes'))
     addpath(fullfile(base, 'data'))
+    addpath(fullfile(base, 'figures'));
 
 end
 
