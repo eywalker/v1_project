@@ -1,8 +1,9 @@
 %%
-cv_trainfits = fetch(pro(cd_dataset.CrossValidationSets * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl'), '*');
+key = 'subject_id = 21'
+cv_trainfits = fetch(pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl'), '*');
 [data_train, v_lc_id] = dj.struct.tabulate(cv_trainfits, 'train_mu_logl', 'lc_id');
 
-cv_testfits = fetch(pro(cd_dataset.CrossValidationSets * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl'), '*');
+cv_testfits = fetch(pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl'), '*');
 [data_test, v_lc_id] = dj.struct.tabulate(cv_testfits, 'test_mu_logl', 'lc_id');
 [contrasts, v_lc_id] = dj.struct.tabulate(cv_testfits, 'cv_contrast', 'lc_id');
 all_contrasts = cellfun(@str2num, contrasts(1,:));
@@ -24,8 +25,8 @@ for idxModel = 1:size(trainLL, 2)
     errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idxModel,:));
     %plot(binc, mu, 'color', line_color(idxModel, :));
     hold on;
-
 end
+
 plot(x, ones(size(x)) * log(0.5), 'k--');
 title('Trained set (non-shuffled)');
 legend(modelNames);
@@ -187,7 +188,7 @@ end
 legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for difference in test and train w.r.t. the specified model
-model_number = 3;
+model_number = 5;
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 
