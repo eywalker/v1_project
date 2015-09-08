@@ -12,9 +12,6 @@ classdef OptimalWidth < handle
         modelName
     end
     
-    
-    
-    
     methods
         function obj = OptimalWidth(sigmaA, sigmaB, stimCenter, modelName, pointExtractor)
             % CONSTRUCTOR Initializes the object with experiment settings about standard
@@ -177,6 +174,5 @@ classdef OptimalWidth < handle
             logLList = log(abs(pRespTotal));
             muLL = mean(logLList);
         end
-        
     end
 end

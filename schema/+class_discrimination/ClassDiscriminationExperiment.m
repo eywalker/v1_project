@@ -71,7 +71,7 @@ classdef ClassDiscriminationExperiment < dj.Relvar & dj.AutoPopulate
             
             
             insert(this,tuple);
-            makeTuples(class_discrimination.ClassDiscriminationTrial,key);
+            makeTuples(class_discrimination.ClassDiscriminationTrial, key);
         end
         
     end
