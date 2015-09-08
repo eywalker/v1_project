@@ -26,7 +26,7 @@ classdef PeakWidthPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
         % name of the model (modelName) and a function handle to the
         % likelihood peak and width extractor (pwExtractor).
             if nargin < 5
-                pwExtractor = @ClassifierModel.fitGaussToLikelihood;
+                pwExtractor = @ClassifierModel.getMeanStd;
             end
             if nargin < 4
                 modelName = 'PeakWidthPSLLC';

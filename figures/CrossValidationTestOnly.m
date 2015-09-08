@@ -11,7 +11,7 @@ edges = [0, unique(edges), 1];
 edges = 0.5*(edges(1:end-1) + edges(2:end));
 
 %%
-models_to_plot = [1,2,3,4,5,6,7];
+models_to_plot = [3,2,1,4,5,6,7];
 
 %% Contrast vs mean logL plot for non-shuffled and shuffled
 line_color = lines(length(modelNames));
@@ -36,12 +36,11 @@ ylabel('Mean log likelihood');
 
 
 
-%% bar plots for average log likelihood across contrast
+%% bar plots for average log likelihood across contrast relative to the specified model
 muTestLL = mean(testLL);
-muTrainLL = mean(trainLL);
-
-
-delta = testLL - trainLL;
+model_number = 3;
+delta = bsxfun(@minus, testLL, testLL(:, model_number));
+muDelta = mean(delta);
 stdDelta = std(delta);
 semDelta = stdDelta ./ sqrt(size(delta, 1));
 
@@ -49,26 +48,28 @@ figure;
 width = 2;
 space = 0.5;
 left = space/2 + width/2;
-for modelIdx = 1:NUM_MODELS
-    pos = (modelIdx-1)*(2*width + space) + left;
-    h1=bar(pos, muTrainLL(modelIdx), width);
+for idx = 1:length(models_to_plot)
+    modelIdx = models_to_plot(idx);
+    pos = (idx-1)*(width + space) + left;
+
     hold on;
-    
-    h2=bar(pos+width, muTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
-    errorbar(pos+width, muTestLL(modelIdx), semDelta(modelIdx), 'k');
-    h = ttest(delta(:, modelIdx));
-    if ~isnan(h) && h
-        h = text(pos + width, muTestLL(modelIdx) - 0.1, '*');
-        set(h, 'FontSize', 25);
+    h1=bar(pos, muDelta(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
+    errorbar(pos, muDelta(modelIdx), semDelta(modelIdx), 'k');
+    H = ttest(delta(:, modelIdx));
+    if ~isnan(H) && H
+        th = text(pos, muDelta(modelIdx) + semDelta(modelIdx) + 0.005, '*');
+        set(th, 'FontSize', 25);
     end
 end
-legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
-right = (space + 2 * width) * NUM_MODELS;
-pos = (2*width + space) * [0:NUM_MODELS-1] + left + width/2;
+%legend([h1], {'Test set'});
+NUM_MODELS = length(models_to_plot);
+right = (space + width) * NUM_MODELS;
+pos = (width + space) * [0:NUM_MODELS-1] + left;
 set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames);
+set(gca, 'xticklabel', modelNames(models_to_plot));
 xlim([0, right]);
-ylabel('Mean loglikelihood');
+ylabel('Relative mean loglikelihood');
+title('Model fits relative to the maximum likelihood peak-only model');
 
 %% Plot specific models w.r.t. another one
 model_number = 3; % model to compare against
@@ -106,7 +107,6 @@ legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
 
 %% Plot all models w.r.t. the specified
 model_number = 3;
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 edges = arrayfun(@(x) prctile(all_contrasts, x), 0:10:100);
 edges = [0, unique(edges), 1];
@@ -129,29 +129,9 @@ end
 title(sprintf('Model performance relative to %s', modelNames{model_number}));
 xlabel('Contrast');
 ylabel(sprintf('Log likelihood relative to %s', modelNames{model_number}));
-xlim([edges(1), edges(end)]);
+xlim([0.005, 1]);
 ylim([-0.03,0.11]);
 legend(labels);
-%% plot the difference in model w.r.t the first
-model_number = 1;
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
-dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-
-figure;
-for modelIdx = 1:NUM_MODELS
-    subplot(1, 5, modelIdx);
-    [mu, s, n, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx) - dTrainLL(:, modelIdx), edges);
-    h1=errorbar(binc, mu, s./sqrt(n), '-x', 'Color', [1, 0.3, 0]);
-    x = logspace(-3,0,100);
-    hold on;
-    plot(x, zeros(size(x)), 'k-.');
-    set(gca, 'xscale', 'log');
-    title(modelNames{modelIdx});
-    xlabel('Contrast');
-    ylabel(sprintf('Difference in loglikelihood relative to %s', modelNames{model_number}));
-    xlim([edges(1), edges(end)]);
-end
-legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for difference in test and train w.r.t. the specified model
 model_number = 3;
