@@ -1,5 +1,5 @@
 %{
-cd_decoder.DecoderModels (manual) # list of population decoder models
+cd_decoder.DecoderModels (manual)      # list of population decoder models
 decoder_id       : int                 # unique id for the decoder model
 -----
 decoder_class    : varchar(255)        # class name for the decoder model
@@ -34,13 +34,20 @@ classdef DecoderModels < dj.Relvar
             insert(self, tuple);
         end
             
-            
-        
         function model=getDecoder(self)
             assert(count(self)==1, 'You can only retrieve one decoder at a time');
             info = fetch(self, '*');
             model = eval(info.decoder_class);
             model.setModelConfigs(info.decoder_config);
+        end
+        
+        function models=getDecoders(self)
+            keys = fetch(self);
+            models = [];
+            for keyIdx = length(keys):-1:1
+                model = getDecoder(self & keys(keyIdx));
+                models(keyIdx) = model;
+            end
         end
     end
 end

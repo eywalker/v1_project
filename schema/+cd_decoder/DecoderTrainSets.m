@@ -1,5 +1,5 @@
 %{
-cd_decoder.DecoderTrainSets (computed) # trainset for decoder
+cd_decoder.DecoderTrainSets (computed)       # trainset for decoder
 dec_trainset_owner      : varchar(255)       # name of the table that owns this dataset
 dec_trainset_hash       : varchar(255)       # SHA-1 hash for the primary key of the target data entry
 -----
