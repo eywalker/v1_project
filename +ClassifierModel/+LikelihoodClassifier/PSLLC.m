@@ -137,6 +137,9 @@ classdef PSLLC < handle
             end
             
             paramSet = self.getModelParameters;
+            % hack to restrict the search space - all Inf are replaced by
+            % 200
+            paramSet.upperBounds(isinf(paramSet.upperBounds)) = 200;
             minX = paramSet.values;
             minCost = min(cf(minX), Inf); % this step necessary in case cf evalutes to NaN
             
@@ -148,8 +151,8 @@ classdef PSLLC < handle
                 fprintf('.');
                 x0 = x0set(:, i);
                 
-                [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
-                %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds);
+                %[x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                [x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 if (cost < minCost)
                     minCost = cost;
                     minX = x;
