@@ -105,6 +105,7 @@ set(gca, 'xtick', pos);
 set(gca, 'xticklabel', modelNames);
 xlim([0, right]);
 ylabel('Mean loglikelihood');
+%rotateXLabels(gca,90);
 
 %% Plot specific models w.r.t. another one
 model_number = 3; % model to compare against
