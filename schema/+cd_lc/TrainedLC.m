@@ -20,14 +20,17 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
 	methods(Access=protected)
 
 		function makeTuples(self, key)
+            
             tuple = key;
             lc_info = fetch(cd_lc.LCModels & key ,'*');
             tuple.lc_class = lc_info.lc_class;
             tuple.lc_label = lc_info.lc_label;
             
-            
-            lc_model = getLC(cd_lc.LCModels & key);
-            
+            if count(cd_lc.PrevFitLC & key) == 1
+                lc_model = getLC(cd_lc.PrevFitLC & key);
+            else
+                lc_model = getLC(cd_lc.LCModels & key);
+            end
             [muLL, logl] = self.train(lc_model, key, 50);
             tuple.lc_trainset_size = length(logl);
             tuple.lc_train_mu_logl = muLL;

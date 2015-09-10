@@ -7,6 +7,9 @@ cd_dataset.SCGroupedShuffledDataSets (computed) # shuffled dataset grouped by st
 %}
 
 classdef SCGroupedShuffledDataSets < dj.Relvar & dj.AutoPopulate
+    % Represents dataset that has been shuffled within a fixed contrast
+    % and among similar stimulus orientations. The exact method of
+    % shuffling is specified in cd_dataset.ShuffleParams
     properties
 		popRel = pro(cd_dataset.ContrastSessionDataSet * cd_dataset.ShuffleParams);
 	end
