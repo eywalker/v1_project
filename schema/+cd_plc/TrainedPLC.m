@@ -24,10 +24,13 @@ classdef TrainedPLC < dj.Relvar & dj.AutoPopulate
             tuple.plc_class = plc_info.plc_class;
             tuple.plc_label = plc_info.plc_label;
             
+            if count(cd_plc.PrevFitPLC & key) == 1
+                plc_model = getPLC(cd_plc.PrevFitPLC & key);
+            else
+                plc_model = getPLC(cd_plc.PLCModels & key);
+            end
             
-            plc_model = getPLC(cd_plc.PLCModels & key);
-            
-            [muLL, logl] = self.train(plc_model, key, 50);
+            [muLL, logl] = self.train(plc_model, key, 25);
             tuple.plc_trainset_size = length(logl);
             tuple.plc_train_mu_logl = muLL;
             tuple.plc_trained_config = plc_model.getModelConfigs();
