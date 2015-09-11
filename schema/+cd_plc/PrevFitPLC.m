@@ -19,7 +19,7 @@ classdef PrevFitPLC < dj.Relvar & dj.AutoPopulate
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-            tuple = fetch(cd_lc.TrainedPLC & key, '*');
+            tuple = fetch(cd_plc.TrainedPLC & key, '*');
             self.insert(tuple);
 		end
     end
