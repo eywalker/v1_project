@@ -1,8 +1,8 @@
-sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2014-10-01"', 'session_datetime < "2015-01"');
+sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2015-06-01"', 'session_datetime < "2015-11-21"');
 data = fetch(class_discrimination.ClassDiscriminationTrial & sessions, '*');
 pdata1 = packData(data);
 
-sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2015-04-01"');
+sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2014-08-01"');
 data = fetch(class_discrimination.ClassDiscriminationTrial & sessions, '*');
 pdata2 = packData(data);
 %% Look at performance across contrast
@@ -38,12 +38,13 @@ plot(x, y, 'k--');
 plot(x, t*50, 'k--');
 
 %% Resp A vs contrast and Resp B vs contrast 
-pdata = pdata2;
-edges = arrayfun(@(x) prctile(pdata.contrast, x), 0:10:100);
+pdata = pdata1;
+edges = arrayfun(@(x) prctile(pdata.contrast, x), 0:20:100);
 edges = [0, unique(edges), 1];
 edges = 0.5*(edges(1:end-1) + edges(2:end));
 select_a = strcmp(pdata.selected_class,'A');
-posA = strcmp(pdata.correct_response
+select_b = ~select_a;
+posA = strcmp(pdata.correct_response, 'A');
 [muA, sigmaA, nA, binc] = nanBinnedStats(pdata.contrast, select_a, edges);
 [muB, sigmaB, nB, binc] = nanBinnedStats(pdata.contrast, select_b, edges);
 figure;
@@ -55,7 +56,7 @@ errorbar(binc, muB*100, semB*100, 'g');
 
 %%
 
-sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & tomkeys(end-45:end-33); %acq.Sessions('session_datetime > "2015-04-01"');
+sessions = class_discrimination.ClassDiscriminationExperiment & acq.Sessions('session_datetime > "2015-04-01"');
 data = fetch(class_discrimination.ClassDiscriminationTrial & sessions, '*');
 pdata = packData(data);
 %% Look how re
