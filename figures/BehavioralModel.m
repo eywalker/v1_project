@@ -1,4 +1,4 @@
-sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2015-06-01"', 'session_datetime < "2015-11-21"');
+sessions = class_discrimination.ClassDiscriminationExperiment & 'subject_id = 21' & acq.Sessions('session_datetime > "2015-07-01"', 'session_datetime < "2015-11-21"');
 data = fetch(class_discrimination.ClassDiscriminationTrial & sessions, '*');
 pdata1 = packData(data);
 

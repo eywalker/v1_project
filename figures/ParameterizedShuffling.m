@@ -22,7 +22,7 @@ c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
 
 %% Contrast vs mean logL plot for non-shuffled and shuffled
-models_to_plot = 1:5;
+models_to_plot = 1:7;
 NUM_MODELS = length(models_to_plot);
 
 line_color = lines(length(modelNames));
@@ -70,7 +70,7 @@ ylabel('Mean log likelihood');
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
 models_to_plot = 1:7;
 NUM_MODELS = length(models_to_plot);
-target = 7;
+target = 1;
 
 delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
 delta_test = bsxfun(@minus, testLL, testLL(:, target));
@@ -91,7 +91,7 @@ end
 
 x = logspace(-3, 0, 100);
 plot(x, ones(size(x)) * log(0.5), 'k--');
-title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on original set vs contrast relative to %s', modelNames{target}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
@@ -108,13 +108,58 @@ for idx = 1:length(models_to_plot)
     hold on;
 end
 plot(x, ones(size(x)) * log(0.5), 'k--');
-title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on shuffled set vs contrast relative to %s', modelNames{target}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
+%% Contrast vs. mean logL plot for non-shuffled and shuffled relative to the target model treated as 0
+models_to_plot = 1:7;
+NUM_MODELS = length(models_to_plot);
+target = 1;
+
+delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
+delta_test = bsxfun(@minus, testLL, testLL(:, target));
+
+line_color = lines(length(modelNames));
+h = figure(3);
+set(h, 'name',  'Difference in fit relative to target vs. Contrast');
+subplot(1, 2, 1);
+
+for idx = 1:NUM_MODELS
+    idxModel = models_to_plot(idx);
+    [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta_train(:, idxModel), edges);
+    p = '-';
+    errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :), 'linewidth', 2);
+    hold on;
+end
+
+x = logspace(-3, 0, 100);
+plot(x, zeros(size(x)), 'k--');
+title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target}));
+legend(modelNames(models_to_plot));
+xlabel('Contrast');
+set(gca, 'xscale', 'log');
+xlim([0.003, 1.2]);
+ylabel('Mean log likelihood');
+
+subplot(1, 2, 2);
+for idx = 1:NUM_MODELS
+    idxModel = models_to_plot(idx);
+    [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta_test(:, idxModel), edges);
+    p = '-';
+    errorbar(binc, mu, s./sqrt(n),p, 'color', line_color(idx, :), 'linewidth', 2);
+    hold on;
+end
+plot(x, zeros(size(x)), 'k--');
+title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target}));
+legend(modelNames(models_to_plot));
+xlabel('Contrast');
+set(gca, 'xscale', 'log');
+xlim([0.003, 1.2]);
+ylabel('Mean log likelihood');
 %% Plot the difference between non-shuffle(train) and shuffle(test)
 figure;
 delta = testLL - trainLL;

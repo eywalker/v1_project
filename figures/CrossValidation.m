@@ -190,8 +190,8 @@ end
 models_to_plot = 1:7;
 NUM_MODELS = length(models_to_plot);
 
-muTestLL = mean(testLL);
-muTrainLL = mean(trainLL);
+muTestLL = nanmean(testLL);
+muTrainLL = nanmean(trainLL);
 
 delta = testLL - trainLL;
 stdDelta = std(delta);
@@ -312,20 +312,20 @@ end
 legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for difference in test and train w.r.t. the specified model
-models_to_plot = 7:length(modelNames);
+models_to_plot = 1:length(modelNames);
 NUM_MODELS = length(models_to_plot);
 
-target = 7;
+target = 1;
 
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, target));
 dTestLL = bsxfun(@minus, testLL, testLL(:, target));
 
-muDTestLL = mean(dTestLL);
-stdDTestLL = std(dTestLL);
+muDTestLL = nanmean(dTestLL);
+stdDTestLL = nanstd(dTestLL);
 semDTestLL = stdDTestLL/sqrt(size(dTestLL,1));
 
-muDTrainLL = mean(dTrainLL);
-stdDTrainLL = std(dTrainLL);
+muDTrainLL = nanmean(dTrainLL);
+stdDTrainLL = nanstd(dTrainLL);
 semDTrainLL = stdDTrainLL/sqrt(size(dTrainLL,1));
 
 h = figure;
