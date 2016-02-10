@@ -58,6 +58,15 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             [muLL, logl] = lc_model.getLogLikelihood(dataSet);
         end
         
+        function dataSet = getDataSet(self)
+            decoder = getDecoder(cd_decoder.TrainedDecoder & self);
+            dataSet = fetchDataSet(cd_lc.LCTrainSets & self);
+            decodeOri = linspace(220, 320, 1000);
+            L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
+            dataSet.decodeOri = decodeOri;
+            dataSet.likelihood = L;
+        end
+        
         function retrain(self, keys, N)
             if nargin < 3
                 N = 50;
