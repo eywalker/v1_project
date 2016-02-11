@@ -63,7 +63,7 @@ bg = draw.flatImage(width, height, bgColor);
 
 %% Look at only a specific trial
 
-trialNum = 1103;
+trialNum = 2089;
 fps = 120;
 showFig = false;
 scale = 0.6;
@@ -96,14 +96,14 @@ cue = cueClass(trialNum);
 % movie config
 
 phaseStep = 3 * 2 * pi / 1000; %speed * pi / 180 / 1000; % speed expressed in radians per millisecond
-postStim = 200;
+postStim = 1000;
 
 % prepare eye trace
 relEyeTime = (eyeTime - showStimulusTime);
 
 %pos = find(relEyeTime > (startTrialTime) & relEyeTime < (endStimulusTime + postStim));
 
-pos = find(relEyeTime > (-500) & relEyeTime < (endStimulusTime + postStim));
+pos = find(relEyeTime > (-50) & relEyeTime < (endStimulusTime + postStim));
 posStart = min(pos);
 posEnd = max(pos);
 
@@ -129,7 +129,7 @@ for f = 1:length(ts)
     ye = ys(f);
     im = bg;
     if t < 100000
-        if t < endStimulusTime
+        
             % show grating stimulus
             if t >= 0 & t < stimOffTime
                 grating = draw.drawGratings(width, height, stimX, stimY, (ori - 90) * pi / 180, spatialFreq /(2*pi), t * phaseStep);
@@ -141,7 +141,7 @@ for f = 1:length(ts)
             end
 
             % show saccade targets
-            if t >= targetOnTime & t < targetOffTime
+            if t >= 0 & t < targetOffTime
                 % target setup: 2 = red left green right, 1 = green left red right
                 if target == 2
                     leftColor = targetAColor;
@@ -152,18 +152,32 @@ for f = 1:length(ts)
                 end
                 im = draw.drawCircle(im, fixSpotX - targetOffset, fixSpotY, targetRadius, leftColor);
                 im = draw.drawCircle(im, fixSpotX + targetOffset, fixSpotY, targetRadius, rightColor);
-            end 
-            if t > showFixSpotTime & t < allowSaccadeTime
-                % draw fixation spot
-                im = draw.drawCircle(im, fixSpotX, fixSpotY, fixSpotRadius, fixSpotColor);
             end
+            
+            if t >= 1500
+                if cue == target
+                    offset = -targetOffset;
+                else
+                    offset = targetOffset;
+                end
+                inner = draw.circularMask(width, height, fixSpotX + offset, fixSpotY, targetRadius * 1.4);
+                outer = draw.circularMask(width, height, fixSpotX + offset, fixSpotY, targetRadius * 1.7);
+                rim = outer .* (1 - inner);
+                clr = draw.flatImage(width, height, [1,1,1]);
+                im = draw.overlayImagesWithAlpha(im, clr, rim);
+            end
+%             
+%             if t > showFixSpotTime & t < allowSaccadeTime
+%                 % draw fixation spot
+%                 im = draw.drawCircle(im, fixSpotX, fixSpotY, fixSpotRadius, fixSpotColor);
+%             end
         end
         % drawing eye trace
-        im = draw.drawCircle(im, xe + xc, ye + yc, eyeRadius, 1, 0.3);
+        %im = draw.drawCircle(im, xe + xc, ye + yc, eyeRadius, 1, 0.3);
         if scale < 1
             im = im(yl(1)+1:yl(2),xl(1)+1:xl(2),:);
         end
-    end
+   
     M(f) = im2frame(im);
     if showFig
         imshow(im);
@@ -171,14 +185,12 @@ for f = 1:length(ts)
         
 end
 
-Mall = [Mall M];
-
 %%
 %fileName = input('Enter file name: ', 's')
-fileName = sprintf('MonkeyPerformance', trialNum);
+fileName = sprintf('trial_%d', trialNum);
 writer = VideoWriter(['movies/' fileName '.mp4'], 'MPEG-4');
-
+%%
 writer.FrameRate = fps/2;
 writer.open();
-writer.writeVideo(Mall);
+writer.writeVideo(M);
 writer.close();
