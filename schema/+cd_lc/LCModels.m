@@ -13,9 +13,9 @@ classdef LCModels < dj.Relvar
             self.restrict(varargin{:});
         end
         
-        function new_id = registerLC(self, model, config, label)
+        function new_id = registerLC(self, label, model, config)
             if nargin < 4
-                label = '';
+                config = getModelConfigs(model);
             end
 
             last_id = max(fetchn(cd_lc.LCModels, 'lc_id'));
