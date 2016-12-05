@@ -64,7 +64,7 @@ classdef ContrastSeparatedGPDPCEncoder < handle
                 x = stimulus(pos);
                 counts = spikeCounts(:, pos);
                 
-                alpha_c = zeros(self.NUM_UNITS, length(stimulus));
+                alpha_c = zeros(self.NUM_UNITS, length(x));
                 y_bias = zeros(1, self.NUM_UNITS);
                 
                 
