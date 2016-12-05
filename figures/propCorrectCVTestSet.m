@@ -1,19 +1,19 @@
 %% Fetch the data!
-tom = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.ContrastSessionDataSet & 'subject_id = 21');
-leo = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.ContrastSessionDataSet & 'subject_id = 3');
+tom = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.CVTrainSets & 'subject_id = 21');
+leo = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.CVTrainSets & 'subject_id = 3');
 
 
-tomPDiff = fetch(pro(cd_analysis.BinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.BinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * tom, '*');
-leoPDiff = fetch(pro(cd_analysis.BinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.BinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * leo, '*');
+tomPDiff = fetch(pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * tom, '*');
+leoPDiff = fetch(pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * leo, '*');
 
 %% Reorganize the data
 tomP1 = [tomPDiff.p1];
 tomP2 = [tomPDiff.p2];
-tomCont = cellfun(@(x) str2num(x), {tomPDiff.dataset_contrast});
+tomCont = cellfun(@(x) str2num(x), {tomPDiff.cv_contrast});
 
 leoP1 = [leoPDiff.p1];
 leoP2 = [leoPDiff.p2];
-leoCont = cellfun(@(x) str2num(x), {leoPDiff.dataset_contrast});
+leoCont = cellfun(@(x) str2num(x), {leoPDiff.cv_contrast});
 
 %% Common figure settings
 fs = 14;

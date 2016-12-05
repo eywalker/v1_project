@@ -107,6 +107,7 @@ xlim([0, right]);
 ylabel('Mean loglikelihood');
 
 %% Plot specific models w.r.t. another one
+figure;
 model_number = 3; % model to compare against
 modelIdx = 5; % model to plot
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
