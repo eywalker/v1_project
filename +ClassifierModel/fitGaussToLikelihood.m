@@ -1,5 +1,6 @@
 function [mu,sigma,fitL]=fitGaussToLikelihood(s, L)
     s = s(:);
+    L = bsxfun(@rdivide, L, sum(L, 1));
     fitL=zeros(size(L));
     [mu_init, sigma_init]=getStat(s, L); % start with mean and std of L(s) as initial guess
     mu = zeros(size(L,2),1);
