@@ -35,6 +35,9 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
             decoder = getDecoder(cd_decoder.TrainedDecoder & key);
             % fetch the test dataset
             dataSet = fetchDataSet(cd_lc.LCTestSets & key);
+            dataSet.goodUnits = decoder.unitFilter(:);
+            dataSet.totalCounts = sum(dataSet.counts, 1);
+            dataSet.goodTotalCounts = dataSet.goodUnits' * dataSet.counts;
             decodeOri = linspace(220, 320, 1000);
             L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
             dataSet.decodeOri = decodeOri;

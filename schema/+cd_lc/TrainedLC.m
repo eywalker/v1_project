@@ -41,11 +41,17 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
     
     methods
         function model=getLC(self)
-            assert(count(self)==1, 'You can only retrieve one decoder at a time');
+            assert(count(self)==1, 'You can only retrieve one model at a time');
             info = fetch(self, '*');
             model = eval(info.lc_class);
             model.setModelConfigs(info.lc_trained_config);
         end
+        
+        function [dataset, decoder, model]=getAll(self)
+            [dataset, decoder] = getDataSet(self);
+            model = getLC(self);
+        end
+            
         
         function [muLL, logl] = train(self, lc_model, key, n)
             decoder = getDecoder(cd_decoder.TrainedDecoder & key);
@@ -61,11 +67,11 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             [muLL, logl] = lc_model.getLogLikelihood(dataSet);
         end
         
-        function dataSet = getDataSet(self)
+        function [dataSet, decoder] = getDataSet(self)
             decoder = getDecoder(cd_decoder.TrainedDecoder & self);
             dataSet = fetchDataSet(cd_lc.LCTrainSets & self);
             dataSet.goodUnits = decoder.unitFilter(:);
-            dataSet.toalCounts = sum(dataSet.counts, 1);
+            dataSet.totalCounts = sum(dataSet.counts, 1);
             dataSet.goodTotalCounts = dataSet.goodUnits' * dataSet.counts;
             decodeOri = linspace(220, 320, 1000);
             L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
