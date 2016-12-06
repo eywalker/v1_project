@@ -1,27 +1,20 @@
+key = fetch(cd_lc.TrainedLC, 'LIMIT 1');
+[dataset, decoder, model] = getAll(cd_lc.TrainedLC & key);
+%%
+rng(100, 'twister');
+dataset.counts = decoder.encode(dataset.orientation, dataset.contrast);
+dataset.likelihood = decoder.getLikelihoodDistr(dataset.decodeOri, dataset.contrast, dataset.counts);
 
+dataset.goodUnits = decoder.unitFilter(:);
+dataset.totalCounts = sum(dataset.counts, 1);
+dataset.goodTotalCounts = dataset.goodUnits' * dataset.counts;
 
+resp=model.classifyLikelihood(dataset);
+dataset.selected_class = resp';
 
-sigmas = linspace(0,30,10);
-sigmaA = 3;
-sigmaB = 15;
-priorA = 0.73;
-lapseRate = 0.0;
-s_hat = linspace(-20, 20,100);
-l_color = lines(length(sigmas));
-figure;
-for i = 1:length(sigmas)
-    sigma = sigmas(i);
-    k1 = 1/2*log((sigma.^2 + sigmaB.^2)./(sigma.^2 + sigmaA.^2)) + log(priorA./(1-priorA));
-    k2 = 1/2*(sigmaB.^2 - sigmaA.^2) ./ ((sigma.^2 + sigmaA.^2) .* (sigma.^2 + sigmaB.^2));
-    k = sqrt(k1./k2);
+dataset.correct_response=strcmp(dataset.selected_class, dataset.stimulus_class);
 
-    unreal_k = ~arrayfun(@isreal, k);
-    k(unreal_k) = 0; % give 0 to pass by erf function
-    LCA = ((1/2)*(erf((s_hat+k)./sigma./sqrt(2)) - erf((s_hat-k)./sigma./sqrt(2)))); % p(C='A'|s)
-    LCA(unreal_k) = 0;
-    pA = LCA * (1-lapseRate) + lapseRate * 0.5;
-    hold off;
-    plot(s_hat, pA, 'color', l_color(i,:));
-    ylim([0, 1]);
-    pause();
-end
+isLeft = strcmp(dataset.correct_direction, 'Left');
+choseLeft = dataset.correct_response == isLeft; % using notXOR trick to flip boolean if correct_response is false
+[dataset.selected_direction{choseLeft}] = deal('Left');
+[dataset.selected_direction{~choseLeft}] = deal('Right');
