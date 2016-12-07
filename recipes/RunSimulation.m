@@ -11,8 +11,9 @@ parpopulate(cd_lc.LCTrainSets, 'lc_trainset_owner = "cd_dataset.SimulatedRespons
 
 % regiser pairing between Simulated Responses decoder trainset and
 % Simulated Responses LC trainset
-rel = pro(cd_decoder.DecoderTrainSets * cd_dataset.SimulatedResponses) * ...
-    pro(cd_lc.LCTrainSets * cd_dataset.SimulatedResponses);
+dataset = cd_dataset.DataSets & cd_dataset.SimulatedResponses;
+rel = pro(cd_decoder.DecoderTrainSets * dataset) * ...
+    pro(cd_lc.LCTrainSets * dataset);
 registerPair(cd_lc.LCTrainSetPairs, rel);
 
 % now finally get onto training decoders and then LC models
