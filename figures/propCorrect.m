@@ -19,6 +19,7 @@ leoCont = cellfun(@(x) str2num(x), {leoPDiff.dataset_contrast});
 fs = 14;
 fs_title = 16;
 font = 'Arial';
+c = min(0.005 * (2.^(0:8)), 1);
 c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
 

@@ -1,7 +1,7 @@
 %% Fetch the data!
 
 data_source = pro(cd_dataset.ContrastSessionDataSet, 'dataset_hash -> sim_hash', 'dataset_owner -> sim_owner');
-sim = pro(cd_dataset.SimulatedResponses, 'dataset_hash', 'dataset_owner', 'dec_trainset_hash -> sim_hash', 'dec_trainset_owner -> sim_owner');
+sim = pro(cd_dataset.SimulatedBehavior, 'dataset_hash', 'dataset_owner', 'dec_trainset_hash -> sim_hash', 'dec_trainset_owner -> sim_owner');
 source = data_source * cd_dataset.DataSets & sim;
 %%
 
@@ -27,7 +27,6 @@ font = 'Arial';
 c = min(0.005 * (2.^(0:8)), 1);
 c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
-
 %% Generate scatter plot for two models
 
 figure('Color', [1,1,1]);
@@ -142,12 +141,12 @@ hold on;
 plot(x, y, 'k--');
 
 set(ax, 'FontName', font, 'FontSize', fs);
-setc(ax, 'xscale', 'log');
+set(ax, 'xscale', 'log');
 set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.06]);
+ylim([-0.01, 0.5]);
 title('Monkey T', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);
@@ -166,7 +165,7 @@ set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.1]);
+ylim([-0.01, 0.5]);
 title('Monkey L', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);

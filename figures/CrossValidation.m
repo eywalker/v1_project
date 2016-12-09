@@ -25,7 +25,7 @@ edges = 0.5 * (c(1:end-1) + c(2:end));
 models_to_plot = 1:7;
 NUM_MODELS = length(models_to_plot);
 %% Contrast vs. mean logL plot for non-shuffled and shuffled
-models_to_plot = 1:7;
+models_to_plot = [1:3,21,4:6,22, 7];
 NUM_MODELS = length(models_to_plot);
 
 line_color = lines(length(modelNames));
@@ -67,7 +67,7 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-models_to_plot = 1:7;
+models_to_plot = [7, 21];
 NUM_MODELS = length(models_to_plot);
 target = 7;
 
@@ -115,7 +115,7 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-models_to_plot = 1:7;
+models_to_plot = [4:6, 17, 7];
 NUM_MODELS = length(models_to_plot);
 target = 7;
 
