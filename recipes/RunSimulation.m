@@ -21,4 +21,4 @@ registerPair(cd_lc.LCTrainSetPairs, rel);
 parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.SimulatedResponses"');
 
 % train all LC models
-parpopulate(cd_lc.TrainedLC, rel, 'lc_id in (1,2,3,7)');
+parpopulate(cd_lc.TrainedLC, rel, 'lc_id between 1 and 7');
