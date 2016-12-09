@@ -53,9 +53,10 @@ classdef TotalSpikeCountPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             elseif isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood') && isfield(dataStruct, 'goodTotalCounts')
                 decodeOri = dataStruct.decodeOri;
                 likelihood = dataStruct.likelihood;
-                [s_hat, sigma] = self.peakExtractor(decodeOri, likelihood);% extract center of the likelihood function
+                [s_hat, ~] = self.peakExtractor(decodeOri, likelihood);% extract center of the likelihood function
+                sigma = dataStruct.goodTotalCounts;
                 dataStruct.computed_peak = s_hat;
-                dataStruct.computed_width = dataStruct.goodTotalCounts; % use total spike counts as surrogate of uncertainty width
+                dataStruct.computed_width = sigma; % use total spike counts as surrogate of uncertainty width
             elseif isfield(dataStruct, 'likelihood_peak') && isfield(dataStruct, 'likelihood_width')
                 s_hat = dataStruct.likelihood_peak;
                 sigma = dataStruct.likelihood_width;
