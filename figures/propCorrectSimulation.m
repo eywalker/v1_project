@@ -24,6 +24,8 @@ leoCont = cellfun(@(x) str2num(x), {leoPDiff.dataset_contrast});
 fs = 14;
 fs_title = 16;
 font = 'Arial';
+c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
+edges = 0.5 * (c(1:end-1) + c(2:end));
 
 %% Generate scatter plot for two models
 
@@ -122,7 +124,7 @@ set(ax, 'xticklabel', 10.^[-3:0] * 100);
 set(ax, 'ytick', 0.5:0.1:0.9);
 title('Monkey L', 'FontName', font, 'FontSize', fs_title);
 
-%% Difference between modesl
+%% Difference between models
 linec = lines;
 figure('color', [1,1,1]);
 nSlots = 10;
@@ -139,7 +141,7 @@ hold on;
 plot(x, y, 'k--');
 
 set(ax, 'FontName', font, 'FontSize', fs);
-set(ax, 'xscale', 'log');
+setc(ax, 'xscale', 'log');
 set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
@@ -163,7 +165,7 @@ set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.06]);
+ylim([-0.01, 0.1]);
 title('Monkey L', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);
