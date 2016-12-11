@@ -36,6 +36,14 @@ classdef TrainedDecoder < dj.Relvar & dj.AutoPopulate
             self.restrict(varargin{:});
         end
         
+        function [dataSet, model] = getAll(self)
+            assert(count(self)==1, 'You can only retrieve one decoder at a time');
+            info = fetch(self, '*');
+            dataSet = fetchDataSet(cd_decoder.DecoderTrainSets & self);
+            model = eval(info.decoder_class);
+            model.setModelConfigs(info.decoder_trained_config);
+        end
+        
         function model=getDecoder(self)
             assert(count(self)==1, 'You can only retrieve one decoder at a time');
             info = fetch(self, '*');

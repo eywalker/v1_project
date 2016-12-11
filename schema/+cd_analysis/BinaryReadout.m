@@ -10,7 +10,7 @@ prop_correct: float              # proportion of correct trials
 classdef BinaryReadout < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = cd_lc.TrainedLC
+		popRel = pro(cd_lc.TrainedLC)
 	end
 
 	methods(Access=protected)
