@@ -16,8 +16,8 @@ leoP2 = [leoPDiff.p2];
 leoCont = cellfun(@(x) str2num(x), {leoPDiff.dataset_contrast});
 
 %% Common figure settings
-fs = 14;
-fs_title = 16;
+fs = 18;
+fs_title = 20;
 font = 'Arial';
 c = min(0.005 * (2.^(0:8)), 1);
 c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
@@ -31,7 +31,8 @@ x = linspace(0, 1, 100);
 
 ax = subplot(1,2,1);
 hold on;
-scatter(tomP1, tomP2, 30, log(tomCont), 'filled');
+scatter(tomP1, tomP2, 40, log(tomCont), 'filled');
+axis equal
 plot(x, x, 'k--');
 xlim([0.5, 1]);
 ylim([0.5, 1]);
@@ -48,7 +49,8 @@ set(h, 'TickLabels', 10.^[-3:0] * 100);
 
 ax = subplot(1,2,2);
 hold on;
-scatter(leoP1, leoP2, 30, log(leoCont), 'filled');
+scatter(leoP1, leoP2, 40, log(leoCont), 'filled');
+axis equal
 plot(x, x, 'k--');
 xlim([0.5, 1]);
 ylim([0.5, 1]);
@@ -132,7 +134,7 @@ y = zeros(size(x));
 ax = subplot(2,1,1);
 tomDelta = tomP2 - tomP1;
 [mu, s, n, binc] = nanBinnedStats(tomCont, tomDelta, edges);
-errorbar(binc, mu, s./sqrt(n), 'color',linec(1,:));
+errorbar(binc, mu, s./sqrt(n), 'color',linec(1,:), 'linewidth', 2);
 hold on;
 plot(x, y, 'k--');
 
@@ -151,7 +153,7 @@ set(ax, 'YTick', -0.01:0.01:0.06);
 ax = subplot(2,1,2);
 leoDelta = leoP2 - leoP1;
 [mu, s, n, binc] = nanBinnedStats(leoCont, leoDelta, edges);
-errorbar(binc, mu, s./sqrt(n), 'color',linec(1,:));
+errorbar(binc, mu, s./sqrt(n), 'color',linec(1,:), 'linewidth', 2);
 hold on;
 plot(x, y, 'k--');
 

@@ -1,5 +1,5 @@
 %% Fetch data for Tom: subject_id = 21
-key = 'subject_id = 21'
+key = 'subject_id = 3'
 cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
 cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
 data = fetch(cv_train * cv_test, '*');
@@ -10,6 +10,7 @@ all_contrasts = cellfun(@str2num, contrasts(1,:));
 
 %% Construct labels and contrast edges
 modelNames = fetchn(cd_lc.LCModels, 'lc_label');
+modelNames = modelNames(v_lcid);
 % make trainLL and testLL num_sessions x num_models
 trainLL = data_train';
 testLL = data_test';
@@ -22,11 +23,16 @@ c = min(0.005 * (2.^(0:8)), 1);
 
 c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
-models_to_plot = 1:7;
+models_to_plot = [1:3, 17:19, 4:6, 7];
 NUM_MODELS = length(models_to_plot);
+
+%% Common figure settings
+fs = 14;
+fs_title = 16;
+font = 'Arial';
 %% Contrast vs. mean logL plot for non-shuffled and shuffled
-models_to_plot = [1:3,21,4:6,22, 7];
-NUM_MODELS = length(models_to_plot);
+%models_to_plot = [17:20, 7];
+%NUM_MODELS = length(models_to_plot);
 
 line_color = lines(length(modelNames));
 h = figure(1);
@@ -66,9 +72,7 @@ set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
-%% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-models_to_plot = [7, 21];
-NUM_MODELS = length(models_to_plot);
+%% Contrast vs. mean logL plot for trainset and teset with error bars based on difference w.r.t. target
 target = 7;
 
 delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
@@ -115,8 +119,6 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-models_to_plot = [4:6, 17, 7];
-NUM_MODELS = length(models_to_plot);
 target = 7;
 
 delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
@@ -160,9 +162,9 @@ set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
-%% Plot the difference between non-shuffle(train) and shuffle(test)
-models_to_plot = 1:7;
-NUM_MODELS = length(models_to_plot);
+%% Plot the difference between train and test
+%models_to_plot = 1:7;
+%NUM_MODELS = length(models_to_plot);
 
 h = figure(4);
 set(h, 'name',  'Difference in fit: test - train');
@@ -187,8 +189,8 @@ for idx = 1:NUM_MODELS
 end
 
 %% bar plots for average log likelihood across contrast
-models_to_plot = 1:7;
-NUM_MODELS = length(models_to_plot);
+%models_to_plot = 1:7;
+%NUM_MODELS = length(models_to_plot);
 
 muTestLL = nanmean(testLL);
 muTrainLL = nanmean(trainLL);
@@ -227,8 +229,6 @@ ylabel('Mean loglikelihood');
 %rotateXLabels(gca,90);
 
 %% Plot specific models w.r.t. another one
-models_to_plot = 1:7;
-NUM_MODELS = length(models_to_plot);
 
 
 model_number = 3; % model to compare against
@@ -312,8 +312,8 @@ end
 legend(h1, {'Test set (shuffled)'});
 
 %% bar plots for difference in test and train w.r.t. the specified model
-models_to_plot = 1:length(modelNames);
-NUM_MODELS = length(models_to_plot);
+%models_idx_plot = 1:length(modelNames);
+%NUM_MODELS = length(models_idx_plot);
 
 target = 1;
 
@@ -362,10 +362,12 @@ for idx = 1:NUM_MODELS
         %set(h, 'FontSize', 25);
     end
 end
+
 right = (space + 2 * width) * NUM_MODELS;
 pos = (2*width + space) * [0:NUM_MODELS-1] + left + width/2;
 set(gca, 'xtick', pos);
 set(gca, 'xticklabel', modelNames(models_to_plot));
+set(gca, 'FontName', font, 'FontSize', fs);
 xlim([0, right]);
 legend([h1, h2], {'Train set', 'Test set'});
 ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{target}));
