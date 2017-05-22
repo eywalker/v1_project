@@ -46,7 +46,7 @@ classdef ExplicitCodingClassifier < ClassifierModel.LikelihoodClassifier.PSLLC
                 resp = decoder.baseEncoder.encode(s, []);
                 [~, pos] = max(resp, [], 2);
                 peak_ori = s(pos);
-                total_counts = decoder.unitFilter' * dataStruct.counts;
+                total_counts = decoder.unitFilter' * dataStruct.counts + eps;
                 s_hat = (peak_ori .* decoder.unitFilter') * dataStruct.counts ./ total_counts;
                 sigma = sqrt((peak_ori.^2 .* decoder.unitFilter') * dataStruct.counts ./ total_counts - s_hat.^2);
                 dataStruct.explicit_mean = s_hat;

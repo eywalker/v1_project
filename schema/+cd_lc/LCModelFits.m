@@ -19,6 +19,30 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
         function self = LCModelFits(varargin)
             self.restrict(varargin{:});
         end
+        
+        function [dataSet, decoder] = getTrainSet(self, key)
+            if nargin < 2
+                key = self;
+            end
+            [dataSet, decoder] = getDataSet(cd_lc.TrainedLC & key);
+        end
+        
+        function [dataSet, decoder] = getTestSet(self, key)
+            if nargin < 2
+                key = self;
+            end
+            decoder = getDecoder(cd_decoder.TrainedDecoder & key);
+            dataSet = fetchDataSet(cd_lc.LCTrainSets & key);
+            dataSet.decoder = decoder; % store the decoder
+            dataSet.goodUnits = decoder.unitFilter(:);
+            dataSet.totalCounts = sum(dataSet.counts, 1);
+            dataSet.goodTotalCounts = dataSet.goodUnits' * dataSet.counts;
+            decodeOri = linspace(220, 320, 1000);
+            L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
+            dataSet.decodeOri = decodeOri;
+            dataSet.likelihood = L;
+        end
+            
     end
 
 	methods(Access=protected)
@@ -31,17 +55,8 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
             
             
             lc_model = getLC(cd_lc.TrainedLC & key);
+            dataSet = self.getTestSet(key);
             
-            decoder = getDecoder(cd_decoder.TrainedDecoder & key);
-            % fetch the test dataset
-            dataSet = fetchDataSet(cd_lc.LCTestSets & key);
-            dataSet.goodUnits = decoder.unitFilter(:);
-            dataSet.totalCounts = sum(dataSet.counts, 1);
-            dataSet.goodTotalCounts = dataSet.goodUnits' * dataSet.counts;
-            decodeOri = linspace(220, 320, 1000);
-            L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
-            dataSet.decodeOri = decodeOri;
-            dataSet.likelihood = L;
             [muLL, logLList] = lc_model.getLogLikelihood(dataSet);
             fprintf('%s model fit mu_logl = %.3f\n', lc_model.modelName, muLL);
             tuple.lc_test_mu_logl = muLL;

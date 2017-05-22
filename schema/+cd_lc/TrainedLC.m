@@ -55,23 +55,17 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
         
         function [muLL, logl] = train(self, lc_model, key, n)
             % TODO: combine with getDataSet
-            decoder = getDecoder(cd_decoder.TrainedDecoder & key);
-            dataSet = fetchDataSet(cd_lc.LCTrainSets & key);
-            dataSet.goodUnits = decoder.unitFilter(:);
-            dataSet.toalCounts = sum(dataSet.counts, 1);
-            dataSet.goodTotalCounts = dataSet.goodUnits' * dataSet.counts;
-            decodeOri = linspace(220, 320, 1000);
-            dataSet.decoder = decoder; % store the decoder
-            L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
-            dataSet.decodeOri = decodeOri;
-            dataSet.likelihood = L;
+            dataSet = self.getDataSet(key);
             lc_model.train(dataSet, n);
             [muLL, logl] = lc_model.getLogLikelihood(dataSet);
         end
         
-        function [dataSet, decoder] = getDataSet(self)
-            decoder = getDecoder(cd_decoder.TrainedDecoder & self);
-            dataSet = fetchDataSet(cd_lc.LCTrainSets & self);
+        function [dataSet, decoder] = getDataSet(self, key)
+            if nargin < 2
+                key = self;
+            end
+            decoder = getDecoder(cd_decoder.TrainedDecoder & key);
+            dataSet = fetchDataSet(cd_lc.LCTrainSets & key);
             dataSet.decoder = decoder; % store the decoder
             dataSet.goodUnits = decoder.unitFilter(:);
             dataSet.totalCounts = sum(dataSet.counts, 1);
