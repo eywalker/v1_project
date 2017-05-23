@@ -2,18 +2,37 @@
 key = 'subject_id = 3'
 cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
 cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
+sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
+
+
 data = fetch(cv_train * cv_test, '*');
 [data_train, v_lcid] = dj.struct.tabulate(data, 'train_mu_logl', 'lc_id');
 [data_test, v_lcid] = dj.struct.tabulate(data, 'test_mu_logl', 'lc_id');
 [contrasts, v_lc_id2] = dj.struct.tabulate(data, 'cv_contrast', 'lc_id');
 all_contrasts = cellfun(@str2num, contrasts(1,:));
+data_train = data_train';
+data_test = data_test';
+
+%%
+data_train = [];
+data_test = [];
+all_contrasts = cellfun(@str2num, {sessions.cv_contrast});
+all_data = fetch(cv_train * cv_test, '*');
+for s=sessions'
+    fprintf('.')
+    data = dj.struct.join(all_data, s);
+    data_train = [data_train; [data.train_mu_logl]];
+    data_test = [data_test; [data.test_mu_logl]];
+end
+fprintf('complete\n');
+
 
 %% Construct labels and contrast edges
 modelNames = fetchn(cd_lc.LCModels, 'lc_label');
 modelNames = modelNames(v_lcid);
 % make trainLL and testLL num_sessions x num_models
-trainLL = data_train';
-testLL = data_test';
+trainLL = data_train;
+testLL = data_test;
 c = min(0.005 * (2.^(0:8)), 1);
 % edges = arrayfun(@(x) prctile(all_contrasts, x), 0:10:100);
 % edges = [0, unique(edges), 1];
@@ -23,7 +42,7 @@ c = min(0.005 * (2.^(0:8)), 1);
 
 c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
-models_to_plot = [1:3, 17:19, 4:6, 7];
+models_to_plot = [1:3, 17:20, 4:6, 7, 23];
 NUM_MODELS = length(models_to_plot);
 
 %% Common figure settings
@@ -315,7 +334,7 @@ legend(h1, {'Test set (shuffled)'});
 %models_idx_plot = 1:length(modelNames);
 %NUM_MODELS = length(models_idx_plot);
 
-target = 1;
+target = 3;
 
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, target));
 dTestLL = bsxfun(@minus, testLL, testLL(:, target));
@@ -395,10 +414,12 @@ semDDLL = stdDDLL/sqrt(size(ddLL, 1));
 figure;
 width = 2;
 space = 0.5;
-N = length(modelNames);
+N = length(models_to_plot);
 left = space/2 + width/2;
-for modelIdx = 1:N
-    pos = (modelIdx-1)*(2*width + space) + left;
+for idx = 1:N
+    
+    pos = (idx-1)*(2*width + space) + left;
+    modelIdx = models_to_plot(idx);
     h1=bar(pos, muDTrainLL(modelIdx), width);
     hold on;
     
@@ -414,7 +435,8 @@ end
 right = (space + 2 * width) * N;
 pos = (2*width + space) * [0:N-1] + left + width/2;
 set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames);
+set(gca, 'xticklabel', modelNames(models_to_plot));
 xlim([0, right]);
 legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
 ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{model_number}));
+rotateXLabels(gca, 90);

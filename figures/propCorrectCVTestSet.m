@@ -2,9 +2,14 @@
 tom = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.CVTrainSets & 'subject_id = 21');
 leo = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.CVTrainSets & 'subject_id = 3');
 
+model1 = 'lc_id = 3';
+model2 = 'lc_id = 7';
+tomPDiff = pro(cd_analysis.TestsetBinaryReadout & model1, 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & model2, 'lc_id -> model2', 'prop_correct -> p2') * tom;
+tomPDiff = fetch(pro(cd_dataset.CrossValidationSets, tomPDiff, 'avg(p1) -> p1', 'avg(p2) -> p2'), '*');
+leoPDiff = pro(cd_analysis.TestsetBinaryReadout & model1, 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & model2, 'lc_id -> model2', 'prop_correct -> p2') * leo;
+leoPDiff = fetch(pro(cd_dataset.CrossValidationSets, leoPDiff, 'avg(p1) -> p1', 'avg(p2) -> p2'), '*');
 
-tomPDiff = fetch(pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * tom, '*');
-leoPDiff = fetch(pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * leo, '*');
+
 
 %% Reorganize the data
 tomP1 = [tomPDiff.p1];
