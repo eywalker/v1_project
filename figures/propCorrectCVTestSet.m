@@ -144,11 +144,11 @@ set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.06]);
+ylim([-0.01, 0.1]);
 title('Monkey T', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);
-set(ax, 'YTick', -0.01:0.01:0.06);
+set(ax, 'YTick', -0.01:0.02:0.1);
 
 ax = subplot(2,1,2);
 leoDelta = leoP2 - leoP1;
@@ -163,9 +163,9 @@ set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.06]);
+ylim([-0.01, 0.1]);
 title('Monkey L', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);
-set(ax, 'YTick', -0.01:0.01:0.06);
+set(ax, 'YTick', -0.01:0.02:0.1);
 

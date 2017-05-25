@@ -5,8 +5,8 @@ original_fits=fetch((cd_plc.PLCTrainSets * cd_plset.PLSets * cd_plset.ContrastSe
 all_contrasts = cellfun(@str2num, contrasts(:,1));
 selection = pro(cd_plset.ContrastSessionPLSet & key, 'plset_hash -> source_plset_hash');
 filter = 'plshuffle_method = "shuffleLikelihoodWidthsAroundActualStims" and plshuffle_binwidth = 3';
-shuffled_fits = fetch((cd_plc.PLCTrainSets * cd_plset.PLSets * cd_plset.ShuffledPLSets & selection) * cd_plc.TrainedPLC & filter, '*');
-[data_shuffled, ~, ~, v_seed] = dj.struct.tabulate(shuffled_fits, 'plc_train_mu_logl', 'plc_id', 'source_plset_hash', 'plshuffle_seed');
+shuffled_fits = fetch((cd_plc.PLCTestSets * cd_plset.PLSets * cd_plset.ShuffledPLSets & selection) * cd_plc.PLCTestFits & filter, '*');
+[data_shuffled, ~, ~, v_seed] = dj.struct.tabulate(shuffled_fits, 'plc_test_mu_logl', 'plc_id', 'source_plset_hash', 'plshuffle_seed');
 mu_shuffled_kinds = mean(data_shuffled, 3);
 %% Construct labels and edges
 modelNames = fetchn(cd_plc.PLCModels, 'plc_label');
@@ -22,7 +22,7 @@ c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
 
 %% Contrast vs mean logL plot for non-shuffled and shuffled
-models_to_plot = 1:7;
+models_to_plot = 1:3;
 NUM_MODELS = length(models_to_plot);
 
 line_color = lines(length(modelNames));
@@ -68,7 +68,7 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-models_to_plot = 1:7;
+%models_to_plot = 1:7;
 NUM_MODELS = length(models_to_plot);
 target = 1;
 
@@ -96,6 +96,7 @@ legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
+%ylim([-0.05, 0.04]);
 ylabel('Mean log likelihood');
 
 subplot(1, 2, 2);
@@ -113,10 +114,11 @@ legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
+%ylim([-0.05, 0.04]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled relative to the target model treated as 0
-models_to_plot = 1:7;
+%models_to_plot = 1:7;
 NUM_MODELS = length(models_to_plot);
 target = 1;
 
@@ -138,11 +140,12 @@ end
 
 x = logspace(-3, 0, 100);
 plot(x, zeros(size(x)), 'k--');
-title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on non-shuffled data vs contrast relative to %s', modelNames{target}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
+ylim([-0.05, 0.05]);
 ylabel('Mean log likelihood');
 
 subplot(1, 2, 2);
@@ -154,11 +157,12 @@ for idx = 1:NUM_MODELS
     hold on;
 end
 plot(x, zeros(size(x)), 'k--');
-title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on shuffled data vs contrast relative to %s', modelNames{target}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
+ylim([-0.05, 0.05]);
 ylabel('Mean log likelihood');
 %% Plot the difference between non-shuffle(train) and shuffle(test)
 figure;
