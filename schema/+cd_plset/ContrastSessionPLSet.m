@@ -34,7 +34,6 @@ classdef ContrastSessionPLSet < dj.Relvar & dj.AutoPopulate
     end
     
 	methods(Access=protected)
-
 		function makeTuples(self, key)
             tuple = key;
             rel = pro(cd_dataset.ContrastSessionDataSet * cd_decoder.DecoderTrainSets * cd_decoder.DecoderModels & key);
