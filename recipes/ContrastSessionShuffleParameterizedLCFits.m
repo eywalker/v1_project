@@ -25,7 +25,7 @@ parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"')
 
 
 % register shuffled sets as testset
-parpopulate(cd_plc.PLCTestSets, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"');
+parpopulate(cd_plc.PLCTestSets, 'plc_testset_owner = "cd_plset.ShuffledPLSets"');
 
 % register pairing between contrast sessions as trainset and shuffled data
 % as testset
