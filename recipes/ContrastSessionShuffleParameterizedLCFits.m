@@ -15,10 +15,22 @@ parpopulate(cd_plset.ContrastSessionPLSet);
 rel = pro(cd_plset.ContrastSessionPLSet, 'plset_owner -> source_plset_owner', 'plset_hash -> source_plset_hash');
 parpopulate(cd_plset.ShuffledPLSets, rel);
 
-% register both contrast sessions and PLsets as the trainset for PLC
+% register both contrast sessions and shuffled PLsets as the trainset for PLC
 parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.ContrastSessionPLSet"');
 parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"');
 
 
 parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.ContrastSessionPLSet"');
 parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"');
+
+
+% register shuffled sets as testset
+parpopulate(cd_plc.PLCTestSets, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"');
+
+% register pairing between contrast sessions as trainset and shuffled data
+% as testset
+pairs = fetch(pro(cd_plset.ShuffledPLSets, 'source_plset_hash -> plc_trainset_hash', 'source_plset_owner -> plc_trainset_owner', 'plset_owner -> plc_testset_owner', 'plset_hash -> plc_testset_hash'), '*');
+registerPair(cd_plc.PLCTrainTestPairs, pairs);
+
+% test the fits
+populate(cd_plc.PLCTestFits, 'plc_id <=3');
