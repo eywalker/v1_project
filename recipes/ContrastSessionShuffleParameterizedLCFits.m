@@ -33,4 +33,4 @@ pairs = fetch(pro(cd_plset.ShuffledPLSets, 'source_plset_hash -> plc_trainset_ha
 registerPair(cd_plc.PLCTrainTestPairs, pairs);
 
 % test the fits
-populate(cd_plc.PLCTestFits, 'plc_id <=3');
+parpopulate(cd_plc.PLCTestFits, 'plc_id <=3');
