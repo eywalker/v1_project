@@ -1,5 +1,5 @@
 %% Fetch data a monkey: subject_id= 3 for Leo and 21 for Tom
-key = 'subject_id = 21'
+key = 'subject_id = 3'
 cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
 cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
 sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
@@ -55,8 +55,6 @@ fs = 14;
 fs_title = 16;
 font = 'Arial';
 %% Contrast vs. mean logL plot for train set and test set
-%models_to_plot = [17:20, 7];
-%NUM_MODELS = length(models_to_plot);
 
 line_color = lines(length(modelNames));
 h = figure(1);
@@ -144,7 +142,6 @@ ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
 target = 1;
-models_to_plot = [1:3,17:20,4:7];
 delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
 delta_test = bsxfun(@minus, testLL, testLL(:, target));
 
