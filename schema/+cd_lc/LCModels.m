@@ -13,16 +13,18 @@ classdef LCModels < dj.Relvar
             self.restrict(varargin{:});
         end
         
-        function new_id = registerLC(self, label, model, config)
+        function new_id = registerLC(self, label, model, config, new_id)
             if nargin < 4
                 config = getModelConfigs(model);
             end
-
-            last_id = max(fetchn(cd_lc.LCModels, 'lc_id'));
-            if isempty(last_id)
-                last_id = 0;
+            
+            if nargin < 5
+                last_id = max(fetchn(cd_lc.LCModels, 'lc_id'));
+                if isempty(last_id)
+                    last_id = 0;
+                end
+                new_id = last_id + 1;
             end
-            new_id = last_id + 1;
             if ~ischar(model) % if owner given as an object
                 model = class(model);
             end

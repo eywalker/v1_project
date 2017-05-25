@@ -10,7 +10,7 @@ pws = [];
 %%
 for id=1:length(contrastSet)
 
-    key = fetch(cd_lc.TrainedLC & contrastSet(id), 'LIMIT 1')
+    key = fetch(cd_lc.TrainedLC & contrastSet(id), 'LIMIT 1');
     dataSet = getDataSet(cd_lc.TrainedLC & key);
 
     modelPeak = getLC(cd_lc.TrainedLC & contrastSet(id) & 'lc_id = 1');

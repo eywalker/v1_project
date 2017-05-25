@@ -2,9 +2,14 @@
 tom = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.CVTrainSets & 'subject_id = 21');
 leo = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.CVTrainSets & 'subject_id = 3');
 
+model1 = 'lc_id = 3';
+model2 = 'lc_id = 7';
+tomPDiff = pro(cd_analysis.TestsetBinaryReadout & model1, 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & model2, 'lc_id -> model2', 'prop_correct -> p2') * tom;
+tomPDiff = fetch(pro(cd_dataset.CrossValidationSets, tomPDiff, 'avg(p1) -> p1', 'avg(p2) -> p2'), '*');
+leoPDiff = pro(cd_analysis.TestsetBinaryReadout & model1, 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & model2, 'lc_id -> model2', 'prop_correct -> p2') * leo;
+leoPDiff = fetch(pro(cd_dataset.CrossValidationSets, leoPDiff, 'avg(p1) -> p1', 'avg(p2) -> p2'), '*');
 
-tomPDiff = fetch(pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * tom, '*');
-leoPDiff = fetch(pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.TestsetBinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * leo, '*');
+
 
 %% Reorganize the data
 tomP1 = [tomPDiff.p1];
@@ -139,11 +144,11 @@ set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.06]);
+ylim([-0.01, 0.1]);
 title('Monkey T', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);
-set(ax, 'YTick', -0.01:0.01:0.06);
+set(ax, 'YTick', -0.01:0.02:0.1);
 
 ax = subplot(2,1,2);
 leoDelta = leoP2 - leoP1;
@@ -158,9 +163,9 @@ set(ax, 'Box', 'off');
 xlabel('Contast (%)');
 ylabel('Difference in {\itP}(Correct)');
 xlim([0.002, 1]);
-ylim([-0.01, 0.06]);
+ylim([-0.01, 0.1]);
 title('Monkey L', 'FontName', font, 'FontSize', fs_title);
 set(ax, 'XTick', [0.01, 0.1, 1]);
 set(ax, 'XTickLabel', [1, 10, 100]);
-set(ax, 'YTick', -0.01:0.01:0.06);
+set(ax, 'YTick', -0.01:0.02:0.1);
 

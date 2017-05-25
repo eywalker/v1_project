@@ -12,13 +12,23 @@ prop_correct                : float                         # proportion of corr
 classdef TestsetBinaryReadout < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = cd_lc.LCModelFits  % !!! update the populate relation
+		popRel = pro(cd_lc.LCModelFits)  % !!! update the populate relation
 	end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-		%!!! compute missing fields for key here
+            dataSet = getTestSet(cd_lc.LCModelFits & key);
+            model = getLC(cd_lc.TrainedLC & key);
+            modelChoice = model.pRespA(dataSet) > 0.5;
+            actualChoice = strcmp(dataSet.selected_class, 'A');
+            correctChoice = modelChoice == actualChoice';
+            pCorrect = mean(correctChoice);
+            
+            key.model_choice = modelChoice;
+            key.model_correct = correctChoice;
+            key.prop_correct = pCorrect;
+            key.num_trials = length(correctChoice);
 			self.insert(key)
 		end
 	end

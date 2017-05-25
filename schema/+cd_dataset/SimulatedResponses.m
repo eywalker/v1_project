@@ -31,6 +31,7 @@ classdef SimulatedResponses < dj.Relvar & dj.AutoPopulate
             dataset.goodUnits = decoder.unitFilter(:);
             dataset.totalCounts = sum(dataset.counts, 1);
             dataset.goodTotalCounts = dataset.goodUnits' * dataset.counts;
+            dataset.decoder = decoder;
 
             resp=model.classifyLikelihood(dataset);
             dataset.selected_class = resp';
