@@ -1,5 +1,5 @@
 %% Fetch data for Tom: subject_id = 21
-key = 'subject_id = 3'
+key = 'subject_id = 21'
 cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
 cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
 data = fetch(cv_train * cv_test, '*');
@@ -73,7 +73,7 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for trainset and teset with error bars based on difference w.r.t. target
-target = 7;
+target = 1;
 
 delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
 delta_test = bsxfun(@minus, testLL, testLL(:, target));
@@ -119,13 +119,14 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-target = 7;
-
+target = 1;
+models_to_plot = [1:3,17:20,4:7];
 delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
 delta_test = bsxfun(@minus, testLL, testLL(:, target));
 
-line_color = lines(length(modelNames));
+line_color = lines_adj(length(modelNames), 1, [0.1, -0.3, 0.3]);
 h = figure(3);
+clf;
 set(h, 'name',  'Difference in fit relative to target vs. Contrast');
 subplot(1, 2, 1);
 
@@ -133,17 +134,21 @@ for idx = 1:length(models_to_plot)
     idxModel = models_to_plot(idx);
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta_train(:, idxModel), edges);
     p = '-';
-    errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :), 'linewidth', 2);
+    errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idxModel, :), 'linewidth', 2);
     hold on;
 end
 
+set(gca, 'fontsize', fs);
 x = logspace(-3, 0, 100);
 plot(x, zeros(size(x)), 'k--');
 title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target}));
 legend(modelNames(models_to_plot));
-xlabel('Contrast');
+xlabel('Contrast (%)');
 set(gca, 'xscale', 'log');
+set(gca, 'xtick', 0.01*[0.1, 1, 10, 100]);
+set(gca, 'xticklabel', [0.1, 1, 10, 100]);
 xlim([0.003, 1.2]);
+ylim([-0.01, 0.07]);
 ylabel('Mean log likelihood');
 
 subplot(1, 2, 2);
@@ -151,15 +156,19 @@ for idx = 1:length(models_to_plot)
     idxModel = models_to_plot(idx);
     [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta_test(:, idxModel), edges);
     p = '-';
-    errorbar(binc, mu, s./sqrt(n),p, 'color', line_color(idx, :), 'linewidth', 2);
+    errorbar(binc, mu, s./sqrt(n),p, 'color', line_color(idxModel, :), 'linewidth', 2);
     hold on;
 end
+set(gca, 'fontsize', fs);
 plot(x, zeros(size(x)), 'k--');
 title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target}));
 legend(modelNames(models_to_plot));
-xlabel('Contrast');
+xlabel('Contrast (%)');
 set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
+set(gca, 'xtick', 0.01*[0.1, 1, 10, 100]);
+set(gca, 'xticklabel', [0.1, 1, 10, 100]);
+ylim([-0.01, 0.07]);
 ylabel('Mean log likelihood');
 
 %% Plot the difference between train and test
@@ -330,7 +339,7 @@ semDTrainLL = stdDTrainLL/sqrt(size(dTrainLL,1));
 
 h = figure;
 set(h, 'name',  'Average log likelihood relative to a model');
-
+p_thr = 0.01;
 width = 2;
 space = 0.5;
 left = space/2 + width/2;
@@ -342,8 +351,8 @@ for idx = 1:NUM_MODELS
     errorbar(pos, muDTrainLL(modelIdx), semDTrainLL(modelIdx), 'k');
     hold on;
     
-    h = ttest(dTrainLL(:, modelIdx));
-    if ~isnan(h)
+    [h, p, ci] = ttest(dTrainLL(:, modelIdx));
+    if p <= p_thr
         mult = sign(mean(dTrainLL(:,modelIdx)));
         %h = text(pos, muDTrainLL(modelIdx) + 3*mult*semDTrainLL(modelIdx), '*');
         plot(pos, muDTrainLL(modelIdx) + 3*mult*semDTrainLL(modelIdx), 'r*', 'markersize', 13);
@@ -354,8 +363,8 @@ for idx = 1:NUM_MODELS
     h2 = bar(pos+width, muDTestLL(modelIdx), width, 'FaceColor', [1, 0.7, 0]);
     errorbar(pos+width, muDTestLL(modelIdx), semDTestLL(modelIdx), 'k');
     
-    h = ttest(dTestLL(:, modelIdx));
-    if ~isnan(h)
+    [h, p, ci] = ttest(dTestLL(:, modelIdx));
+    if p <= p_thr
         mult = sign(mean(dTestLL(:,modelIdx)));
         %h = text(pos + width, muDTestLL(modelIdx) + mult*3*semDTestLL(modelIdx), '*');
         plot(pos + width, muDTestLL(modelIdx) + 2*mult*semDTestLL(modelIdx), 'b*', 'markersize', 13);
@@ -369,7 +378,8 @@ set(gca, 'xtick', pos);
 set(gca, 'xticklabel', modelNames(models_to_plot));
 set(gca, 'FontName', font, 'FontSize', fs);
 xlim([0, right]);
-legend([h1, h2], {'Train set', 'Test set'});
+append = sprintf(': * is significant with p < %.2f', p_thr);
+legend([h1, h2], {['Train set' append], ['Test set' append]});
 ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{target}));
 rotateXLabels(gca, 90);
 %% bar plots for difference in test vs train w.r.t. the first
