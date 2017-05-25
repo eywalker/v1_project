@@ -63,11 +63,13 @@ pdata = packData(data);
 
 %%
 model_bayes = ClassifierModel.BehavioralClassifier.BehavioralBPLClassifier();
-model_bayes.p_ub = [1, 0.5, 50, 8, 30]
+model_bayes.p_ub = [1, 0.5, 50, 8, 30];
 model_bayes.train(pdata, 3);
 %%
 model_nb = ClassifierModel.BehavioralClassifier.FixedCriterionClassifier();
 model_nb.train(pdata, 5);
+%%
+fs = 15;
 %% plot bayesian model
 test_data = struct();
 test_ori = linspace(250, 290, 1000);
@@ -90,7 +92,7 @@ for i = 1:length(subset)
     select = selected_a(pos);
     ori = pdata.orientation(pos);
     [mu, sigma, n, binc] = nanBinnedStats(ori, select, ori_edges);
-    h=plot(binc, mu, 'o', 'markersize', 7, 'color', line_c(i,:));
+    h=plot(binc, mu, 'o', 'markersize', 7,'MarkerFaceColor', line_c(i,:), 'color', line_c(i,:));
     handles = [handles h];
     hold on;
     labels = [labels {sprintf('contrast = %.2f%', cont_val * 100)}];
@@ -99,8 +101,9 @@ for i = 1:length(subset)
     ylabel('Probability of responding C=1');
     test_data.contrast = base * cont_val;
     pA = model_bayes.pRespA(test_data);
-    plot(test_ori, pA, 'color', line_c(i,:));
+    plot(test_ori, pA, 'color', line_c(i,:), 'linewidth', 2);
 end
+set(gca, 'fontsize', fs);
 legend(handles, labels)
 %% plot non-bayesian model
 test_data = struct();
@@ -123,7 +126,7 @@ for i = 1:length(subset)
     select = selected_a(pos);
     ori = pdata.orientation(pos);
     [mu, sigma, n, binc] = nanBinnedStats(ori, select, ori_edges);
-    h=plot(binc, mu, 'o', 'markersize', 7, 'color', line_c(i,:));
+    h=plot(binc, mu, 'o', 'markersize', 7,'MarkerFaceColor', line_c(i,:), 'color', line_c(i,:));
     handles = [handles h];
     hold on;
     labels = [labels {sprintf('contrast = %.2f%', cont_val * 100)}];
@@ -131,6 +134,8 @@ for i = 1:length(subset)
     
     test_data.contrast = base * cont_val;
     pA = model_nb.pRespA(test_data);
-    plot(test_ori, pA, 'color', line_c(i,:));
+    plot(test_ori, pA, 'color', line_c(i,:), 'linewidth', 2);
 end
+set(gca, 'fontsize', fs);
+xlabel('Stimulus orientation (deg)');
 legend(handles, labels)

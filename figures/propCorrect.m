@@ -3,8 +3,8 @@ tom = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.ContrastSessionDataS
 leo = cd_lc.LCTrainSets * (cd_dataset.DataSets * cd_dataset.ContrastSessionDataSet & 'subject_id = 3');
 
 
-tomPDiff = fetch(pro(cd_analysis.BinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.BinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * tom, '*');
-leoPDiff = fetch(pro(cd_analysis.BinaryReadout & 'lc_id = 3', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.BinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * leo, '*');
+tomPDiff = fetch(pro(cd_analysis.BinaryReadout & 'lc_id = 1', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.BinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * tom, '*');
+leoPDiff = fetch(pro(cd_analysis.BinaryReadout & 'lc_id = 1', 'lc_id -> model1', 'prop_correct -> p1') * pro(cd_analysis.BinaryReadout & 'lc_id = 7', 'lc_id -> model2', 'prop_correct -> p2') * leo, '*');
 
 %% Reorganize the data
 tomP1 = [tomPDiff.p1];
