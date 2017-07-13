@@ -5,6 +5,7 @@ classdef PoissonLikeDecoder < handle
         binWidth; % binWidth for adj bin logistic regression
         h; % Poisson like kernel
         ori; % ori bins
+        unitFilter = ':'; % filter out bad units when computing likelihood distr
     end
     
     methods
