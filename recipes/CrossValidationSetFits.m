@@ -34,7 +34,7 @@ registerPair(cd_lc.LCTrainTestPairs, rel_test);
 parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.ContrastSessionDataSet"');
 
 %% train all LC models
-parpopulate(cd_lc.TrainedLC, rel_train);
+parpopulate(cd_lc.TrainedLC, rel_train, 'lc_id <= 7');
 
 %% test trained LC on tset sets
 parpopulate(cd_lc.LCModelFits, rel_test);

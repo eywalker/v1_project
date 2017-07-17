@@ -31,7 +31,7 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             else
                 lc_model = getLC(cd_lc.LCModels & key);
             end
-            [muLL, logl] = self.train(lc_model, key, 150);
+            [muLL, logl] = self.train(lc_model, key, 60);
             tuple.lc_trainset_size = length(logl);
             tuple.lc_train_mu_logl = muLL;
             tuple.lc_trained_config = lc_model.getModelConfigs();
