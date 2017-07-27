@@ -1,13 +1,15 @@
 %% Fetch data a monkey: subject_id= 3 for Leo and 21 for Tom
-key = 'subject_id = 3'
-cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
-cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
+key = 'subject_id = 3';
+
+cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels * cd_decoder.DecoderModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
+cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels * cd_decoder.DecoderModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
 sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
 modelNames = fetchn(cd_lc.LCModels, 'lc_label');
 
 
 %% Fetch data using tabluate - bit hacky and not guaranteed to match
-data = fetch(cv_train * cv_test, '*');
+restr = 'decoder_id = 2 and lc_id <= 7'
+data = fetch(cv_train * cv_test & restr, '*');
 [data_train, v_lcid] = dj.struct.tabulate(data, 'train_mu_logl', 'lc_id');
 [data_test, v_lcid] = dj.struct.tabulate(data, 'test_mu_logl', 'lc_id');
 [contrasts, v_lc_id2] = dj.struct.tabulate(data, 'cv_contrast', 'lc_id');
