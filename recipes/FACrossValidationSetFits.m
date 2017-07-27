@@ -6,7 +6,7 @@ parpopulate(cd_dataset.FAContrastSessionDataSet);
 parpopulate(cd_dataset.FACrossValidationSets);
 
 % register FAContrastSessions as decoder trainset
-parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.FAContrastSessionDataSet" and decoder_id=1');
+parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.FAContrastSessionDataSet"');
 %% register FACVTrainSets as LC trainset
 parpopulate(cd_lc.LCTrainSets, 'lc_trainset_owner = "cd_dataset.FACVTrainSets"');
 
@@ -31,7 +31,7 @@ registerPair(cd_lc.LCTrainTestPairs, rel_test);
 %% now finally get onto training decoders and then LC models
 
 %% train all decoders
-parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.FAContrastSessionDataSet"');
+parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.FAContrastSessionDataSet" and decoder_id = 1');
 
 %% train all LC models
 parpopulate(cd_lc.TrainedLC, rel_train, 'lc_id <= 7');
