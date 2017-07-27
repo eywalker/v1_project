@@ -6,7 +6,7 @@ parpopulate(cd_dataset.FAContrastSessionDataSet);
 parpopulate(cd_dataset.FACrossValidationSets);
 
 % register FAContrastSessions as decoder trainset
-parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.FAContrastSessionDataSet"');
+parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.FAContrastSessionDataSet" and decoder_id=1');
 %% register FACVTrainSets as LC trainset
 parpopulate(cd_lc.LCTrainSets, 'lc_trainset_owner = "cd_dataset.FACVTrainSets"');
 
