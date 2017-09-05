@@ -1,7 +1,7 @@
 %% Make sure cd_dataset.ShuffleParams is populated
 
 % prepare simulated responses
-parpopulate(cd_dataset.SimulatedResponses);
+parpopulate(cd_dataset.SimulatedResponses, 'decoder_id=1');
 
 % register SimlatedResponses as decoder trainset
 parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.SimulatedResponses"');
