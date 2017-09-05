@@ -1,19 +1,23 @@
 %% Fetch data a monkey: subject_id= 3 for Leo and 21 for Tom
-key = [];
+key = 'subject_id = 3';
 
 cv_train = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels * cd_decoder.DecoderModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
 cv_test = pro((cd_dataset.CrossValidationSets & key) * cd_lc.LCModels * cd_decoder.DecoderModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
 sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
-modelNames = fetchn(cd_lc.LCModels, 'lc_label');
+% build the model names - robust to case of skipping lc_id
+modelNames = {}
+for m=fetch(cd_lc.LCModels, 'lc_label')'
+    modelNames{m.lc_id} = m.lc_label;
+end
 decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
-%% merge all primary keys except for lc_id, and decoder_id into
+%% merge all primary keys except for lc_id, and decoder_id into a single key
 pk = cv_train.primaryKey;
 filter = ~ismember(pk, {'lc_id', 'decoder_id'});
 pk = pk(filter);
 joint_id = pro(cv_train, sprintf('concat_ws("-", %s) -> joint_id',strjoin(pk, ',')));
 
-%% Fetch data using tabluate - bit hacky and not guaranteed to match
-restr = 'lc_id <= 7';
+%% Fetch data using tabulate with combined primary key
+restr = 'lc_id <= 7 and decoder_id = 1';
 data = fetch(cv_train * cv_test * joint_id & restr, '*');
 [data_train, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 [data_test, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
@@ -86,11 +90,13 @@ set(gca, 'xscale', 'log');
 xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
-%% Contrast vs. mean logL plot for trainset and teset with error bars based on difference w.r.t. target
-target = 1;
+%% Contrast vs. mean logL plot for trainset and teset with error bars based on difference w.r.t. a target model
 
-delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
-delta_test = bsxfun(@minus, testLL, testLL(:, target));
+% compare against this model
+target_model = 1;
+
+delta_train = bsxfun(@minus, trainLL, trainLL(:, target_model));
+delta_test = bsxfun(@minus, testLL, testLL(:, target_model));
 
 line_color = lines(length(modelNames));
 h = figure(2);
@@ -108,7 +114,7 @@ end
 
 x = logspace(-3, 0, 100);
 plot(x, ones(size(x)) * log(0.5), 'k--');
-title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target_model}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
@@ -125,7 +131,7 @@ for idx = 1:length(models_to_plot)
     hold on;
 end
 plot(x, ones(size(x)) * log(0.5), 'k--');
-title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target_model}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast');
 set(gca, 'xscale', 'log');
@@ -133,9 +139,9 @@ xlim([0.003, 1.2]);
 ylabel('Mean log likelihood');
 
 %% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
-target = 1;
-delta_train = bsxfun(@minus, trainLL, trainLL(:, target));
-delta_test = bsxfun(@minus, testLL, testLL(:, target));
+target_model = 1;
+delta_train = bsxfun(@minus, trainLL, trainLL(:, target_model));
+delta_test = bsxfun(@minus, testLL, testLL(:, target_model));
 
 line_color = lines_adj(length(modelNames), 1, [0.1, -0.3, 0.3]);
 h = figure(3);
@@ -154,7 +160,7 @@ end
 set(gca, 'fontsize', fs);
 x = logspace(-3, 0, 100);
 plot(x, zeros(size(x)), 'k--');
-title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target_model}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast (%)');
 set(gca, 'xscale', 'log');
@@ -174,7 +180,7 @@ for idx = 1:length(models_to_plot)
 end
 set(gca, 'fontsize', fs);
 plot(x, zeros(size(x)), 'k--');
-title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target}));
+title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target_model}));
 legend(modelNames(models_to_plot));
 xlabel('Contrast (%)');
 set(gca, 'xscale', 'log');
@@ -333,10 +339,10 @@ legend(h1, {'Test set (shuffled)'});
 %models_idx_plot = 1:length(modelNames);
 %NUM_MODELS = length(models_idx_plot);
 
-target = 3;
+target_model = 3;
 
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, target));
-dTestLL = bsxfun(@minus, testLL, testLL(:, target));
+dTrainLL = bsxfun(@minus, trainLL, trainLL(:, target_model));
+dTestLL = bsxfun(@minus, testLL, testLL(:, target_model));
 
 muDTestLL = nanmean(dTestLL);
 stdDTestLL = nanstd(dTestLL);
@@ -389,7 +395,7 @@ set(gca, 'FontName', font, 'FontSize', fs);
 xlim([0, right]);
 append = sprintf(': * is significant with p < %.2f', p_thr);
 legend([h1, h2], {['Train set' append], ['Test set' append]});
-ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{target}));
+ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{target_model}));
 rotateXLabels(gca, 90);
 %% bar plots for difference in test vs train w.r.t. the first
 
