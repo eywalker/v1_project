@@ -9,7 +9,7 @@ dataset_contrast    : varchar(128)           # contrast of the stimulus
 classdef FAContrastSessionDataSet < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = class_discrimination.SpikeCountSet;
+		popRel = class_discrimination.FASpikeCountSet;
 	end
 
 	methods(Access=protected)
