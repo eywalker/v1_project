@@ -7,7 +7,7 @@ model_correct: longblob          # indicates whether model choice was correct
 prop_correct: float              # proportion of correct trials
 %}
 
-classdef BinaryReadout < dj.Relvar & dj.AutoPopulate
+classdef BinaryReadout < dj.Computed
 
 	properties
 		popRel = pro(cd_lc.TrainedLC)

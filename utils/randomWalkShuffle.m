@@ -1,9 +1,12 @@
 function shuffledDataSet = randomWalkShuffle(dataSet, sigma, seed)
+    % shuffles the spikes for each unit across trials by randomly walking
+    % along orientation axis. 
+    
     if nargin < 3
         seed = 'shuffle';
     end
     if nargin < 2
-        binWidth = 0.5;
+        sigma = 0.5;
     end
     
     rng(seed, 'twister');

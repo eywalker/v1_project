@@ -1,9 +1,19 @@
 function shuffledDataSet = randomIndexWalkShuffle(dataSet, sigma, seed)
+    % For each electrode, let the spike counts randomly "walk" along the
+    % "rank" of the orientation axis. As a result, nearby orientation
+    % trials have higher chances of switching position with each other.
+    % Because it is the "position" within the sorted orientation that's
+    % getting shuffled, orientation with large number of repeats have less
+    % chance of switching to a different orientation bins. This method of
+    % shuffling effectively respects the density of data by "expanding"
+    % dense regions when walking. sigma is the standard deviation in units
+    % of rank.
+    
     if nargin < 3
         seed = 'shuffle';
     end
     if nargin < 2
-        binWidth = 0.5;
+        sigma = 0.5;
     end
     
     rng(seed, 'twister');

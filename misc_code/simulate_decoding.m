@@ -1,8 +1,15 @@
-s = 20;
-N = 25;
-t_c = linspace(-90,90,N);
-sigma = 50;
+% Create plots simulating decoding the stimulus from the activitiy 
+% population of Gaussian tuning curves responding to a single stimulus. 
+% Shows different results under two gain values on the resopnse
+% (e.g. contrast effect).
+
+s = 20; % stimulus value
+N = 25; % population size
+sigma = 50; % std of Gaussian tuning curve
 gains = [1000, 300];
+
+t_c = linspace(-90,90,N);
+
 figure;
 rng(560);
 for idxGain = 1:length(gains)

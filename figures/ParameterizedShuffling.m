@@ -17,7 +17,7 @@ testLL = mu_shuffled_kinds';
 %edges = arrayfun(@(x) prctile(all_contrasts, x), 0:10:100);
 %edges = [0, unique(edges), 1];
 %edges = 0.5*(edges(1:end-1) + edges(2:end));
-
+c = all_contrasts(:)';
 c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 edges = 0.5 * (c(1:end-1) + c(2:end));
 
@@ -303,7 +303,7 @@ model_number = 1;
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 
-ddLL = dTestLL - dTrainLL;
+ddLL = dTestLL - dTrainLL(:, 1:3);
 
 muDTestLL = mean(dTestLL);
 stdDTestLL = std(dTestLL);

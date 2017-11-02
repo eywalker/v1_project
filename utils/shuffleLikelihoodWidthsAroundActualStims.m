@@ -1,4 +1,7 @@
 function shuffledPLSet = shuffleLikelihoodWidthsAroundActualStims(plSet, binWidth, seed, binCenter)
+%SHUFFLELIKELIHOODWIDTHSAROUNDACTUALSTIMS Shuffle likelihood widths within
+%the binned stimulus orientation
+
     if nargin < 4
         binCenter = 0;
     end

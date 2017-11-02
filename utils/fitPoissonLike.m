@@ -1,6 +1,10 @@
 function [ orid_keys, h ] = fitPoissonLike(binWidth, dataSet)
-%FITPOISSONLIKE Summary of this function goes here
-%   Detailed explanation goes here
+%FITPOISSONLIKE Fits Poisson-like distribution kernel via pairwise logistic
+% methods
+%
+%   Given dataSet structure with orientation and counts fields, fit
+%   Poisson-like distribution kernel h(s) by performing pairwise logistic
+%   regression on counts of binned orientation.
 
 pos = dataSet.orientation >= 250 & dataSet.orientation <= 290;
 

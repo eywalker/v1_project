@@ -14,7 +14,7 @@ range_b                       : double   # Number of degrees with support for B
 classdiscriminationexperiment_ts=CURRENT_TIMESTAMP: timestamp# automatic timestamp. Do not edit
 %}
 
-classdef ClassDiscriminationExperiment < dj.Relvar & dj.AutoPopulate
+classdef ClassDiscriminationExperiment < dj.Computed
     properties
         popRel = acq.Stimulation('exp_type="ClassDiscrimination"') & stimulation.StimTrialGroup
     end

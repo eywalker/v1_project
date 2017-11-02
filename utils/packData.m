@@ -1,4 +1,6 @@
 function packedData = packData(dataSet)
+    % given a structure array, will "pack" field contents into a single
+    % element structure array with stacked field elements
     if length(dataSet) == 1
         packedData = dataSet;
         return;

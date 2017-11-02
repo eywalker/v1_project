@@ -117,7 +117,7 @@ legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
 
 
 %% plot the difference in model w.r.t the first
-model_number = ;
+model_number = 3;
 dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
 dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
 
@@ -175,7 +175,7 @@ for modelIdx = models_to_plot
     
     h2=bar(pos+width, muDTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
     errorbar(pos+width, muDTestLL(modelIdx), semDTestLL(modelIdx), 'k');
-    h = ttest(dTestLL(:, modelIdx))
+    h = ttest(dTestLL(:, modelIdx));
     if ~isnan(h) && h
         h = text(pos + width, muDTestLL(modelIdx) + 2*semDTestLL(modelIdx), '*');
         set(h, 'FontSize', 25);

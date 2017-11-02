@@ -1,10 +1,10 @@
 close all;
 N = 17;
 mu = linspace(220,320,N);
-G = 50
+G = 50;
 %mu = randn(1, N) * 50 + 270;
 sigma = 10;
-s_train = rand(1000, 1) * (320-220) + 220;
+%s_train = rand(1000, 1) * (320-220) + 220;
 s_train = randn(10000, 1)*5 + 270;
 delta = bsxfun(@minus, s_train(:), mu);
 f = bsxfun(@times, G, normpdf(delta, 0, sigma));

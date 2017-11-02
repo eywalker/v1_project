@@ -1,6 +1,5 @@
 function [adj_counts, corrected] = spikeFA(data)
     
-
     all_counts = [data.counts];
     all_contrasts = [data.contrast];
     u_cont = unique(all_contrasts);
