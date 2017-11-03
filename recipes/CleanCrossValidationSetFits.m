@@ -14,8 +14,8 @@ parpopulate(cd_lc.LCTrainSets, 'lc_trainset_owner = "cd_dataset.CleanCVTrainSets
 % regiser pairing between Contrast Session decoder trainset and CV
 % TrainSets as LC trainsets
 % Session LC trainset
-rel_train = pro(cd_decoder.DecoderTrainSets * cd_dataset.CleanContrastSessionDataSet) * ...
-    pro(cd_lc.LCTrainSets * cd_dataset.CleanCVTrainSets, 'cv_contrast -> dataset_contrast');
+rel_train = pro(cd_decoder.DecoderTrainSets * pro(cd_dataset.CleanContrastSessionDataSet, 'dataset_hash -> dec_trainset_hash')) * ...
+    pro(cd_lc.LCTrainSets *  pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash'), 'cv_contrast -> dataset_contrast');
 
 registerPair(cd_lc.LCTrainSetPairs, rel_train);
 %% register CVTestSets as LC testset
@@ -24,8 +24,8 @@ parpopulate(cd_lc.LCTestSets, 'lc_testset_owner = "cd_dataset.CleanCVTestSets"')
 
 % regiser pairing between CV TrainSets as LC trainsets and CV
 % TrainSets as LC testsets
-rel_test = pro(cd_lc.LCTrainSets * cd_dataset.CleanCVTrainSets) * ...
-    pro(cd_lc.LCTestSets * cd_dataset.CleanCVTestSets);
+rel_test = pro(cd_lc.LCTrainSets * pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash')) * ...
+    pro(cd_lc.LCTestSets * pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash'));
 registerPair(cd_lc.LCTrainTestPairs, rel_test);
 
 %% now finally get onto training decoders and then LC models
