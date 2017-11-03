@@ -18,7 +18,7 @@ classdef DataSets < dj.Relvar
             if ~ischar(owner) % if owner given as an object
                 owner = class(owner);
             end
-            assert(ismember('dj.Table', superclasses(owner)),...
+            assert(ismember('dj.Table', superclasses(owner)) | ismember('dj.internal.Table', superclasses(owner)) ,...
                 'Owner of the table must be a valid dj.Table derivative');
             hash = gethash(key);
             
