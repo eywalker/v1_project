@@ -8,13 +8,13 @@ cv_contrast: varchar(128)       # stimulus contrast
 classdef CleanCrossValidationSets < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = cd_dataset.CVParams * class_discrimination.CleanSpikeCountSet
+		popRel = cd_dataset.CVParams * class_discrimination.CSCLookup
 	end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-            data  = fetch(class_discrimination.SpikeCountTrials * class_discrimination.CSCLookup & class_discrimination.CleanSpikeCountTrials & key, '*');
+            data  = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.CSCLookup & class_discrimination.CleanSpikeCountTrials & key, '*');
             data = dj.struct.sort(data, 'trial_num');
             all_contrast = arrayfun(@num2str, [data.contrast], 'UniformOutput', false);
             unique_contrast = unique(all_contrast);

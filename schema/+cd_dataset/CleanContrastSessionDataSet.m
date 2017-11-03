@@ -1,6 +1,6 @@
 %{
 cd_dataset.CleanContrastSessionDataSet (computed) # data grouped by session and contrast
--> class_discrimination.CleanSpikeCountSet
+-> class_discrimination.CSCLookup
 dataset_contrast    : varchar(128)           # contrast of the stimulus
 -----
 -> cd_dataset.DataSets
@@ -9,13 +9,13 @@ dataset_contrast    : varchar(128)           # contrast of the stimulus
 classdef CleanContrastSessionDataSet < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = class_discrimination.CleanSpikeCountSet;
+		popRel = class_discrimination.CSCLookup;
 	end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key) 
-            data  = fetch(class_discrimination.ClassDiscriminationTrial & class_discrimination.CleanSpikeCountTrials & key, '*');
+            data  = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.CSCLookup & class_discrimination.CleanSpikeCountTrials & key, '*');
             all_contrast = arrayfun(@num2str, [data.contrast], 'UniformOutput', false);
             unique_contrast = unique(all_contrast);
             for i = 1:length(unique_contrast)
@@ -38,7 +38,7 @@ classdef CleanContrastSessionDataSet < dj.Relvar & dj.AutoPopulate
                 pack = true;
             end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
-            data = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials & class_discrimination.CleanSpikeCountTrials & self, '*');
+            data = fetch(class_discrimination.ClassDiscriminationTrial * class_discrimination.SpikeCountTrials * class_discrimination.CSCLookup  & class_discrimination.CleanSpikeCountTrials & self, '*');
             data = dj.struct.sort(data, 'trial_num');
             contrast = fetchn(self, 'dataset_contrast');
             all_contrast = arrayfun(@num2str, [data.contrast], 'UniformOutput', false);
