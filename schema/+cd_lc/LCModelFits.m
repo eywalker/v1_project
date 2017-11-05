@@ -32,7 +32,7 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
                 key = self;
             end
             decoder = getDecoder(cd_decoder.TrainedDecoder & key);
-            dataSet = fetchDataSet(cd_lc.LCTrainSets & key);
+            dataSet = fetchDataSet(cd_lc.LCTestSets & key);
             dataSet.decoder = decoder; % store the decoder
             dataSet.goodUnits = decoder.unitFilter(:);
             dataSet.totalCounts = sum(dataSet.counts, 1);
