@@ -1,5 +1,4 @@
 function setPath
-    
     base = fileparts(mfilename('fullpath'));
     addpath(base)
     addpath(fullfile(base, 'analysis'))
@@ -8,5 +7,6 @@ function setPath
     addpath(fullfile(base, 'recipes'))
     addpath(fullfile(base, 'figures'));
     addpath(fullfile(base, 'utils'));
+    addpath(fullfile(base, 'scripts'));
 end
 
