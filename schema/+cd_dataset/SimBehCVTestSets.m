@@ -28,7 +28,7 @@ classdef SimBehCVTestSets < dj.Relvar
                 pack = true;
             end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
-            data = fetchDataSet(cd_dataset.SimulatedBehavior & self);
+            data = fetchDataSet(cd_dataset.SimulatedBehavior & pro(self), false);
             info = fetch(self, '*');
             test_indices = info.test_indices;
             dataSet = data(test_indices);

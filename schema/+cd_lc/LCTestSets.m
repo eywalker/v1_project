@@ -25,9 +25,12 @@ classdef LCTestSets < dj.Relvar & dj.AutoPopulate
     end
     
     methods
-        function dataSet = fetchDataSet(self)
+        function dataSet = fetchDataSet(self, pack)
+            if nargin < 2
+                pack = true;
+            end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
-            dataSet = fetchDataSet(cd_dataset.DataSets & self);
+            dataSet = fetchDataSet(cd_dataset.DataSets & self, pack);
         end
     end
 end

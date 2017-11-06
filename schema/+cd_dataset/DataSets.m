@@ -39,7 +39,7 @@ classdef DataSets < dj.Relvar
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
             info = fetch(self, '*');
             table = eval(info.dataset_owner);
-            dataSet = fetchDataSet(table & self);
+            dataSet = fetchDataSet(table & self, pack);
             if pack
                 dataSet = packData(dataSet);
             end

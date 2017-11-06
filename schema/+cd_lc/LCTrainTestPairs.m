@@ -13,7 +13,7 @@ classdef LCTrainTestPairs < dj.Relvar
         function registerPair(self, keys)
             if ~isstruct(keys)
                 % a hack that's necessary for some unknown reason
-                keys = fetch(keys - keys & self);
+                keys = fetch(keys - self);
             end
             fields = {'lc_trainset_owner', 'lc_trainset_hash',...
                 'lc_testset_owner', 'lc_testset_hash'};

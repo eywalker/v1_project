@@ -19,19 +19,31 @@ classdef SimulatedBehavior < dj.Relvar & dj.AutoPopulate
             self.restrict(varargin{:});
         end
         
-        function dataset = fetchDataSet(self)
+        function dataSet = fetchDataSet(self, pack)
+            if nargin < 2
+                pack = true;
+            end
             assert(count(self)==1, 'Only can fetch one dataset at a time!');
             tuple = fetch(self);
-            [dataset, decoder, model] = getAll(cd_lc.TrainedLC & self);
+            
+            dataSet = fetchDataSet(cd_lc.LCTrainSets & pro(self), false);
+            [dset, decoder, model] = getAll(cd_lc.TrainedLC & pro(self));
             
             rng(tuple.simulation_seed, 'twister');
-            resp=model.classifyLikelihood(dataset);
-            dataset.selected_class = resp';
-            dataset.correct_response=strcmp(dataset.selected_class, dataset.stimulus_class);
-            isLeft = strcmp(dataset.correct_direction, 'Left');
-            choseLeft = dataset.correct_response == isLeft; % using notXOR trick to flip boolean if correct_response is false
-            [dataset.selected_direction{choseLeft}] = deal('Left');
-            [dataset.selected_direction{~choseLeft}] = deal('Right');
+            resp = model.classifyLikelihood(dset);
+            
+            [dataSet.selected_class] = deal(resp{:});
+            correct_response = strcmp(resp', {dataSet.stimulus_class});
+            cr_cell = num2cell(correct_response);
+            [dataSet.correct_response] = deal(cr_cell{:});
+            isLeft = strcmp({dataSet.correct_direction}, 'Left');
+            choseLeft = correct_response == isLeft; % using notXOR trick to flip boolean if correct_response is false
+            [dataSet(choseLeft).selected_direction] = deal('Left');
+            [dataSet(~choseLeft).selected_direction] = deal('Right');
+            
+            if pack
+                dataSet = packData(dataSet);
+            end
         end
     end
     
