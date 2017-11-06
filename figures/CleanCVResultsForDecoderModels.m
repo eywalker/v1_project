@@ -1,8 +1,13 @@
 %% Fetch data a monkey: subject_id= 3 for Leo and 21 for Tom
 key = 'subject_id = 21';
 restr = class_discrimination.CSCLookup & key;
-cv_train = pro((cd_dataset.CleanCrossValidationSets & restr) * cd_lc.LCModels * cd_decoder.DecoderModels, cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CleanCVTrainSets, 'avg(lc_train_mu_logl) -> train_mu_logl');
-cv_test = pro((cd_dataset.CleanCrossValidationSets & restr) * cd_lc.LCModels * cd_decoder.DecoderModels, cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CleanCVTestSets, 'avg(lc_test_mu_logl)->test_mu_logl');
+
+aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels;
+train_leaf =  cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CleanCVTrainSets;
+cv_train = pro(aggr_targets, train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl');
+
+test_leaf =  cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CleanCVTestSets;
+cv_test = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl');
 
 %%
 sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
