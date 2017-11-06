@@ -21,4 +21,4 @@ registerPair(cd_lc.LCTrainSetPairs, rel);
 parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet" and decoder_id = 1');
 %
 % train all LC models
-parpopulate(cd_lc.TrainedLC, rel);
+parpopulate(cd_lc.TrainedLC, rel, 'lc_id <=7');

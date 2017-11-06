@@ -12,7 +12,7 @@ cv_test = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl');
 %%
 sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
 % build the model names - robust to case of skipping lc_id
-modelNames = {}
+modelNames = {};
 for m=fetch(cd_lc.LCModels, 'lc_label')'
     modelNames{m.lc_id} = m.lc_label;
 end
@@ -25,17 +25,19 @@ joint_id = pro(cv_train, sprintf('concat_ws("-", %s) -> joint_id',strjoin(pk, ',
 
 %% Fetch data using tabulate with combined primary key
 restr = 'lc_id <= 7 and decoder_id = 1';
-data = fetch(cv_train * cv_test * joint_id & restr, '*');
+data = fetch(cv_train * cv_test * joint_id * class_discrimination.CSCLookup & restr, '*');
+
 [data_train, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 [data_test, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 assert(all(strcmp(v_jointid, v_jointid_c)) && all(v_lcid == v_lcid_c) && all(v_decid == v_decid_c));
+
 [all_contrasts, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(data, 'cv_contrast', 'joint_id', 'lc_id', 'decoder_id');
 assert(all(strcmp(v_jointid, v_jointid_c)) && all(v_lcid == v_lcid_c) && all(v_decid == v_decid_c));
-%[subjects, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(data, 'subject_id', 'joint_id', 'lc_id', 'decoder_id');
-%assert(all(strcmp(v_jointid, v_jointid_c)) && all(v_lcid == v_lcid_c) && all(v_decid == v_decid_c));
+[subjects, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(data, 'subject_id', 'joint_id', 'lc_id', 'decoder_id');
+assert(all(strcmp(v_jointid, v_jointid_c)) && all(v_lcid == v_lcid_c) && all(v_decid == v_decid_c));
 
 all_contrasts = cellfun(@str2num, all_contrasts(:, 1));
-%subjects = subjects(:, 1);
+subjects = subjects(:, 1);
 %% Construct labels and contrast edges
 
 % make trainLL and testLL num_sessions x num_models

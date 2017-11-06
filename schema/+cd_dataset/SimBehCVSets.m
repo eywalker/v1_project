@@ -16,7 +16,7 @@ classdef SimBehCVSets < dj.Relvar & dj.AutoPopulate
 
 		function makeTuples(self, key)
             data  = fetchDataSet(cd_dataset.SimulatedBehavior & key);
-            all_contrast = data.contrast;
+            all_contrast = arrayfun(@num2str, [data.contrast], 'UniformOutput', false);
             unique_contrast = unique(all_contrast);
             seed = key.cv_seed;
             rng(seed, 'twister');
@@ -27,7 +27,7 @@ classdef SimBehCVSets < dj.Relvar & dj.AutoPopulate
                 tuple.cv_contrast = c;
                 insert(self, tuple);
                 N = tuple.cv_n;
-                pos = find(all_contrast, c);
+                pos = find(strcmp(all_contrast, c));
                 trialInd = pos(randperm(length(pos)));
                 splits = round(linspace(0,length(pos),N+1));
                 fprintf('%d-way cross validation\n', N);
