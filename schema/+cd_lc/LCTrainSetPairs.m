@@ -12,7 +12,7 @@ classdef LCTrainSetPairs < dj.Relvar
         
         function registerPair(self, keys)
             if ~isstruct(keys)
-                keys = fetch(keys - keys & self);
+                keys = fetch(keys - self);
             end
             fields = {'dec_trainset_owner', 'dec_trainset_hash',...
                 'lc_trainset_owner', 'lc_trainset_hash'};

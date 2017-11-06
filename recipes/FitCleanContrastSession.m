@@ -18,7 +18,7 @@ registerPair(cd_lc.LCTrainSetPairs, rel);
 % now finally get onto training decoders and then LC models
 
 % train all decoders
-parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"');
+parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet" and decoder_id = 1');
 %
 % train all LC models
 parpopulate(cd_lc.TrainedLC, rel);
