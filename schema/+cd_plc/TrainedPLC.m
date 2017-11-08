@@ -30,7 +30,7 @@ classdef TrainedPLC < dj.Relvar & dj.AutoPopulate
                 plc_model = getPLC(cd_plc.PLCModels & key);
             end
             
-            [muLL, logl] = self.train(plc_model, key, 25);
+            [muLL, logl] = self.train(plc_model, key, 60);
             tuple.plc_trainset_size = length(logl);
             tuple.plc_train_mu_logl = muLL;
             tuple.plc_trained_config = plc_model.getModelConfigs();
