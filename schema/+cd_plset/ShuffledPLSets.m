@@ -10,7 +10,7 @@ source_plset_hash     : varchar(255)       # SHA-1 hash for the primary key of t
 classdef ShuffledPLSets < dj.Relvar & dj.AutoPopulate
 
 	properties
-        popRel = pro(cd_plset.PLSets & cd_plset.ContrastSessionPLSet, 'plset_owner -> source_plset_owner', 'plset_hash -> source_plset_hash') * cd_plset.PLShuffleParams;
+        popRel = pro(cd_plset.PLSets & cd_plset.CleanContrastSessionPLSet, 'plset_owner -> source_plset_owner', 'plset_hash -> source_plset_hash') * cd_plset.PLShuffleParams;
     end
     
     methods

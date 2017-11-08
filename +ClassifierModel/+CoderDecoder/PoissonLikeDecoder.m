@@ -1,6 +1,6 @@
 classdef PoissonLikeDecoder < handle
-    % POISSONLIKEDECODER Given spike data, returns can decode likelihood
-    % function over the stimulus
+    % POISSONLIKEDECODER Given spike data, returns decoded likelihood
+    % function over the stimulus based on Poisson-like distribution
     properties
         nbins; % number of bins to divide stimulus domain into
         w; % Poisson like kernel logistic weigths
@@ -11,17 +11,15 @@ classdef PoissonLikeDecoder < handle
     methods
         function obj = PoissonLikeDecoder(nbins)
             % Constructer for PoissonLikeCodec
-            if nargin > 0
-                obj.nbins = nbins;
-            else
-                obj.nbins = 10;
+            if nargin < 1
+                nbins = 10;
             end
+            obj.nbins = nbins;
         end
         
 
         
         function train(self, dataSet)
-
             counts = dataSet.counts;
             ori = dataSet.orientation;
             n_prc = self.nbins;
@@ -43,11 +41,8 @@ classdef PoissonLikeDecoder < handle
             end
 
             bincc = 0.5 * (binc(1:end-1) + binc(2:end));
-            
             self.w = w;
             self.bincc = bincc;
-            
-
         end
 
 %         function logLList = getLogLikelihood(self, stimulus, contrast, spikeCounts)

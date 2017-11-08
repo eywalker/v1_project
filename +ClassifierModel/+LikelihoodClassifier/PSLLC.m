@@ -26,14 +26,14 @@ classdef PSLLC < handle
         stimCenter; % center of class distributions
         priorA = 0.5; % prior for class 'A'
         alpha = 1; % posterior ratio power
-        lapseRate = 0;
+        lapseRate = 0; % lapase rate
         modelName = ''; 
         
-        params = {'priorA', 'lapseRate', 'alpha'};
-        fixedParams = false(1, 3);
+        params = {'priorA', 'lapseRate', 'alpha'}; % specification of parameter names
+        fixedParams = false(1, 3); % specifies which of the parameters should be "fixed" - non-trainable
         p_lb = [0, 0, 0]; % lower bound for parameters
         p_ub = [1, 1, Inf]; % upper bound for parameters
-        precompLogLRatio = true % set this to False to get logLRatio recomputed with parameter update
+        precompLogLRatio = true % set this to false to get logLRatio recomputed with parameter update
         
     end
     
@@ -58,6 +58,7 @@ classdef PSLLC < handle
                 modelName = 'PSLLC';
             end
             if nargin < 1
+                % defaults to the known experiment configuration
                 sigmaA = 3;
                 sigmaB = 15;
                 stimCenter = 270;
@@ -106,12 +107,6 @@ classdef PSLLC < handle
         function muLL = train(self, trainSet, nReps)%decodeOri, likelihood, classResp, nReps)
         % train Trains the model using the training dataset.
         % 
-        % Note that this train method will only train three parameters
-        % of priorA, alpha and lapseRate. If your specific model
-        % requires additional parameters whose value has to be
-        % optimized based on the dataset, then the model specific train
-        % method must be prepared and utilized.
-        %
             fprintf('Training %s', self.modelName);
             % TRAIN Trains the likelihood classifier to learn the model
             if nargin < 3
@@ -164,6 +159,7 @@ classdef PSLLC < handle
         end
         
         function fixParameterByName(self, field)
+        % Fix the parameter specified by the name field
             pos = find(strcmp(field, self.params));
             if ~isempty(pos)
                 self.fixedParams(pos) = true;
@@ -171,6 +167,7 @@ classdef PSLLC < handle
         end
         
         function releaseParameterByName(self, field)
+        % Release the parameter specified by the name field
             pos = find(strcmp(field, self.params));
             if ~isempty(pos)
                 self.fixedParams(pos) = false;
@@ -178,6 +175,7 @@ classdef PSLLC < handle
         end
             
         function setParameterFixMap(self, fmap)
+        % sets the entire parameter fix map
             assert(length(fmap) == length(self.params), 'Parameter fix map size must match the number of parameters!');
             self.fixedParams = logical(fmap);
         end
@@ -204,14 +202,18 @@ classdef PSLLC < handle
             paramSet.upperBounds = self.p_ub(~self.fixedParams);
         end
         
-        function x0 = getInitialGuess(self, nreps)
+        function x0 = getInitialGuess(self, nreps, infVal)
+            if nargin < 3
+                infVal = 100;
+            end
+            
             paramSet = self.getModelParameters();
             np = paramSet.numParameters;
             r = rand(np, nreps);
             lb = paramSet.lowerBounds(:);
             ub = paramSet.upperBounds(:);
-            ub(isinf(ub))=100;
-            lb(isinf(lb))=-100;
+            ub(isinf(ub))=infVal;
+            lb(isinf(lb))=-infVal;
 
             x0 = bsxfun(@plus, bsxfun(@times,(ub-lb),r), lb);
         end

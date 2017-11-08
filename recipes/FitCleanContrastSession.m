@@ -4,7 +4,7 @@
 parpopulate(cd_dataset.CleanContrastSessionDataSet);
 
 % register ContrastSessions as decoder trainset
-parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"');
+parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"', 'decoder_id = 1');
 
 % register ContrastSessions as LC trainset
 parpopulate(cd_lc.LCTrainSets, 'lc_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"');

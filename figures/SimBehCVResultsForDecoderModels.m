@@ -1,12 +1,5 @@
 %% Fetch data a monkey: subject_id= 3 for Leo and 21 for Tom
-aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels;
-train_leaf =  cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CleanCVTrainSets;
-cv_train = pro(aggr_targets, train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl');
 
-test_leaf =  cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * cd_dataset.CleanCVTestSets;
-cv_test = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl');
-
-%%
 sbsets=pro(cd_dataset.SimBehCVSets, 'lc_trainset_owner -> src_trainset_owner', 'lc_trainset_hash -> src_trainset_hash', 'lc_id -> src_id', '*');
 aggr_targets = sbsets * cd_lc.LCModels * cd_decoder.DecoderModels;
 
@@ -14,6 +7,22 @@ sbtrainsets=pro(cd_dataset.SimBehCVTrainSets, 'lc_trainset_owner -> src_trainset
 train_leaf =  cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * sbtrainsets;
 cv_train = pro(aggr_targets, train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl');
 
+sbtestsets=pro(cd_dataset.SimBehCVTestSets, 'lc_trainset_owner -> src_trainset_owner', 'lc_trainset_hash -> src_trainset_hash', 'lc_id -> src_id', '*');
+test_leaf =  cd_lc.LCModelFits * cd_lc.LCTestSets * cd_dataset.DataSets * sbtestsets;
+cv_test = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl');
+%%
+id3_score = pro(cv_train & 'lc_id=3', 'lc_id -> lc_id_3', 'train_mu_logl -> id3_logl');
+id7_score = pro(cv_train & 'lc_id=7', 'lc_id -> lc_id_7', 'train_mu_logl -> id7_logl');
+scores = fetch(id3_score * id7_score, '*');
+src3=[scores.src_id]==3;
+src7=[scores.src_id]==7;
+v3_src3 = [scores(src3).id3_logl];
+v7_src3 = [scores(src3).id7_logl];
+v3_src7 = [scores(src7).id3_logl];
+v7_src7 = [scores(src7).id7_logl];
+%%
+[h, p, ci] = ttest(v3_src3, v7_src3)
+[h, p, ci] = ttest(v3_src7, v7_src7)
 %%
 sessions = fetch(cd_dataset.CrossValidationSets & key, '*');
 % build the model names - robust to case of skipping lc_id
