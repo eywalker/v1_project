@@ -1,9 +1,9 @@
-original_fits=fetch((cd_lc.LCTrainSets * cd_dataset.ContrastSessionDataSet) * cd_lc.TrainedLC, '*');
+original_fits=fetch((cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.ContrastSessionDataSet) * cd_lc.TrainedLC, '*');
 [data_original,v_plc_id, v_trainset_hash]  = dj.struct.tabulate(original_fits, 'lc_train_mu_logl', 'lc_id' , 'lc_trainset_hash');
 [contrasts, v_hash] = dj.struct.tabulate(original_fits, 'dataset_contrast', 'lc_trainset_hash');
 all_contrasts = cellfun(@str2num, contrasts(:,1));
 %%
-shuffled_fits = fetch((cd_lc.LCTrainSets * pro(cd_dataset.ContrastSessionDataSet, 'dataset_hash -> source_dataset_hash', 'dataset_owner -> source_dataset_owner') * ...
+shuffled_fits = fetch((cd_lc.LCTrainSets * cd_dataset.DataSets * pro(cd_dataset.ContrastSessionDataSet, 'dataset_hash -> source_dataset_hash', 'dataset_owner -> source_dataset_owner') * ...
     cd_dataset.SCGroupedShuffledDataSets) * cd_lc.TrainedLC, '*');
 %%
 [data_shuffled, v_lc_id, v_hash, v_shuffle] = dj.struct.tabulate(shuffled_fits, 'lc_train_mu_logl', 'lc_id', 'source_dataset_hash', 'shuffle_method');
@@ -15,7 +15,6 @@ counts = nansum(~isnan(data_shuffled), 4);
 modelNames = fetchn(cd_lc.LCModels, 'lc_label');
 trainLL = data_original';
 testLL = mu_shuffled_kinds(:,:,3)';
-
 %% Contrast vs mean logL plot for non-shuffled and shuffled
 line_color = lines(length(modelNames));
 figure;
