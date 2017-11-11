@@ -13,7 +13,7 @@ plc_trainset_size   : int             # size of the trainset
 classdef PrevFitPLC < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = (cd_plc.PLCModels * cd_plc.PLCTrainSets) & cd_plc.TrainedPLC;
+		popRel = pro(cd_plc.PLCModels * cd_plc.PLCTrainSets) & pro(cd_plc.TrainedPLC);
 	end
 
 	methods(Access=protected)

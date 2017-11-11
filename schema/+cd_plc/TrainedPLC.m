@@ -40,7 +40,7 @@ classdef TrainedPLC < dj.Relvar & dj.AutoPopulate
     
     methods
         function model=getPLC(self)
-            assert(count(self)==1, 'You can only retrieve one decoder at a time');
+            assert(count(self)==1, 'You can only retrieve one PLC model at a time');
             info = fetch(self, '*');
             model = eval(info.plc_class);
             model.setModelConfigs(info.plc_trained_config);
