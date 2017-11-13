@@ -13,16 +13,18 @@ classdef PLCModels < dj.Relvar
             self.restrict(varargin{:});
         end
         
-        function new_id = registerPLC(self, model, config, label)
+        function new_id = registerPLC(self, label, model, config, new_id)
             if nargin < 4
-                label = '';
+                config = getModelConfigs(model);
             end
-
-            last_id = max(fetchn(cd_plc.PLCModels, 'plc_id'));
-            if isempty(last_id)
-                last_id = 0;
+            
+            if nargin < 5
+                last_id = max(fetchn(cd_plc.PLCModels, 'plc_id'));
+                if isempty(last_id)
+                    last_id = 0;
+                end
+                new_id = last_id + 1;
             end
-            new_id = last_id + 1;
             if ~ischar(model) % if owner given as an object
                 model = class(model);
             end
@@ -33,6 +35,7 @@ classdef PLCModels < dj.Relvar
             tuple.plc_label = label;
             insert(self, tuple);
         end
+       
         
         function model=getPLC(self)
             assert(count(self)==1, 'You can only retrieve one decoder at a time');
