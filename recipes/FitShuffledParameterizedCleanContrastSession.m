@@ -10,7 +10,6 @@ parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.Clean
 % train all decoders
 parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"', 'decoder_id = 1');
 
-
 % parameterize all contrast session sets
 parpopulate(cd_plset.CleanContrastSessionPLSet);
 
@@ -25,8 +24,8 @@ parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.CleanContrastSe
 parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"', restr);
 
 %%
-parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.CleanContrastSessionPLSet"', 'plc_id <=2');
-parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"', 'plc_id <= 2', pro(cd_plc.PLCTrainSets & restr));
+parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.CleanContrastSessionPLSet"', 'plc_id in (1, 2, 8, 9)');
+parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"', 'plc_id in (1, 2, 8, 9)', pro(cd_plc.PLCTrainSets & restr));
 
 %%
 % register shuffled sets as testset
@@ -38,4 +37,4 @@ pairs = pro(cd_plc.PLCTrainSets) * pro(cd_plc.PLCTestSets) * pro(cd_plset.Shuffl
 registerPair(cd_plc.PLCTrainTestPairs, pairs);
 
 % test the fits
-parpopulate(cd_plc.PLCTestFits, 'plc_id <=2');
+parpopulate(cd_plc.PLCTestFits, 'plc_id in (1, 2, 8, 9)');
