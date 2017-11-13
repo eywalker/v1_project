@@ -10,7 +10,7 @@ classdef PointPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             % deviation (sigmaA and sigmaB) and center (stimCenter) of two
             % distributions.
             if nargin < 5
-                pointExtractor = @ClassifierModel.fitGaussToLikelihood;
+                pointExtractor = @ClassifierModel.getMeanStd;
             end
             if nargin < 4
                 modelName = 'PointPSLLC';
