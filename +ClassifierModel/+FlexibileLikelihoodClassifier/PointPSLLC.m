@@ -37,10 +37,13 @@ classdef PointPSLLC < ClassifierModel.FlexibileLikelihoodClassifier.PSLLC
     
     methods (Access = protected)
         function [logLRatio, dataStruct] = getLogLRatio(self, dataStruct)
-            if isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood')
+            if isfield(dataStruct, 's_hat')
+                s_hat = dataStruct.s_hat;
+            elseif isfield(dataStruct, 'decodeOri') && isfield(dataStruct, 'likelihood')
                 decodeOri = dataStruct.decodeOri;
                 likelihood = dataStruct.likelihood;
                 s_hat = self.pointExtractor(decodeOri, likelihood);% extract center and width of the likelihood function
+                dataStruct.s_hat = s_hat;
             elseif isfield(dataStruct, 'likelihood_peak')
                 s_hat = dataStruct.likelihood_peak;
             end

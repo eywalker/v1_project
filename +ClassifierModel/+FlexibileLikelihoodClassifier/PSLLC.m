@@ -29,6 +29,7 @@ classdef PSLLC < handle
         fixedParams = [true, true, false, false, false, false]; % specifies which of the parameters should be "fixed" - non-trainable
         p_lb = [0, 0, 190, 0, 0, 0]; % lower bound for parameters
         p_ub = [Inf, Inf, 350, 1, 1, Inf]; % upper bound for parameters
+        initializer;
         precompLogLRatio = false % set this to false to get logLRatio recomputed with parameter update
         
     end
@@ -63,6 +64,8 @@ classdef PSLLC < handle
             obj.sigmaB = sigmaB;
             obj.stimCenter = stimCenter;
             obj.modelName = modelName;
+            obj.initializer = [];
+            obj.initializer.stimCenter = @(n) randn(1, n) * 5 + 270;
         end
         
         function pA = pRespA(self, dataStruct)
@@ -141,6 +144,7 @@ classdef PSLLC < handle
             for i = 1 : nReps
                 fprintf('.');
                 x0 = x0set(:, i);
+                %fprintf('Starting to train...\n')
                 
                 [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
@@ -192,6 +196,7 @@ classdef PSLLC < handle
             % model parameters needed for optimization/training
             paramSet = [];
             p_set = self.params(~self.fixedParams);
+            paramSet.names = p_set;
             paramSet.numParameters = length(p_set);
             paramSet.values = cellfun(@(x) self.(x), p_set);
             paramSet.lowerBounds = self.p_lb(~self.fixedParams);
@@ -212,6 +217,14 @@ classdef PSLLC < handle
             lb(isinf(lb))=-infVal;
 
             x0 = bsxfun(@plus, bsxfun(@times,(ub-lb),r), lb);
+            
+            % if special initializer exists, use that instead
+            for i=1:np
+                fname = paramSet.names{i};
+                if isfield(self.initializer, fname)
+                    x0(i, :) = self.initializer.(fname)(nreps);
+                end
+            end
         end
         
 

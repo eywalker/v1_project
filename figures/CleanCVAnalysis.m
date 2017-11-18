@@ -1,3 +1,22 @@
+train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl');
+test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl');
+aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels;
+
+
+%% merge all primary keys except for lc_id and decoder_id into a single key
+pk = aggr_targets.primaryKey;
+filter = ~ismember(pk, {'lc_id', 'decoder_id'});
+pk = pk(filter);
+joint_id = pro(aggr_targets, sprintf('concat_ws("-", %s) -> joint_id', strjoin(pk, ',')));
+
+results = pro(aggr_targets, train_leaf * test_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl', 'avg(lc_test_mu_logl) -> test_mu_logl');
+data = fetch(results * joint_id * class_discrimination.CSCLookup, '*');
+
+
+%% Tabulate into contrast-sessions x decoder_id x lc_id
+[trainData, v_session, v_decoder, v_lc] = dj.struct(data, 'train_mu_logl', 'joint_id', 'decoder_id', 'lc_id');
+[dj.struct(data, 'test_mu_logl', 'joint_id', 'decoder_id', 'lc_id')
+
 %% Fetch data for a monkey: subject_id= 3 for Leo and 21 for Tom
 aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels;
 train_leaf =  cd_lc.TrainedLC * cd_lc.LCTrainSets * cd_dataset.DataSets * cd_dataset.CleanCVTrainSets;
@@ -23,7 +42,7 @@ for m=fetch(cd_lc.LCModels, 'lc_label')'
 end
 decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
 %% merge all primary keys except for lc_id and decoder_id into a single key
-pk = cv_train.primaryKey;
+pk = data.primaryKey;
 filter = ~ismember(pk, {'lc_id', 'decoder_id'});
 pk = pk(filter);
 joint_id = pro(cv_train, sprintf('concat_ws("-", %s) -> joint_id',strjoin(pk, ',')));
