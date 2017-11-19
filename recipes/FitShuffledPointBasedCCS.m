@@ -3,28 +3,30 @@
 % get all contrast sessions
 parpopulate(cd_dataset.CleanContrastSessionDataSet);
 
-
-% register ContrastSessions as decoder trainset
+% register CleanContrastSessions as decoder trainset
 parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"');
 
 % train all decoders
 parpopulate(cd_decoder.TrainedDecoder, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"', 'decoder_id = 1');
 
-% parameterize all contrast session sets
-parpopulate(cd_plset.CleanContrastSessionPLSet);
+% train all point decoders
+parpopulate(cd_point.PointDecoderModels, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"');
 
-% shuffle up all contrast session sets
-rel = pro(cd_plset.CleanContrastSessionPLSet, 'plset_owner -> source_plset_owner', 'plset_hash -> source_plset_hash');
+% parameterize all point based CCS  sets
+parpopulate(cd_plset.PointDecodedCCSPLSet);
+
+% shuffle up all point based CCS sets
+rel = pro(cd_plset.PointDecodedCCSPLSet, 'plset_owner -> source_plset_owner', 'plset_hash -> source_plset_hash');
 
 parpopulate(cd_plset.ShuffledPLSets, rel);
 restr = cd_plset.PLSets & (cd_plset.ShuffledPLSets & rel);
 %%
 % register both contrast sessions and shuffled PLsets as the trainset for PLC
-parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.CleanContrastSessionPLSet"');
+parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.PointDecodedCCSPLSet"');
 parpopulate(cd_plc.PLCTrainSets, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"', restr);
 
 %%
-parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.CleanContrastSessionPLSet"', 'plc_id in (1, 2, 8, 9, 10)');
+parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.PointDecodedCCSPLSet"', 'plc_id in (1, 2, 8, 9, 10)');
 parpopulate(cd_plc.TrainedPLC, 'plc_trainset_owner = "cd_plset.ShuffledPLSets"', 'plc_id in (1, 2, 8, 9, 10)', pro(cd_plc.PLCTrainSets & restr));
 
 %%

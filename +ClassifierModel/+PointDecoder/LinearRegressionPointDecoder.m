@@ -22,7 +22,7 @@ classdef LinearRegressionPointDecoder < handle
             % Decode Takes in spikes counds and decode stimulus
             counts = [dataSet.counts];
             counts(end+1, :) = 1; % extend for bias
-            shat = self.weights' * counts;
+            shat = self.weights(:)' * counts;
         end
         
         function mse = train(self, dataSet)
@@ -30,7 +30,7 @@ classdef LinearRegressionPointDecoder < handle
             counts(end+1, :) = 1; % extend for bias
             orientation = [dataSet.orientation];
             self.weights = counts' \ orientation';
-            mse = mean((orientation - self.weights' * counts).^2);
+            mse = mean((orientation - self.weights(:)' * counts).^2);
         end
         
         function configSet = getModelConfigs(self)

@@ -3,4 +3,5 @@ CleanCrossValidationSetFits;
 FitCleanContrastSession;
 RunCleanSimulationCV;
 FitShuffledParameterizedCleanContrastSession;
+FitShuffledPointBasedCCS;
 quit;
