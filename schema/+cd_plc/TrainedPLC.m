@@ -47,8 +47,8 @@ classdef TrainedPLC < dj.Relvar & dj.AutoPopulate
         end
         
         function [muLL, logl] = train(self, plc_model, key, n)
-            
             plSet = fetchPLSet(cd_plc.PLCTrainSets & key);
+            plSet.key = key;
             plc_model.train(plSet, n);
             [muLL, logl] = plc_model.getLogLikelihood(plSet);
         end

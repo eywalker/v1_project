@@ -8,7 +8,7 @@ lc_class    : varchar(255)   # class name for the likelihood classifier
 lc_label='' : varchar(255)   # descriptor for the model
 lc_trained_config   : longblob       # structure for configuring the model
 lc_train_mu_logl   : double          # mean log likelihood
-lc_trainset_size : int                  # size of the trainset
+lc_trainset_size : int               # size of the trainset
 %}
 
 classdef TrainedLC < dj.Relvar & dj.AutoPopulate
@@ -62,8 +62,11 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
         
         function [dataSet, decoder] = getDataSet(self, key)
             if nargin < 2
-                key = self;
+                key = pro(self);
             end
+                
+            key = fetch(self & key);
+            
             decoder = getDecoder(cd_decoder.TrainedDecoder & key);
             dataSet = fetchDataSet(cd_lc.LCTrainSets & key);
             dataSet.decoder = decoder; % store the decoder
@@ -74,6 +77,7 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
             dataSet.decodeOri = decodeOri;
             dataSet.likelihood = L;
+            dataSet.key = key;
         end
         
         function retrain(self, keys, N)
