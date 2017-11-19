@@ -62,10 +62,8 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
         
         function [dataSet, decoder] = getDataSet(self, key)
             if nargin < 2
-                key = pro(self);
+                key = fetch(self);
             end
-                
-            key = fetch(self & key);
             
             decoder = getDecoder(cd_decoder.TrainedDecoder & key);
             dataSet = fetchDataSet(cd_lc.LCTrainSets & key);
