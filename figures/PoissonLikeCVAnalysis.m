@@ -1,7 +1,9 @@
-restr = 'decoder_id = 1';
-train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl');
-test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl');
-aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels & restr;
+restr = 'decoder_id = 2';
+train_leaf = pro(cd_dataset.FACVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl');
+test_leaf = pro(cd_dataset.FACVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl');
+aggr_targets = cd_dataset.FACrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels & restr;
+
+
 
 %% merge all primary keys except for lc_id and decoder_id into a single key
 pk = aggr_targets.primaryKey;
@@ -28,8 +30,6 @@ decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
 %% Fetch data using tabulate with combined primary key
 
 [trainLL, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(train_data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
-[testLL, v_jointid_test, v_lcid_test, v_decid_test] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
-
 %[testLL, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 
 all_contrasts = dj.struct.tabulate(train_data, 'cv_contrast', 'joint_id', 'lc_id', 'decoder_id');
@@ -60,146 +60,15 @@ NUM_MODELS = length(models_to_plot);
 fs = 14;
 fs_title = 16;
 font = 'Arial';
-
-%% Performance comparison grid
-
-models_to_plot = [24, 32];
-nModels = length(models_to_plot);
-vmax = max(trainLL(:)) + 0.01;
-
-for subjIdx = 1:length(uniqueSubj)
-    subj = uniqueSubj(subjIdx);
-    sessMatch = (subjects == subj);
-    
-    muLL = mean(trainLL(sessMatch, :), 1);
-    
-    h = figure;
-    set(h, 'name',  sprintf('Train Set Model comparisons for Subject %d', subj));
-
-    for row=1:nModels
-        for col=1:nModels
-            rowModel = models_to_plot(row);
-            colModel = models_to_plot(col);
-            posRow = find(v_lcid == rowModel);
-            posCol = find(v_lcid == colModel);
-            if isempty(posRow) || isempty(posCol)
-                continue;
-            end
-            
-            subplot(nModels, nModels, (row-1)*nModels + col);
-            
-            if row < col
-                axis off;
-%                 rowV = muLL(posRow);
-%                 colV = muLL(posCol);
-%                 bar([rowV, colV]);
-                continue;
-            elseif row == col
-                [mu, s, n, binc] = nanBinnedStats(contrast(sessMatch), trainLL(sessMatch, posRow), edges);
-                p = '-';
-                errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
-                hold on;
-                x = logspace(-3, 0, 100);
-                plot(x, ones(size(x)) * log(0.5), 'k--');
-                title(modelNames(colModel));
-                xlabel('Contrast');
-                set(gca, 'xscale', 'log');
-                xlim([0.003, 1.2]);
-                ylabel('Mean log likelihood');
-                ylim([log(0.5), -0.3]);
-            else
-
-                % on lower left, show scatter plot
-                
-                scatter(trainLL(sessMatch, posCol), trainLL(sessMatch, posRow), [], contrast(sessMatch));
-                [h, p, ci] = ttest(trainLL(sessMatch, posCol), trainLL(sessMatch, posRow));
-                xlabel(modelNames(colModel));
-                ylabel(modelNames(rowModel));
-                hold on;
-                x = linspace(log(0.5), vmax);
-                plot(x, x, '--r');
-                if row ~= col
-                    title(sprintf('p-val = %.3f', p));
-                end
-                xlim([log(0.5), vmax]);
-                ylim([log(0.5), vmax]);
-                
-            end
-        end
-    end
-end
-
-for subjIdx = 1:length(uniqueSubj)
-    subj = uniqueSubj(subjIdx);
-    sessMatch = (subjects == subj);
-    
-    muLL = mean(trainLL(sessMatch, :), 1);
-    
-    h = figure;
-    set(h, 'name',  sprintf('Test Set Model comparisons for Subject %d', subj));
-
-    for row=1:nModels
-        for col=1:nModels
-            rowModel = models_to_plot(row);
-            colModel = models_to_plot(col);
-            posRow = find(v_lcid_test == rowModel);
-            posCol = find(v_lcid_test == colModel);
-            if isempty(posRow) || isempty(posCol)
-                continue;
-            end
-            
-            subplot(nModels, nModels, (row-1)*nModels + col);
-            
-            if row < col
-                axis off;
-%                 rowV = muLL(posRow);
-%                 colV = muLL(posCol);
-%                 bar([rowV, colV]);
-                continue;
-            elseif row == col
-                [mu, s, n, binc] = nanBinnedStats(contrast(sessMatch), testLL(sessMatch, posRow), edges);
-                p = '-';
-                errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
-                hold on;
-                x = logspace(-3, 0, 100);
-                plot(x, ones(size(x)) * log(0.5), 'k--');
-                title(modelNames(colModel));
-                xlabel('Contrast');
-                set(gca, 'xscale', 'log');
-                xlim([0.003, 1.2]);
-                ylabel('Mean log likelihood');
-                ylim([log(0.5), -0.3]);
-            else
-
-                % on lower left, show scatter plot
-                
-                scatter(testLL(sessMatch, posCol), testLL(sessMatch, posRow), [], contrast(sessMatch));
-                [h, p, ci] = ttest(testLL(sessMatch, posCol), testLL(sessMatch, posRow));
-                xlabel(modelNames(colModel));
-                ylabel(modelNames(rowModel));
-                hold on;
-                x = linspace(log(0.5), vmax);
-                plot(x, x, '--r');
-                if row ~= col
-                    title(sprintf('p-val = %.3f', p));
-                end
-                xlim([log(0.5), vmax]);
-                ylim([log(0.5), vmax]);
-                
-            end
-        end
-    end
-end
-
 %% Contrast vs. mean logL plot for training set
-models_to_plot = [1, 24, 7, 32];
+
 line_color = lines(length(models_to_plot));
 h = figure(1);
 set(h, 'name',  'Fit vs Contrast');
 
 for subjIdx = 1:length(uniqueSubj)
     subj = uniqueSubj(subjIdx);
-    subplot(2, length(uniqueSubj), subjIdx);
+    subplot(1, length(uniqueSubj), subjIdx);
     for idx = 1:length(models_to_plot)
         modelID = models_to_plot(idx);
         pos = find(v_lcid == modelID);
@@ -223,101 +92,124 @@ for subjIdx = 1:length(uniqueSubj)
     xlim([0.003, 1.2]);
     ylabel('Mean log likelihood');
     ylim([log(0.5), -0.3]);
-    
-    subplot(2, length(uniqueSubj), length(uniqueSubj) + subjIdx);
-    for idx = 1:length(models_to_plot)
-        modelID = models_to_plot(idx);
-        pos = find(v_lcid_test == modelID);
-        if isempty(pos)
-            continue;
-        end
-        sessMatch = (subjects == subj);
-        
-        [mu, s, n, binc] = nanBinnedStats(contrast(sessMatch), testLL(sessMatch, pos), edges);
-        p = '-';
-        errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
-        hold on;
-    end
-
-    x = logspace(-3, 0, 100);
-    plot(x, ones(size(x)) * log(0.5), 'k--');
-    title(sprintf('Fit on test set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
-    xlabel('Contrast');
-    set(gca, 'xscale', 'log');
-    xlim([0.003, 1.2]);
-    ylabel('Mean log likelihood');
-    ylim([log(0.5), -0.3]);
 
 end
+% %%
+% subplot(1, 2, 2);
+% for idx = 1:length(models_to_plot)
+%     idxModel = models_to_plot(idx);
+%     [mu, s, n, binc] = nanBinnedStats(all_contrasts, testLL(:, idxModel), edges);
+%     p = '-';
+%     errorbar(binc, mu, s./sqrt(n),p, 'color', line_color(idx, :));
+%     hold on;
+% end
+% plot(x, ones(size(x)) * log(0.5), 'k--');
+% title('Fit on test set vs contrast');
+% legend(modelNames(models_to_plot));
+% xlabel('Contrast');
+% set(gca, 'xscale', 'log');
+% xlim([0.003, 1.2]);
+% ylabel('Mean log likelihood');
+
 %% Contrast vs. mean logL plot for trainset and teset with error bars based on difference w.r.t. a target model
-models_to_plot = [1:7];
+
 % compare against this model
 target_model = 1;
 
-posTrain = find(v_lcid == target_model);
-delta_train = bsxfun(@minus, trainLL, trainLL(:, posTrain));
+delta_train = bsxfun(@minus, trainLL, trainLL(:, target_model));
+delta_test = bsxfun(@minus, testLL, testLL(:, target_model));
 
-posTest = find(v_lcid_test == target_model);
-delta_test = bsxfun(@minus, testLL, testLL(:, posTest));
+line_color = lines_adj(length(modelNames), 1, [0.1, -0.3, 0.3]);
+h = figure(2);
+set(h, 'name',  'Fit vs Contrast with SEM relative to target');
+subplot(1, 2, 1);
 
-line_color = lines(length(models_to_plot));
-h = figure(1);
-set(h, 'name',  'Fit vs Contrast');
-
-for subjIdx = 1:length(uniqueSubj)
-    subj = uniqueSubj(subjIdx);
-    subplot(2, length(uniqueSubj), subjIdx);
-    for idx = 1:length(models_to_plot)
-        modelID = models_to_plot(idx);
-        pos = find(v_lcid == modelID);
-        if isempty(pos)
-            continue;
-        end
-        sessMatch = (subjects == subj);
-        [~, s, n, binc] = nanBinnedStats(contrast(sessMatch), delta_train(sessMatch, idxModel), edges);
-        [mu] = nanBinnedStats(contrast(sessMatch), trainLL(sessMatch, pos), edges);
-        p = '-';
-        errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
-        hold on;
-    end
-
-    x = logspace(-3, 0, 100);
-    plot(x, ones(size(x)) * log(0.5), 'k--');
-    title(sprintf('Fit on train set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
-    xlabel('Contrast');
-    set(gca, 'xscale', 'log');
-    xlim([0.003, 1.2]);
-    ylabel('Mean log likelihood');
-    ylim([log(0.5), -0.3]);
-    
-    subplot(2, length(uniqueSubj), length(uniqueSubj) + subjIdx);
-    for idx = 1:length(models_to_plot)
-        modelID = models_to_plot(idx);
-        pos = find(v_lcid_test == modelID);
-        if isempty(pos)
-            continue;
-        end
-        sessMatch = (subjects == subj);
-        [~, s, n, binc] = nanBinnedStats(contrast(sessMatch), delta_test(sessMatch, idxModel), edges);
-        [mu] = nanBinnedStats(contrast(sessMatch), testLL(sessMatch, pos), edges);
-        p = '-';
-        errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
-        hold on;
-    end
-
-    x = logspace(-3, 0, 100);
-    plot(x, ones(size(x)) * log(0.5), 'k--');
-    title(sprintf('Fit on test set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
-    xlabel('Contrast');
-    set(gca, 'xscale', 'log');
-    xlim([0.003, 1.2]);
-    ylabel('Mean log likelihood');
-    ylim([log(0.5), -0.3]);
-
+for idx = 1:length(models_to_plot)
+    idxModel = models_to_plot(idx);
+    [mu] = nanBinnedStats(all_contrasts, trainLL(:, idxModel), edges);
+    [~, s, n, binc] = nanBinnedStats(all_contrasts, delta_train(:, idxModel), edges);
+    p = '-';
+    errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
+    hold on;
 end
+
+x = logspace(-3, 0, 100);
+plot(x, ones(size(x)) * log(0.5), 'k--');
+title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target_model}));
+legend(modelNames(models_to_plot));
+xlabel('Contrast');
+set(gca, 'xscale', 'log');
+xlim([0.003, 1.2]);
+ylabel('Mean log likelihood');
+
+subplot(1, 2, 2);
+for idx = 1:length(models_to_plot)
+    idxModel = models_to_plot(idx);
+    [mu] = nanBinnedStats(all_contrasts, testLL(:, idxModel), edges);
+    [~, s, n, binc] = nanBinnedStats(all_contrasts, delta_test(:, idxModel), edges);
+    p = '-';
+    errorbar(binc, mu, s./sqrt(n),p, 'color', line_color(idx, :));
+    hold on;
+end
+plot(x, ones(size(x)) * log(0.5), 'k--');
+title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target_model}));
+legend(modelNames(models_to_plot));
+xlabel('Contrast');
+set(gca, 'xscale', 'log');
+xlim([0.003, 1.2]);
+ylabel('Mean log likelihood');
+
+%% Contrast vs. mean logL plot for non-shuffled and shuffled with error bars based on difference w.r.t. target
+target_model = 1;
+delta_train = bsxfun(@minus, trainLL, trainLL(:, target_model));
+delta_test = bsxfun(@minus, testLL, testLL(:, target_model));
+
+line_color = lines_adj(length(modelNames), 1, [0.1, -0.3, 0.3]);
+h = figure(3);
+clf;
+set(h, 'name',  'Difference in fit relative to target vs. Contrast');
+subplot(1, 2, 1);
+
+for idx = 1:length(models_to_plot)
+    idxModel = models_to_plot(idx);
+    [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta_train(:, idxModel), edges);
+    p = '-';
+    errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idxModel, :), 'linewidth', 2);
+    hold on;
+end
+
+set(gca, 'fontsize', fs);
+x = logspace(-3, 0, 100);
+plot(x, zeros(size(x)), 'k--');
+title(sprintf('Fit on train set vs contrast relative to %s', modelNames{target_model}));
+legend(modelNames(models_to_plot));
+xlabel('Contrast (%)');
+set(gca, 'xscale', 'log');
+set(gca, 'xtick', 0.01*[0.1, 1, 10, 100]);
+set(gca, 'xticklabel', [0.1, 1, 10, 100]);
+xlim([0.003, 1.2]);
+ylim([-0.01, 0.07]);
+ylabel('Mean log likelihood');
+
+subplot(1, 2, 2);
+for idx = 1:length(models_to_plot)
+    idxModel = models_to_plot(idx);
+    [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta_test(:, idxModel), edges);
+    p = '-';
+    errorbar(binc, mu, s./sqrt(n),p, 'color', line_color(idxModel, :), 'linewidth', 2);
+    hold on;
+end
+set(gca, 'fontsize', fs);
+plot(x, zeros(size(x)), 'k--');
+title(sprintf('Fit on test set vs contrast relative to %s', modelNames{target_model}));
+legend(modelNames(models_to_plot));
+xlabel('Contrast (%)');
+set(gca, 'xscale', 'log');
+xlim([0.003, 1.2]);
+set(gca, 'xtick', 0.01*[0.1, 1, 10, 100]);
+set(gca, 'xticklabel', [0.1, 1, 10, 100]);
+ylim([-0.01, 0.07]);
+ylabel('Mean log likelihood');
 
 %% Plot the difference between train and test
 %models_to_plot = 1:7;
@@ -346,62 +238,17 @@ for idx = 1:NUM_MODELS
 end
 
 %% bar plots for average log likelihood across contrast
-models_to_plot = [1:7, 24:32];
+%models_to_plot = 1:7;
 %NUM_MODELS = length(models_to_plot);
 
-muTestLL = nanmean(testLL, 1);
-muTrainLL = nanmean(trainLL, 1);
+muTestLL = nanmean(testLL);
+muTrainLL = nanmean(trainLL);
 
-% delta = testLL - trainLL;
-% stdDelta = std(delta);
-% semDelta = stdDelta ./ sqrt(size(delta, 1));
+delta = testLL - trainLL;
+stdDelta = std(delta);
+semDelta = stdDelta ./ sqrt(size(delta, 1));
 
-h = figure;
-set(h, 'name',  'Average log likelihood across contrast');
-
-width = 2;
-space = 0.5;
-left = space/2 + width/2;
-for idx = 1:length(models_to_plot)
-    modelId = models_to_plot(idx);
-    modelPos = find(v_lcid == modelId);
-    
-    pos = (idx-1)*(2*width + space) + left;
-    h1 = bar(pos, muTrainLL(modelPos), width);
-    hold on;
-    
-    %h2 = bar(pos+width, muTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
-%     errorbar(pos+width, muTestLL(modelIdx), semDelta(modelIdx), 'k');
-%     tresult = ttest(delta(:, modelIdx));
-%     if ~isnan(tresult) && tresult
-%         hText = text(pos + width, muTestLL(modelIdx) - 0.01, '*');
-%         set(hText, 'FontSize', 25);
-%     end
-end
-%%
-%legend([h1, h2], {'Train set', 'Test set'});
-right = (space + 2 * width) * NUM_MODELS;
-pos = (2*width + space) * [0:NUM_MODELS-1] + left + width/2;
-set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames);
-xlim([0, right]);
-ylabel('Mean loglikelihood');
-rotateXLabels(gca,90);
-
-
-
-%% bar plots for average log likelihood across contrast
-models_to_plot = [1:7, 24:32];
-%NUM_MODELS = length(models_to_plot);
-
-muTestLL = nanmean(testLL, 1);
-muTrainLL = nanmean(trainLL, 1);
-
-% delta = testLL - trainLL;
-% stdDelta = std(delta);
-% semDelta = stdDelta ./ sqrt(size(delta, 1));
-
-h = figure;
+h = figure(5);
 set(h, 'name',  'Average log likelihood across contrast');
 
 width = 2;
@@ -413,13 +260,13 @@ for idx = 1:NUM_MODELS
     h1 = bar(pos, muTrainLL(modelIdx), width);
     hold on;
     
-    h2 = bar(pos+width, muTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
-%     errorbar(pos+width, muTestLL(modelIdx), semDelta(modelIdx), 'k');
-%     tresult = ttest(delta(:, modelIdx));
-%     if ~isnan(tresult) && tresult
-%         hText = text(pos + width, muTestLL(modelIdx) - 0.01, '*');
-%         set(hText, 'FontSize', 25);
-%     end
+    h2=bar(pos+width, muTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
+    errorbar(pos+width, muTestLL(modelIdx), semDelta(modelIdx), 'k');
+    h = ttest(delta(:, modelIdx));
+    if ~isnan(h) && h
+        h = text(pos + width, muTestLL(modelIdx) - 0.01, '*');
+        set(h, 'FontSize', 25);
+    end
 end
 legend([h1, h2], {'Train set', 'Test set'});
 right = (space + 2 * width) * NUM_MODELS;

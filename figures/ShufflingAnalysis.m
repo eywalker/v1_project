@@ -21,7 +21,7 @@ modelNames = fetchn(cd_lc.LCModels & tuple, 'lc_label');
 
 %% Plot shuffled vs not-shuffled
 %edges = logspace(-4, 0, 8);
-filter = cv > 0.005;
+filter = cv > 0.002;
 edges = prctile(cv(filter), linspace(0, 100, 6));
 edges(1) = edges(1) - 0.001;
 edges(end) = edges(end) + 0.001;
