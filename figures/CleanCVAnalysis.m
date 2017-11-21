@@ -319,305 +319,68 @@ for subjIdx = 1:length(uniqueSubj)
 
 end
 
-%% Plot the difference between train and test
-%models_to_plot = 1:7;
-%NUM_MODELS = length(models_to_plot);
-
-h = figure(4);
-set(h, 'name',  'Difference in fit: test - train');
-delta = testLL - trainLL;
-
-ROW = ceil(sqrt(NUM_MODELS));
-COL = ceil(NUM_MODELS / ROW);
-
-for idx = 1:NUM_MODELS
-    subplot(ROW, COL, idx);
-    modelIdx = models_to_plot(idx);
-    [mu, s, n, binc] = nanBinnedStats(all_contrasts, delta(:, modelIdx), edges);
-    h=errorbar(binc, mu, s./sqrt(n), '-x', 'Color', [1, 0.2, 0]);
-    set(gca, 'xscale', 'log');
-    title(modelNames{modelIdx});
-    hold on;
-    x = logspace(-3,0,100);
-    plot(x, zeros(size(x)), 'k-.');
-    xlim([edges(1), edges(end)]);
-    ylabel('Mean log likelihood relative to train set');
-    xlabel('Contrast');
-end
-
-%% bar plots for average log likelihood across contrast
+%% bar plots for delta average log likelihood across contrast relative to a taget model
 models_to_plot = [1:7, 24:32];
+targetModel = 3;
+posTrain = find(v_lcid == targetModel);
+deltaTrain = bsxfun(@minus, trainLL, trainLL(:, posTrain));
+
+
 %NUM_MODELS = length(models_to_plot);
-
-muTestLL = nanmean(testLL, 1);
-muTrainLL = nanmean(trainLL, 1);
-
-% delta = testLL - trainLL;
-% stdDelta = std(delta);
-% semDelta = stdDelta ./ sqrt(size(delta, 1));
-
 h = figure;
 set(h, 'name',  'Average log likelihood across contrast');
-
 width = 2;
 space = 0.5;
 left = space/2 + width/2;
-for idx = 1:length(models_to_plot)
-    modelId = models_to_plot(idx);
-    modelPos = find(v_lcid == modelId);
+
+for subjIdx = 1:length(uniqueSubj)
+    subj = uniqueSubj(subjIdx);
+    filter = subjects == subj & contrast > 0.05;
     
-    pos = (idx-1)*(2*width + space) + left;
-    h1 = bar(pos, muTrainLL(modelPos), width);
-    hold on;
+    muDeltaTrainLL = nanmean(deltaTrain(filter,:), 1); % take average across all contrasts
+    stdDeltaTrainLL = nanstd(deltaTrain(filter, :));
+    semDeltaTrainLL = stdDeltaTrainLL ./ sqrt(sum(filter));
+
     
-    %h2 = bar(pos+width, muTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
-%     errorbar(pos+width, muTestLL(modelIdx), semDelta(modelIdx), 'k');
-%     tresult = ttest(delta(:, modelIdx));
-%     if ~isnan(tresult) && tresult
-%         hText = text(pos + width, muTestLL(modelIdx) - 0.01, '*');
-%         set(hText, 'FontSize', 25);
-%     end
-end
-%%
-%legend([h1, h2], {'Train set', 'Test set'});
-right = (space + 2 * width) * NUM_MODELS;
-pos = (2*width + space) * [0:NUM_MODELS-1] + left + width/2;
-set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames);
-xlim([0, right]);
-ylabel('Mean loglikelihood');
-rotateXLabels(gca,90);
-
-
-
-%% bar plots for average log likelihood across contrast
-models_to_plot = [1:7, 24:32];
-%NUM_MODELS = length(models_to_plot);
-
-muTestLL = nanmean(testLL, 1);
-muTrainLL = nanmean(trainLL, 1);
-
-% delta = testLL - trainLL;
-% stdDelta = std(delta);
-% semDelta = stdDelta ./ sqrt(size(delta, 1));
-
-h = figure;
-set(h, 'name',  'Average log likelihood across contrast');
-
-width = 2;
-space = 0.5;
-left = space/2 + width/2;
-for idx = 1:NUM_MODELS
-    modelIdx = models_to_plot(idx);
-    pos = (idx-1)*(2*width + space) + left;
-    h1 = bar(pos, muTrainLL(modelIdx), width);
-    hold on;
+    subplot(1, length(uniqueSubj), subjIdx);
+    labels = [];
+    labelPos = [];
     
-    h2 = bar(pos+width, muTestLL(modelIdx),width, 'FaceColor', [1, 0.3, 0]);
-%     errorbar(pos+width, muTestLL(modelIdx), semDelta(modelIdx), 'k');
-%     tresult = ttest(delta(:, modelIdx));
-%     if ~isnan(tresult) && tresult
-%         hText = text(pos + width, muTestLL(modelIdx) - 0.01, '*');
-%         set(hText, 'FontSize', 25);
-%     end
-end
-legend([h1, h2], {'Train set', 'Test set'});
-right = (space + 2 * width) * NUM_MODELS;
-pos = (2*width + space) * [0:NUM_MODELS-1] + left + width/2;
-set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames);
-xlim([0, right]);
-ylabel('Mean loglikelihood');
-%rotateXLabels(gca,90);
+    for idx = 1:length(models_to_plot)
+        modelId = models_to_plot(idx);
+        modelPos = find(v_lcid == modelId);
+        if isempty(modelPos)
+            continue;
+        end
 
-%% Plot specific models w.r.t. another one
-
-model_number = 3; % model to compare against
-modelIdx = 5; % model to plot
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
-dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-edges = arrayfun(@(x) prctile(all_contrasts, x), linspace(0,100,11));
-edges = [0, unique(edges), 1];
-edges = 0.5*(edges(1:end-1) + edges(2:end));
-%edges = [0,0.02, 0.05, 0.1, 0.15, 0.85,1];
-edges=edges(2:end);
-%figure;
-
-subplot(1, 1, 1);
-[mu_train, s_train, n_train, binc] = nanBinnedStats(all_contrasts, dTrainLL(:, modelIdx), edges);
-[mu_test, s_test, n_test, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx), edges);
-h1=errorbar(binc, mu_train, s_train./sqrt(n_train));
-hold on;
-h2=errorbar(binc, mu_test, s_test./sqrt(n_test), '-x', 'Color', [1,0.3,0]);
-%errorbar(binc, mu_fit, s_fit ./sqrt(n_fit), 'o-r');
-set(gca, 'xscale', 'log');
-title(modelNames{modelIdx});
-xlabel('Contrast');
-ylabel(sprintf('Log likelihood relative to %s', modelNames{model_number}));
-xlim([edges(1), 1]);
-x=logspace(-3,2,100);
-plot(x, zeros(size(x)), 'k--');
-set(gca, 'xtick', [0.01, 0.1, 1]);
-set(gca, 'xticklabel', {'1','10','100'});
-
-legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
-
-%% Plot all models w.r.t. the first
-model_number = 1;
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
-dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-edges = arrayfun(@(x) prctile(all_contrasts, x), 0:10:100);
-edges = [0, unique(edges), 1];
-edges = 0.5*(edges(1:end-1) + edges(2:end));
-%edges = [0,0.02, 0.05, 0.1, 0.15, 0.85,1];
-edges=edges(2:end);
-figure;
-for modelIdx = 1:NUM_MODELS
-    subplot(1, NUM_MODELS, modelIdx);
-    [mu_train, s_train, n_train, binc] = nanBinnedStats(all_contrasts, dTrainLL(:, modelIdx), edges);
-    [mu_test, s_test, n_test, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx), edges);
-    h1=errorbar(binc, mu_train, s_train./sqrt(n_train));
-    hold on;
-    h2=errorbar(binc, mu_test, s_test./sqrt(n_test), '-x', 'Color', [1,0.3,0]);
-    %errorbar(binc, mu_fit, s_fit ./sqrt(n_fit), 'o-r');
-    set(gca, 'xscale', 'log');
-    title(modelNames{modelIdx});
-    xlabel('Contrast');
-    ylabel(sprintf('Log likelihood relative to %s', modelNames{model_number}));
-    xlim([edges(1), edges(end)]);
-end
-legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
-
-%% plot the difference in model w.r.t the first
-model_number = 1;
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
-dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-
-figure;
-for modelIdx = 1:NUM_MODELS
-    subplot(1, 5, modelIdx);
-    [mu, s, n, binc] = nanBinnedStats(all_contrasts, dTestLL(:, modelIdx) - dTrainLL(:, modelIdx), edges);
-    h1=errorbar(binc, mu, s./sqrt(n), '-x', 'Color', [1, 0.3, 0]);
-    x = logspace(-3,0,100);
-    hold on;
-    plot(x, zeros(size(x)), 'k-.');
-    set(gca, 'xscale', 'log');
-    title(modelNames{modelIdx});
-    xlabel('Contrast');
-    ylabel(sprintf('Difference in loglikelihood relative to %s', modelNames{model_number}));
-    xlim([edges(1), edges(end)]);
-end
-legend(h1, {'Test set (shuffled)'});
-
-%% bar plots for difference in test and train w.r.t. the specified model
-%models_idx_plot = 1:length(modelNames);
-%NUM_MODELS = length(models_idx_plot);
-
-target_model = 3;
-
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, target_model));
-dTestLL = bsxfun(@minus, testLL, testLL(:, target_model));
-
-muDTestLL = nanmean(dTestLL);
-stdDTestLL = nanstd(dTestLL);
-semDTestLL = stdDTestLL/sqrt(size(dTestLL,1));
-
-muDTrainLL = nanmean(dTrainLL);
-stdDTrainLL = nanstd(dTrainLL);
-semDTrainLL = stdDTrainLL/sqrt(size(dTrainLL,1));
-
-h = figure;
-set(h, 'name',  'Average log likelihood relative to a model');
-p_thr = 0.01;
-width = 2;
-space = 0.5;
-left = space/2 + width/2;
-hold on;
-for idx = 1:NUM_MODELS
-    modelIdx = models_to_plot(idx);
-    pos = (idx-1)*(2*width + space) + left;
-    h1=bar(pos, muDTrainLL(modelIdx), width, 'b');
-    errorbar(pos, muDTrainLL(modelIdx), semDTrainLL(modelIdx), 'k');
-    hold on;
-    
-    [h, p, ci] = ttest(dTrainLL(:, modelIdx));
-    if p <= p_thr
-        mult = sign(mean(dTrainLL(:,modelIdx)));
-        %h = text(pos, muDTrainLL(modelIdx) + 3*mult*semDTrainLL(modelIdx), '*');
-        plot(pos, muDTrainLL(modelIdx) + 3*mult*semDTrainLL(modelIdx), 'r*', 'markersize', 13);
-        %set(h, 'FontSize', 25);
+        x_pos = (idx-1)*(width + space) + left;
+        labelPos = [labelPos x_pos];
+        labels = [labels modelNames(modelId)];
+        
+        if modelId <= 7
+            c = [255, 187, 53] / 255;
+        else
+            c = [148, 252, 155] / 255;
+        end
+        
+        h1 = bar(x_pos, muDeltaTrainLL(modelPos), width, 'FaceColor', c);
+        hold on;
+        
+        errorbar(x_pos, muDeltaTrainLL(modelPos), semDeltaTrainLL(modelPos), 'k');
+        [tresult, p, ci] = ttest(deltaTrain(filter, modelPos));
+        if ~isnan(tresult) && tresult
+            hText = text(x_pos, muDeltaTrainLL(modelPos) + semDeltaTrainLL(modelPos)*1.1, '*');
+            set(hText, 'FontSize', 25, 'HorizontalAlignment', 'center');
+        end
     end
     
-    
-    h2 = bar(pos+width, muDTestLL(modelIdx), width, 'FaceColor', [1, 0.7, 0]);
-    errorbar(pos+width, muDTestLL(modelIdx), semDTestLL(modelIdx), 'k');
-    
-    [h, p, ci] = ttest(dTestLL(:, modelIdx));
-    if p <= p_thr
-        mult = sign(mean(dTestLL(:,modelIdx)));
-        %h = text(pos + width, muDTestLL(modelIdx) + mult*3*semDTestLL(modelIdx), '*');
-        plot(pos + width, muDTestLL(modelIdx) + 2*mult*semDTestLL(modelIdx), 'b*', 'markersize', 13);
-        %set(h, 'FontSize', 25);
-    end
+    right = x_pos + width/2 + space;
+    set(gca, 'xtick', labelPos);
+    set(gca, 'xticklabel', labels);
+    title(sprintf('Mean log likelihood across contrast for Subject %d', subj));
+    xlim([0, right]);
+    ylabel('Mean loglikelihood');
+    ylim([-0.005, 0.08 ]);
+    rotateXLabels(gca,90);
 end
 
-right = (space + 2 * width) * NUM_MODELS;
-pos = (2*width + space) * [0:NUM_MODELS-1] + left + width/2;
-set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames(models_to_plot));
-set(gca, 'FontName', font, 'FontSize', fs);
-xlim([0, right]);
-append = sprintf(': * is significant with p < %.2f', p_thr);
-legend([h1, h2], {['Train set' append], ['Test set' append]});
-ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{target_model}));
-rotateXLabels(gca, 90);
-%% bar plots for difference in test vs train w.r.t. the first
-
-model_number = 3;
-dTrainLL = bsxfun(@minus, trainLL, trainLL(:, model_number));
-dTestLL = bsxfun(@minus, testLL, testLL(:, model_number));
-
-ddLL = dTestLL - dTrainLL;
-
-muDTestLL = mean(dTestLL);
-stdDTestLL = std(dTestLL);
-semDTestLL = stdDTestLL/sqrt(size(dTestLL,1));
-
-muDTrainLL = mean(dTrainLL);
-stdDTrainLL = std(dTrainLL);
-semDTrainLL = stdDTrainLL/sqrt(size(dTrainLL,1));
-
-
-muDDLL = mean(ddLL);
-stdDDLL = std(ddLL);
-semDDLL = stdDDLL/sqrt(size(ddLL, 1));
-
-figure;
-width = 2;
-space = 0.5;
-N = length(models_to_plot);
-left = space/2 + width/2;
-for idx = 1:N
-    
-    pos = (idx-1)*(2*width + space) + left;
-    modelIdx = models_to_plot(idx);
-    h1=bar(pos, muDTrainLL(modelIdx), width);
-    hold on;
-    
-    h2=bar(pos+width, muDTestLL(modelIdx),width, 'FaceColor', [1, 0.7, 0]);
-    errorbar(pos+width, muDTestLL(modelIdx), semDDLL(modelIdx), 'k');
-
-    h = ttest(ddLL(:, modelIdx));
-    if ~isnan(h) && ttest(ddLL(:, modelIdx))
-        h = text(pos + width, muDTestLL(modelIdx) + 2*semDDLL(modelIdx), '*');
-        set(h, 'FontSize', 25);
-    end
-end
-right = (space + 2 * width) * N;
-pos = (2*width + space) * [0:N-1] + left + width/2;
-set(gca, 'xtick', pos);
-set(gca, 'xticklabel', modelNames(models_to_plot));
-xlim([0, right]);
-legend([h1, h2], {'Train set (non-shuffled)', 'Test set (shuffled)'});
-ylabel(sprintf('Mean  loglikelihood relative to %s', modelNames{model_number}));
-rotateXLabels(gca, 90);
