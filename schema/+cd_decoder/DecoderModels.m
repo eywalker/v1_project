@@ -13,19 +13,22 @@ classdef DecoderModels < dj.Relvar
             self.restrict(varargin{:});
         end
         
-        function new_id = registerDecoder(self, model, config, label)
+        function new_id = registerDecoder(self, label, model, config, new_id)            
             if nargin < 4
-                label = '';
+                config = getModelConfigs(model);
             end
             
-            last_id = max(fetchn(cd_decoder.DecoderModels, 'decoder_id'));
-            if isempty(last_id)
-                last_id = 0;
+            if nargin < 5
+                last_id = max(fetchn(cd_decoder.DecoderModels, 'decoder_id'));
+                if isempty(last_id)
+                    last_id = 0;
+                end
+                new_id = last_id + 1;
             end
-            new_id = last_id + 1;
             if ~ischar(model) % if owner given as an object
                 model = class(model);
             end
+            
             
             tuple.decoder_id = new_id;
             tuple.decoder_class = model;
