@@ -34,8 +34,12 @@ classdef MLPDecoder < handle
             % GETLIKELIHOODDISTR Calculates the likelihood distribution
             % over the range of orientation (decodeOri) for observing given
             % set of spikeCounts and contrast value for each trial
-            
-            logL = self.wo * relu(self.w2 * relu(self.w1 * spikeCounts + self.b1) + self.b2) + self.bo;
+            x = spikeCounts;
+            x = relu(bsxfun(@plus, self.w1 * x, self.b1));
+            x = relu(bsxfun(@plus, self.w2 * x, self.b2));
+            x = bsxfun(@plus, self.wo * x, self.bo);
+            logL = x;
+            %logL = self.wo * relu(self.w2 * relu(self.w1 * spikeCounts + self.b1) + self.b2) + self.bo;
             normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
             normL(isnan(normL)) = 0;
             L = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
