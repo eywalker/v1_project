@@ -25,12 +25,12 @@ classdef MLFiller < dj.Computed
             model_config = fetch1(model_info, 'model');
             decoder = getDecoder(cd_decoder.DecoderModels & key);
             
-            decoder.w1 = model_config.('hiddens.0.weight');
-            decoder.b1 = model_config.('hiddens.0.bias');
-            decoder.w2 = model_config.('hiddens.3.weight');
-            decoder.b2 = model_config.('hiddens.3.bias');
-            decoder.wo = model_config.('ro_layer.weight');
-            decoder.bo = model_config.('ro_layer.bias');
+            decoder.w1 = double(model_config.('hiddens.0.weight'));
+            decoder.b1 = double(model_config.('hiddens.0.bias'));
+            decoder.w2 = double(model_config.('hiddens.3.weight'));
+            decoder.b2 = double(model_config.('hiddens.3.bias'));
+            decoder.wo = double(model_config.('ro_layer.weight'));
+            decoder.bo = double(model_config.('ro_layer.bias'));
             decoder.decodeOri = decodeOri;
             
             key.decoder_class = decoder_info.decoder_class;
