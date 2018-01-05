@@ -26,6 +26,7 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             tuple.lc_class = lc_info.lc_class;
             tuple.lc_label = lc_info.lc_label;
             
+            % if previously trained model exist, start with that
             if count(cd_lc.PrevFitLC & key) == 1
                 lc_model = getLC(cd_lc.PrevFitLC & key);
             else

@@ -14,7 +14,7 @@ lc_trainset_size : int                  # size of the trainset
 classdef PrevFitLC < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = (cd_decoder.TrainedDecoder * cd_lc.LCModels * cd_lc.LCTrainSetPairs) & cd_lc.TrainedLC;
+		popRel = (cd_decoder.TrainedDecoder * cd_lc.LCModels * cd_lc.LCTrainSetPairs) & pro(cd_lc.TrainedLC);
 	end
 
 	methods(Access=protected)
