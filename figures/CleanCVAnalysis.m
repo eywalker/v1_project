@@ -1,4 +1,4 @@
-restr = 'decoder_id = 1';
+restr = 'decoder_id = 3';
 train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl');
 test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl');
 aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels & restr;
@@ -28,10 +28,11 @@ decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
 %% Fetch data using tabulate with combined primary key
 
 [trainLL, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(train_data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
+%%
 [testLL, v_jointid_test, v_lcid_test, v_decid_test] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 
 %[testLL, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
-
+%%
 all_contrasts = dj.struct.tabulate(train_data, 'cv_contrast', 'joint_id', 'lc_id', 'decoder_id');
 subjects = dj.struct.tabulate(train_data, 'subject_id', 'joint_id', 'lc_id', 'decoder_id');
 
@@ -50,7 +51,7 @@ uniqueSubj = unique(subjects);
 % c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 % edges = 0.5 * (c(1:end-1) + c(2:end));
 filter = contrast > 0.002;
-edges = prctile(contrast(filter), linspace(0, 100, 6));
+edges = prctile(contrast(filter), linspace(0, 100, 8));
 edges(1) = edges(1) - 0.001;
 edges(end) = edges(end) + 0.001;
 models_to_plot = [1:7]; % models to plot in terms of model id
@@ -250,8 +251,8 @@ for subjIdx = 1:length(uniqueSubj)
     ylim([log(0.5), -0.3]);
 
 end
-%% Contrast vs. mean logL plot for trainset and teset with error bars based on difference w.r.t. a target model
-models_to_plot = [1:7];
+%% Contrast vs. mean logL plot for trainset and test set with error bars based on difference w.r.t. a target model
+models_to_plot = [25,29,32];
 % compare against this model
 target_model = 1;
 
@@ -275,11 +276,11 @@ for subjIdx = 1:length(uniqueSubj)
             continue;
         end
         sessMatch = (subjects == subj);
-        [~, s, n, binc] = nanBinnedStats(contrast(sessMatch), delta_train(sessMatch, idxModel), edges);
+        [~, s, n, binc] = nanBinnedStats(contrast(sessMatch), delta_train(sessMatch, pos), edges);
         [mu] = nanBinnedStats(contrast(sessMatch), trainLL(sessMatch, pos), edges);
         p = '-';
         errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
-        hold on;
+        hold on; 
     end
 
     x = logspace(-3, 0, 100);
@@ -300,7 +301,7 @@ for subjIdx = 1:length(uniqueSubj)
             continue;
         end
         sessMatch = (subjects == subj);
-        [~, s, n, binc] = nanBinnedStats(contrast(sessMatch), delta_test(sessMatch, idxModel), edges);
+        [~, s, n, binc] = nanBinnedStats(contrast(sessMatch), delta_test(sessMatch, pos), edges);
         [mu] = nanBinnedStats(contrast(sessMatch), testLL(sessMatch, pos), edges);
         p = '-';
         errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(idx, :));
@@ -320,10 +321,13 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% bar plots for delta average log likelihood across contrast relative to a taget model
-models_to_plot = [1:7, 24:32];
-targetModel = 3;
+models_to_plot = [2,5,7,25,29,32];
+data = testLL;
+targetModel = 25;
 posTrain = find(v_lcid == targetModel);
-deltaTrain = bsxfun(@minus, trainLL, trainLL(:, posTrain));
+
+delta = bsxfun(@minus, data, data(:, posTrain));
+
 
 
 %NUM_MODELS = length(models_to_plot);
@@ -333,12 +337,16 @@ width = 2;
 space = 0.5;
 left = space/2 + width/2;
 
+
 for subjIdx = 1:length(uniqueSubj)
     subj = uniqueSubj(subjIdx);
-    filter = subjects == subj & contrast > 0.05;
+    filter = subjects == subj & contrast > 0.05
     
-    muDeltaTrainLL = nanmean(deltaTrain(filter,:), 1); % take average across all contrasts
-    stdDeltaTrainLL = nanstd(deltaTrain(filter, :));
+    fprintf('\nsubject %d p-values: relative to %d\n', subj, targetModel);
+
+    
+    muDeltaTrainLL = nanmean(delta(filter,:), 1); % take average across all contrasts
+    stdDeltaTrainLL = nanstd(delta(filter, :));
     semDeltaTrainLL = stdDeltaTrainLL ./ sqrt(sum(filter));
 
     
@@ -367,7 +375,8 @@ for subjIdx = 1:length(uniqueSubj)
         hold on;
         
         errorbar(x_pos, muDeltaTrainLL(modelPos), semDeltaTrainLL(modelPos), 'k');
-        [tresult, p, ci] = ttest(deltaTrain(filter, modelPos));
+        [tresult, p, ci] = ttest(delta(filter, modelPos));
+        fprintf('model %d: %f\n', modelId, p);
         if ~isnan(tresult) && tresult
             hText = text(x_pos, muDeltaTrainLL(modelPos) + semDeltaTrainLL(modelPos)*1.1, '*');
             set(hText, 'FontSize', 25, 'HorizontalAlignment', 'center');
@@ -380,7 +389,7 @@ for subjIdx = 1:length(uniqueSubj)
     title(sprintf('Mean log likelihood across contrast for Subject %d', subj));
     xlim([0, right]);
     ylabel('Mean loglikelihood');
-    ylim([-0.005, 0.08 ]);
+    ylim([-0.01, 0.03 ]);
     rotateXLabels(gca,90);
 end
 
