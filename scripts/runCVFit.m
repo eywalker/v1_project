@@ -1,5 +1,6 @@
 warning ('off','all');
-MLBasedFits
+parpopulate(cd_lc.PrevFitLC, 'decoder_id = 3')
+%MLBasedFits
 %CleanCrossValidationSetFits;
 %FitCleanContrastSession;
 %RunCleanSimulationCV;
