@@ -15,11 +15,7 @@ classdef PSLLC < handle
 % Furthermore, when providing a specific implementation, be sure to
 % assign meaningful name to the modelName property to ease later
 % analysis and usage.
-% 
-% Author: Edgar Y. Walker
-% e-mail: edgar.walker@gmail.com
-% Last modified: Feb 14, 2014
-%
+
     properties
         sigmaA; % standard deviation of class 'A'
         sigmaB; % standard deviation of class 'B'
@@ -32,7 +28,7 @@ classdef PSLLC < handle
         params = {'priorA', 'lapseRate', 'alpha'}; % specification of parameter names
         fixedParams = false(1, 3); % specifies which of the parameters should be "fixed" - non-trainable
         p_lb = [0, 0, 0]; % lower bound for parameters
-        p_ub = [1, 1, Inf]; % upper bound for parameters
+        p_ub = [1, 1, 20]; % upper bound for parameters
         precompLogLRatio = true % set this to false to get logLRatio recomputed with parameter update
         
     end
