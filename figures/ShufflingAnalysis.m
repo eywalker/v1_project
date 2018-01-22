@@ -9,37 +9,90 @@ indexFields = {'source_plset_hash', 'plc_id'};
 shuffled = dj.struct.tabulate(data, 'leaf_logl', indexFields{:});
 contrast = dj.struct.tabulate(data, 'dataset_contrast', indexFields{:});
 subjects = dj.struct.tabulate(data, 'subject_id', indexFields{:});
+
 cv = cellfun(@str2num, contrast);
 cv = cv(:, 1);
 subjects = subjects(:, 1);
 
-lc_id = num2cell(v_id);
-tuple = [];
-[tuple(1:length(lc_id)).lc_id] = deal(lc_id{:});
-modelNames = fetchn(cd_lc.LCModels & tuple, 'lc_label');
+uniqueSubj = unique(subjects);
 
+%% build the model names - robust to case of skipping lc_id
+modelNames = {};
+for m=fetch(cd_lc.LCModels, 'lc_label')'
+    modelNames{m.lc_id} = m.lc_label;
+end
 
 %% Plot shuffled vs not-shuffled
 %edges = logspace(-4, 0, 8);
-filter = cv > 0.002;
-edges = prctile(cv(filter), linspace(0, 100, 6));
-edges(1) = edges(1) - 0.001;
-edges(end) = edges(end) + 0.001;
 figure;
-hold on;
-colors = lines;
-pos = subjects == 21 & (cv > 0.005);
-for i=1:length(v_id)
-   
-    [mu, sigma, count, binc] = nanBinnedStats(cv(pos), original(pos, i), edges);
-    errorbar(binc, mu, sigma./sqrt(count), 'color', colors(i, :));
-    
-    [mu, sigma, count, binc] = nanBinnedStats(cv(pos), shuffled(pos, i), edges);
-    errorbar(binc, mu, sigma./sqrt(count),'--', 'color', colors(i, :));
-    
-end
-set(gca, 'XScale', 'log')
 
+for subjIdx = 1:length(uniqueSubj)
+    subj = uniqueSubj(subjIdx);
+    sessMatch = (subjects == subj);
+    
+    subplot(1, length(uniqueSubj), subjIdx);
+    
+    filter = cv > 0.002;
+    edges = prctile(cv(filter), linspace(0, 100, 6));
+    edges(1) = edges(1) - 0.001;
+    edges(end) = edges(end) + 0.001;
+    hold on;
+    colors = lines;
+    handles = [];
+    labels = [];
+    for i=1:length(v_id)
+
+        [mu, sigma, count, binc] = nanBinnedStats(cv(sessMatch), original(sessMatch, i), edges);
+        h = errorbar(binc, mu, sigma./sqrt(count), 'color', colors(i, :));
+
+        [mu, sigma, count, binc] = nanBinnedStats(cv(sessMatch), shuffled(sessMatch, i), edges);
+        errorbar(binc, mu, sigma./sqrt(count),'--', 'color', colors(i, :));
+
+    end
+    set(gca, 'XScale', 'log')
+end
+
+%% Plot shuffled vs not-shuffled relative to baseline
+%edges = logspace(-4, 0, 8);
+figure;
+
+target = 1;
+pos = find(v_id == 1);
+deltaOriginal = original - original(:, pos);
+deltaShuffled = shuffled - shuffled(:, pos);
+
+for subjIdx = 1:length(uniqueSubj)
+    subj = uniqueSubj(subjIdx);
+    sessMatch = (subjects == subj) & cv > 0.004;
+    
+    subplot(1, length(uniqueSubj), subjIdx);
+    
+    filter = cv > 0.002;
+    edges = prctile(cv(filter), linspace(0, 100, 7));
+    edges(1) = edges(1) - 0.001;
+    edges(end) = edges(end) + 0.001;
+    hold on;
+    colors = lines;
+    handles = [];
+    labels = [];
+    for i=1:length(v_id)
+        [mu, sigma, count, binc] = nanBinnedStats(cv(sessMatch), deltaOriginal(sessMatch, i), edges);
+        h = errorbar(binc, mu, sigma./sqrt(count), 'color', colors(i, :), 'linewidth', 2);
+        handles = [handles h];
+        labels = [labels {modelNames{i} }];
+
+        [mu, sigma, count, binc] = nanBinnedStats(cv(sessMatch), deltaShuffled(sessMatch, i), edges);
+        h = errorbar(binc, mu, sigma./sqrt(count),'--', 'color', colors(i, :), 'linewidth', 2);
+        handles = [handles h];
+        labels = [labels {[modelNames{i} ' - shuffled']}];
+    end
+    title(sprintf('Subject %d', subj));
+    set(gca, 'XScale', 'log');
+    legend(handles, labels);
+    xlabel('Contrast');
+    ylabel('Difference in mean log-likelihood');
+    ylim([-0.05, 0.15]);
+end
 %%
 
 id1 = pro(match & 'plc_id = 1', 'plc_id -> id1', 'base_logl -> base1', 'leaf_logl -> leaf1');

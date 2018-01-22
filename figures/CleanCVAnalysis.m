@@ -1,6 +1,6 @@
 restr = 'decoder_id = 3';
-train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl');
-test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl');
+train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl', 'lc_trainset_size');
+test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl', 'lc_testset_size');
 aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels & restr;
 
 %% merge all primary keys except for lc_id and decoder_id into a single key
@@ -9,13 +9,13 @@ filter = ~ismember(pk, {'lc_id', 'decoder_id'});
 pk = pk(filter);
 joint_id = pro(aggr_targets, sprintf('concat_ws("-", %s) -> joint_id', strjoin(pk, ',')));
 
-results = pro(aggr_targets, train_leaf * test_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl', 'avg(lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
+results = pro(aggr_targets, train_leaf * test_leaf, 'avg(lc_trainset_size * lc_train_mu_logl) -> train_mu_logl', 'avg(lc_testset_size * lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
 data = fetch(results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
-train_results = pro(aggr_targets, train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl', 'count(*) -> n');
+train_results = pro(aggr_targets, train_leaf, 'sum(lc_trainset_size * lc_train_mu_logl) -> train_mu_logl', 'count(*) -> n');
 train_data = fetch(train_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
-test_results = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
+test_results = pro(aggr_targets, test_leaf, 'sum(lc_testset_size * lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
 test_data = fetch(test_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
 %% build the model names - robust to case of skipping lc_id
@@ -340,7 +340,7 @@ left = space/2 + width/2;
 
 for subjIdx = 1:length(uniqueSubj)
     subj = uniqueSubj(subjIdx);
-    filter = subjects == subj & contrast > 0.05
+    filter = subjects == subj
     
     fprintf('\nsubject %d p-values: relative to %d\n', subj, targetModel);
 
@@ -389,7 +389,7 @@ for subjIdx = 1:length(uniqueSubj)
     title(sprintf('Mean log likelihood across contrast for Subject %d', subj));
     xlim([0, right]);
     ylabel('Mean loglikelihood');
-    ylim([-0.01, 0.03 ]);
+    %ylim([-0.01, 0.03 ]);
     rotateXLabels(gca,90);
 end
 
