@@ -28,7 +28,7 @@ classdef PSLLC < handle
         params = {'sigmaA', 'sigmaB', 'stimCenter', 'priorA', 'lapseRate', 'alpha'}; % specification of parameter names
         fixedParams = [true, true, false, false, false, false]; % specifies which of the parameters should be "fixed" - non-trainable
         p_lb = [0, 0, 190, 0, 0, 0]; % lower bound for parameters
-        p_ub = [Inf, Inf, 350, 1, 1, Inf]; % upper bound for parameters
+        p_ub = [Inf, Inf, 350, 1, 1, 20]; % upper bound for parameters
         initializer;
         precompLogLRatio = false % set this to false to get logLRatio recomputed with parameter update
         

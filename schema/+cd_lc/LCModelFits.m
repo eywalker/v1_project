@@ -22,18 +22,27 @@ classdef LCModelFits < dj.Relvar & dj.AutoPopulate
         
         function [dataSet, decoder] = getTrainSet(self, key)
             if nargin < 2
-                key = self;
+                key = fetch(self);
             end
             [dataSet, decoder] = getDataSet(cd_lc.TrainedLC & key);
         end
         
         function [dataSet, decoder] = getTestSet(self, key)
             if nargin < 2
-                key = self;
+                key = fetch(self);
             end
             decoder = getDecoder(cd_decoder.TrainedDecoder & key);
             dataSet = fetchDataSet(cd_lc.LCTestSets & key);
             dataSet = prepareDataSet(dataSet, decoder, key);
+        end
+        
+        function [trainset, testset, decoder, model]=getAll(self, key)
+            if nargin < 2
+                key = fetch(self);
+            end
+            [trainset, decoder] = getTrainSet(self, key);
+            [testset, ~] = getTestSet(self, key);
+            model = getLC(cd_lc.TrainedLC & key);
         end
             
     end

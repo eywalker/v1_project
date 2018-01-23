@@ -12,10 +12,10 @@ joint_id = pro(aggr_targets, sprintf('concat_ws("-", %s) -> joint_id', strjoin(p
 results = pro(aggr_targets, train_leaf * test_leaf, 'avg(lc_trainset_size * lc_train_mu_logl) -> train_mu_logl', 'avg(lc_testset_size * lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
 data = fetch(results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
-train_results = pro(aggr_targets, train_leaf, 'sum(lc_trainset_size * lc_train_mu_logl) -> train_mu_logl', 'count(*) -> n');
+train_results = pro(aggr_targets, train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl', 'count(*) -> n');
 train_data = fetch(train_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
-test_results = pro(aggr_targets, test_leaf, 'sum(lc_testset_size * lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
+test_results = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
 test_data = fetch(test_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
 %% build the model names - robust to case of skipping lc_id
@@ -50,7 +50,7 @@ uniqueSubj = unique(subjects);
 % 
 % c = [2 * c(1) - c(2), c, 2 * c(end)-c(end-1)];
 % edges = 0.5 * (c(1:end-1) + c(2:end));
-filter = contrast > 0.002;
+filter = contrast > 0.00001;
 edges = prctile(contrast(filter), linspace(0, 100, 8));
 edges(1) = edges(1) - 0.001;
 edges(end) = edges(end) + 0.001;
@@ -193,7 +193,7 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% Contrast vs. mean logL plot for training set
-models_to_plot = [1, 24, 7, 32];
+models_to_plot = [1:4, 33:36];
 line_color = lines(length(models_to_plot));
 h = figure(1);
 set(h, 'name',  'Fit vs Contrast');

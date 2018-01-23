@@ -1,8 +1,13 @@
 keys = fetch(class_discrimination.CSCLookup & 'subject_id = 21');
 
-sessions = cd_dataset.CleanContrastSessionDataSet & keys(30);
+sessions = fetch(cd_dataset.CleanContrastSessionDataSet & keys(30));
 
 decs = fetch(cd_decoder.TrainedDecoder & pro(sessions, 'dataset_hash -> dec_trainset_hash') & 'decoder_id = 1');
+
+[dataSet, model] = getAll(cd_decoder.TrainedDecoder & decs(1));
+
+baseEnc = model.baseEncoder; % tuning curve encoder
+%%
 
 margin = 0.05;
 w = (1 - 2*margin)/10;
@@ -13,6 +18,8 @@ ub = 310;%max(self.trainStimulus);
 stim = linspace(lb, ub, 100);
 
 spikeCounts = base.encode(stim);
+
+
 indSkip = [1, 10, 91, 100];
 count = 1;
 for indUnit=1:100
@@ -23,7 +30,7 @@ for indUnit=1:100
     hax = axes;
     scale=max(spikeCounts(count,:))-min(spikeCounts(count,:));
     hf=plot(stim,(spikeCounts(count,:)-min(spikeCounts(count,:)))/scale);
-    xlabel([]);o
+    xlabel([]);
     ylabel([]);
     set(hax,'Position',[margin+w*floor((indUnit-1)/10), margin + w*mod(indUnit-1, 10), w, w]);
     set(hax,'xtick',[],'ytick',[]);
