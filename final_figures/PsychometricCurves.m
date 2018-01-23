@@ -1,9 +1,6 @@
-subject = 3;
+%% Generates Psychometric curves for the two monkeys using all the trials for which 
 
 
-
-
-%%
 close all;
 figure;
 nBins = 7;
@@ -57,9 +54,9 @@ for subjIdx=1:length(subjects)
         [v, pos] = max(mu);
         peakloc = sum(x(:) .* y(:)) ./ sum(y(:));
         %peakloc = binc(pos);
-        h = plot(binc-peakloc+270, mu, '-', 'color', c);
+        h = plot(binc, mu, '-', 'color', c);
         hold on;
-        %plot(peakloc, v, 'o', 'MarkerSize', 15, 'MarkerFaceColor', c, 'color', c);
+        plot(peakloc, v, 'o', 'MarkerSize', 10, 'MarkerFaceColor', c, 'color', c);
         hs = [hs h];
         labels = [labels {sprintf('Contrast in [%.3f, %.3f]', max(low*100, 0.5), min(high * 100, 100))}];
         hold on;
