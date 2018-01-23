@@ -6,12 +6,13 @@
  
  figure;
  xq = linspace(-50, 50, 1000);
- legends = {}
+ legends = {};
  for i=1:length(decs)
      [dataset, decoder] = getAll(cd_decoder.TrainedDecoder & decs(i));
      L = decoder.getLikelihoodDistr(decoder.decodeOri, [], dataset.counts);
-     [~, p] = max(L);
-     peak = decoder.decodeOri(p);
+     
+     %[~, p] = max(L);
+     %peak = decoder.decodeOri(p);
      %peak = dataset.orientation;
      delta = decoder.decodeOri' - peak;
      Lall = [];
