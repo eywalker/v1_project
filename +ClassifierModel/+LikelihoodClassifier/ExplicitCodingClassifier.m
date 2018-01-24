@@ -26,8 +26,8 @@ classdef ExplicitCodingClassifier < ClassifierModel.LikelihoodClassifier.PSLLC
             obj = obj@ClassifierModel.LikelihoodClassifier.PSLLC(sigmaA, sigmaB, stimCenter, modelName);
             obj.params = [obj.params {'scale', 'bias'}];
             obj.fixedParams = [obj.fixedParams false false];
-            obj.p_lb = [obj.p_lb 0 -Inf];
-            obj.p_ub = [obj.p_ub Inf Inf];
+            obj.p_lb = [obj.p_lb 0 -50];
+            obj.p_ub = [obj.p_ub 50 50];
             obj.precompLogLRatio = false; % make sure logLRatio gets recomputed with parameter update
         end
         

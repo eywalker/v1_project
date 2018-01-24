@@ -28,11 +28,14 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             
             % if previously trained model exist, start with that
             if count(cd_lc.PrevFitLC & key) == 1
+                fprintf('Loading an existing model as baseline...\n');
                 lc_model = getLC(cd_lc.PrevFitLC & key);
+                reps = 20;
             else
                 lc_model = getLC(cd_lc.LCModels & key);
+                reps = 30;
             end
-            [muLL, logl] = self.train(lc_model, key, 70);
+            [muLL, logl] = self.train(lc_model, key, reps);
             tuple.lc_trainset_size = length(logl);
             tuple.lc_train_mu_logl = muLL;
             tuple.lc_trained_config = lc_model.getModelConfigs();
@@ -82,7 +85,7 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
         
         function retrain(self, keys, N)
             if nargin < 3
-                N = 50;
+                N = 30;
             end
             if nargin < 2
                 keys = [];

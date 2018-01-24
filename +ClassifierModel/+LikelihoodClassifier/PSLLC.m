@@ -27,7 +27,7 @@ classdef PSLLC < handle
         
         params = {'priorA', 'lapseRate', 'alpha'}; % specification of parameter names
         fixedParams = false(1, 3); % specifies which of the parameters should be "fixed" - non-trainable
-        p_lb = [0, 0, 0]; % lower bound for parameters
+        p_lb = [0, 0.001, 0]; % lower bound for parameters
         p_ub = [1, 1, 20]; % upper bound for parameters
         precompLogLRatio = true % set this to false to get logLRatio recomputed with parameter update
         
@@ -131,6 +131,7 @@ classdef PSLLC < handle
             % hack to restrict the search space - all Inf are replaced by
             % 200
             paramSet.upperBounds(isinf(paramSet.upperBounds)) = 200;
+            paramSet.lowerBounds(isinf(paramSet.lowerBounds)) = -200;
             minX = paramSet.values;
             minCost = min(cf(minX), Inf); % this step necessary in case cf evalutes to NaN
             
@@ -142,7 +143,8 @@ classdef PSLLC < handle
                 fprintf('.');
                 x0 = x0set(:, i);
                 
-                [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                [x, cost] = bads(@cf, x0(:)', paramSet.lowerBounds(:)', paramSet.upperBounds(:)', [], [], [], options);
+                %[x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 if (cost < minCost)
                     minCost = cost;
@@ -228,8 +230,8 @@ classdef PSLLC < handle
             configSet.paramValues = cellfun(@(x) self.(x), self.params);
             configSet.fixedParams = self.fixedParams;
             configSet.modelName = self.modelName;
-            configSet.lb = self.p_lb;
-            configSet.ub = self.p_ub;
+            %configSet.lb = self.p_lb;
+            %configSet.ub = self.p_ub;
         end
         
         function setModelConfigs(self, configSet)
@@ -244,8 +246,8 @@ classdef PSLLC < handle
             end
             self.fixedParams = configSet.fixedParams;
             self.modelName = configSet.modelName;
-            self.p_lb = configSet.lb;
-            self.p_ub = configSet.ub;
+            %self.p_lb = configSet.lb;
+            %self.p_ub = configSet.ub;
         end
 
     end

@@ -29,7 +29,7 @@ classdef BiasedScaledWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             obj.params = [obj.params {'scale', 'bias'}];
             obj.fixedParams = [obj.fixedParams false false];
             obj.p_lb = [obj.p_lb 0 0];
-            obj.p_ub = [obj.p_ub Inf 300];
+            obj.p_ub = [obj.p_ub 50 300];
             obj.precompLogLRatio = false; %make sure logLRatio gets recomputed with parameter update
         end
         

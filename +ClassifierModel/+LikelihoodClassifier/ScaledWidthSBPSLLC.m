@@ -28,7 +28,7 @@ classdef ScaledWidthSBPSLLC < ClassifierModel.LikelihoodClassifier.PSLLC
             obj.params = [obj.params {'scale'}];
             obj.fixedParams = [obj.fixedParams false];
             obj.p_lb = [obj.p_lb 0];
-            obj.p_ub = [obj.p_ub Inf];
+            obj.p_ub = [obj.p_ub 50];
             obj.precompLogLRatio = false; %make sure logLRatio gets recomputed with parameter update
         end
         
