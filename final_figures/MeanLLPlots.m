@@ -127,7 +127,7 @@ end
 
 %% Grid wise model performance comparison on the test set
 
-models_to_plot = [38, 28, 32];
+models_to_plot = [38, 29, 32];
 nModels = length(models_to_plot);
 vmax = max(testLL(:)) + 0.01;
 
@@ -178,7 +178,7 @@ for subjIdx = 1:length(uniqueSubj)
                 % on lower left, show scatter plot
                 
                 scatter(testLL(sessMatch, posCol), testLL(sessMatch, posRow), [], contrast(sessMatch));
-                [h, p, ci] = ttest(testLL(sessMatch, posCol), testLL(sessMatch, posRow));
+                [p, h, ci] = signrank(testLL(sessMatch, posCol), testLL(sessMatch, posRow));
                 xlabel(modelNames(colModel));
                 ylabel(modelNames(rowModel));
                 hold on;
@@ -221,7 +221,7 @@ for subjIdx = 1:length(uniqueSubj)
     x = logspace(-3, 0, 100);
     plot(x, ones(size(x)) * log(0.5), 'k--');
     title(sprintf('Fit on train set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
+    %legend(modelNames(models_to_plot));
     xlabel('Contrast');
     set(gca, 'xscale', 'log');
     xlim([0.003, 1.2]);
@@ -246,7 +246,9 @@ for subjIdx = 1:length(uniqueSubj)
     x = logspace(-3, 0, 100);
     plot(x, ones(size(x)) * log(0.5), 'k--');
     title(sprintf('Fit on test set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
+    if subjIdx == length(uniqueSubj)
+        legend(modelNames(models_to_plot));
+    end
     xlabel('Contrast');
     set(gca, 'xscale', 'log');
     xlim([0.003, 1.2]);
@@ -255,9 +257,9 @@ for subjIdx = 1:length(uniqueSubj)
 
 end
 %% Contrast vs. mean logL plot for trainset and test set with error bars based on difference w.r.t. a target model
-models_to_plot = [25, 38, 29, 32];
+models_to_plot = [38, 29, 32];
 % compare against this model
-target_model = 25;
+target_model = 38;
 
 posTrain = find(v_lcid == target_model);
 delta_train = bsxfun(@minus, trainLL, trainLL(:, posTrain));
@@ -290,7 +292,7 @@ for subjIdx = 1:length(uniqueSubj)
     %x = logspace(-3, 0, 100);
     %plot(x, ones(size(x)) * log(0.5), 'k--');
     title(sprintf('Fit on train set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
+    %legend(modelNames(models_to_plot));
     xlabel('Contrast');
     set(gca, 'xscale', 'log');
     xlim([0.003, 1.2]);
@@ -315,7 +317,9 @@ for subjIdx = 1:length(uniqueSubj)
     %x = logspace(-3, 0, 100);
     %plot(x, ones(size(x)) * log(0.5), 'k--');
     title(sprintf('Fit on test set vs contrast for subject %d', subj));
-    legend(modelNames(models_to_plot));
+    if subjIdx == length(uniqueSubj)
+        legend(modelNames(models_to_plot));
+    end
     xlabel('Contrast');
     set(gca, 'xscale', 'log');
     xlim([0.003, 1.2]);
@@ -325,9 +329,9 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% bar plots for delta average log likelihood across contrast relative to a taget model
-models_to_plot = [2, 25, 33:36, 37:40, 29, 32];
-data = trainLL;
-targetModel = 2;
+models_to_plot = [38, 29, 32]; %[2, 25, 33:36, 37:40, 29, 32];
+data = testLL;
+targetModel = 38;
 posTrain = find(v_lcid == targetModel);
 
 delta = bsxfun(@minus, data, data(:, posTrain));
@@ -379,7 +383,7 @@ for subjIdx = 1:length(uniqueSubj)
         hold on;
         
         errorbar(x_pos, muDeltaTrainLL(modelPos), semDeltaTrainLL(modelPos), 'k');
-        [tresult, p, ci] = ttest(delta(filter, modelPos));
+        [p, tresult, ci] = signrank(delta(filter, modelPos));
         fprintf('model %d: %f\n', modelId, p);
         if ~isnan(tresult) && tresult
             hText = text(x_pos, muDeltaTrainLL(modelPos) + semDeltaTrainLL(modelPos)*1.1, '*');
@@ -393,7 +397,7 @@ for subjIdx = 1:length(uniqueSubj)
     title(sprintf('Mean log likelihood across contrast for Subject %d', subj));
     xlim([0, right]);
     ylabel('Mean loglikelihood');
-    %ylim([-0.01, 0.03 ]);
+    ylim([-0.01, 0.02 ]);
     rotateXLabels(gca,90);
 end
 

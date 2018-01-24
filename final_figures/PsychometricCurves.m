@@ -54,7 +54,7 @@ for subjIdx=1:length(subjects)
         [v, pos] = max(mu);
         peakloc = sum(x(:) .* y(:)) ./ sum(y(:));
         %peakloc = binc(pos);
-        h = plot(binc, mu, '-', 'color', c);
+        h = plot(binc, mu, '-', 'color', c, 'LineWidth', 2);
         hold on;
         plot(peakloc, v, 'o', 'MarkerSize', 10, 'MarkerFaceColor', c, 'color', c);
         hs = [hs h];

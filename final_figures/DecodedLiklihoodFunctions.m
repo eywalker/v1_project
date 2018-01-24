@@ -14,9 +14,9 @@
      [dataset, decoder] = getAll(cd_decoder.TrainedDecoder & decs(i));
      L = decoder.getLikelihoodDistr(decoder.decodeOri, [], dataset.counts);
      
-     %peak = (decoder.decodeOri * L) ./ sum(L);
-     [~, p] = max(L);
-     peak = decoder.decodeOri(p);
+     peak = (decoder.decodeOri * L) ./ sum(L);
+     %[~, p] = max(L);
+     %peak = decoder.decodeOri(p);
      %peak = dataset.orientation;
      delta = decoder.decodeOri' - peak;
      Lall = [];
@@ -30,7 +30,7 @@
      subplot(1, 2, 1);
      
 
-     h = plot(xq, Ls);
+     h = plot(xq, Ls, 'LineWidth', 1.5);
      hline = [hline h];
      hold on;
      legends = [legends {sprintf('contrast=%.2f', 100 * dataset.contrast(1))}];
