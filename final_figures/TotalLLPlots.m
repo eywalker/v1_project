@@ -9,10 +9,10 @@ filter = ~ismember(pk, {'lc_id', 'decoder_id'});
 pk = pk(filter);
 joint_id = pro(aggr_targets, sprintf('concat_ws("-", %s) -> joint_id', strjoin(pk, ',')));
 
-train_results = pro(aggr_targets, train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl', 'count(*) -> n');
+train_results = pro(aggr_targets, train_leaf, 'avg(lc_trainset_size * lc_train_mu_logl) -> train_logl', 'count(*) -> n');
 train_data = fetch(train_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
-test_results = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
+test_results = pro(aggr_targets, test_leaf, 'sum(lc_testset_size * lc_test_mu_logl) -> test_logl', 'count(*) -> n');
 test_data = fetch(test_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
 %% build the model names - robust to case of skipping lc_id
@@ -24,8 +24,8 @@ decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
 
 %% Fetch data using tabulate with combined primary key
 
-[trainLL, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(train_data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
-[testLL, v_jointid_test, v_lcid_test, v_decid_test] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
+[trainLL, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(train_data, 'train_logl', 'joint_id', 'lc_id', 'decoder_id');
+[testLL, v_jointid_test, v_lcid_test, v_decid_test] = dj.struct.tabulate(test_data, 'test_logl', 'joint_id', 'lc_id', 'decoder_id');
 
 %[testLL, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 %%
@@ -58,9 +58,10 @@ font = 'Arial';
 
 %% %% Grid wise model performance comparison on the training set
 
-models_to_plot = [24, 32];
+models_to_plot = [25, 29, 32];
 nModels = length(models_to_plot);
 vmax = max(trainLL(:)) + 0.01;
+vmin = min(trainLL(:)) - 0.01;
 
 line_color = lines(nModels);
 
@@ -103,7 +104,7 @@ for subjIdx = 1:length(uniqueSubj)
                 set(gca, 'xscale', 'log');
                 xlim([0.003, 1.2]);
                 ylabel('Mean log likelihood');
-                ylim([log(0.5), vmax]);
+                ylim([vmin, vmax]);
             else
                 % on lower left, show scatter plot
                 
@@ -112,13 +113,13 @@ for subjIdx = 1:length(uniqueSubj)
                 xlabel(modelNames(colModel));
                 ylabel(modelNames(rowModel));
                 hold on;
-                x = linspace(log(0.5), vmax);
+                x = linspace(vmin, vmax);
                 plot(x, x, '--r');
                 if row ~= col
                     title(sprintf('p-val = %.3f', p));
                 end
-                xlim([log(0.5), vmax]);
-                ylim([log(0.5), vmax]);
+                xlim([vmin, vmax]);
+                ylim([vmin, vmax]);
                 
             end
         end
@@ -130,6 +131,7 @@ end
 models_to_plot = [24, 28, 32];
 nModels = length(models_to_plot);
 vmax = max(trainLL(:)) + 0.01;
+vmin = min(trainLL(:)) - 0.01;
 
 line_color = lines(nModels);
 
@@ -172,7 +174,7 @@ for subjIdx = 1:length(uniqueSubj)
                 set(gca, 'xscale', 'log');
                 xlim([0.003, 1.2]);
                 ylabel('Mean log likelihood');
-                ylim([log(0.5), vmax]);
+                ylim([vmin, vmax]);
             else
 
                 % on lower left, show scatter plot
@@ -182,14 +184,13 @@ for subjIdx = 1:length(uniqueSubj)
                 xlabel(modelNames(colModel));
                 ylabel(modelNames(rowModel));
                 hold on;
-                x = linspace(log(0.5), vmax);
+                x = linspace(vmin, vmax);
                 plot(x, x, '--r');
                 if row ~= col
                     title(sprintf('p-val = %.6f', p));
                 end
-                xlim([log(0.5), vmax]);
-                ylim([log(0.5), vmax]);
-                
+                xlim([vmin, vmax]);
+                ylim([vmin, vmax]);
             end
         end
     end
@@ -287,8 +288,6 @@ for subjIdx = 1:length(uniqueSubj)
         hold on; 
     end
 
-    %x = logspace(-3, 0, 100);
-    %plot(x, ones(size(x)) * log(0.5), 'k--');
     title(sprintf('Fit on train set vs contrast for subject %d', subj));
     legend(modelNames(models_to_plot));
     xlabel('Contrast');
@@ -325,12 +324,16 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% bar plots for delta average log likelihood across contrast relative to a taget model
-models_to_plot = [25, 29, 32];
+models_to_plot = [2, 34, 5, 7, 25, 29, 32];
 data = testLL;
-targetModel = 25;
-posTrain = find(v_lcid == targetModel);
+targetModel = 2;
 
-delta = bsxfun(@minus, data, data(:, posTrain));
+if targetModel == 0
+    delta = data;
+else
+    posTrain = find(v_lcid == targetModel);
+    delta = bsxfun(@minus, data, data(:, posTrain));
+end
 
 
 
@@ -349,10 +352,7 @@ for subjIdx = 1:length(uniqueSubj)
     fprintf('\nsubject %d p-values: relative to %d\n', subj, targetModel);
 
     
-    muDeltaTrainLL = nanmean(delta(filter,:), 1); % take average across all contrasts
-    stdDeltaTrainLL = nanstd(delta(filter, :));
-    semDeltaTrainLL = stdDeltaTrainLL ./ sqrt(sum(filter));
-
+    totalLL = nansum(delta(filter,:), 1); % take average across all contrasts
     
     subplot(1, length(uniqueSubj), subjIdx);
     labels = [];
@@ -369,31 +369,23 @@ for subjIdx = 1:length(uniqueSubj)
         labelPos = [labelPos x_pos];
         labels = [labels modelNames(modelId)];
         
-        if modelId <= 7
-            c = [255, 187, 53] / 255;
-        else
+        if contains(modelNames(modelId), 'flex', 'IgnoreCase', 1)
             c = [148, 252, 155] / 255;
+        else
+            c = [255, 187, 53] / 255;
         end
         
-        h1 = bar(x_pos, muDeltaTrainLL(modelPos), width, 'FaceColor', c);
+        h1 = bar(x_pos, totalLL(modelPos), width, 'FaceColor', c);
         hold on;
-        
-        errorbar(x_pos, muDeltaTrainLL(modelPos), semDeltaTrainLL(modelPos), 'k');
-        [tresult, p, ci] = ttest(delta(filter, modelPos));
-        fprintf('model %d: %f\n', modelId, p);
-        if ~isnan(tresult) && tresult
-            hText = text(x_pos, muDeltaTrainLL(modelPos) + semDeltaTrainLL(modelPos)*1.1, '*');
-            set(hText, 'FontSize', 25, 'HorizontalAlignment', 'center');
-        end
     end
     
     right = x_pos + width/2 + space;
     set(gca, 'xtick', labelPos);
     set(gca, 'xticklabel', labels);
-    title(sprintf('Mean log likelihood across contrast for Subject %d', subj));
+    title(sprintf('Relative total log likelihood across contrast for Subject %d', subj));
     xlim([0, right]);
-    ylabel('Mean loglikelihood');
-    %ylim([-0.01, 0.03 ]);
+    ylabel('Relative total loglikelihood');
+    %ylim([0, 1500 ]);
     rotateXLabels(gca,90);
 end
 
