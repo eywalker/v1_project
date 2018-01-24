@@ -58,7 +58,7 @@ font = 'Arial';
 
 %% %% Grid wise model performance comparison on the training set
 
-models_to_plot = [25, 37, 29, 32];
+models_to_plot = [38, 29, 32];
 nModels = length(models_to_plot);
 vmax = max(trainLL(:)) + 0.01;
 
@@ -127,7 +127,7 @@ end
 
 %% Grid wise model performance comparison on the test set
 
-models_to_plot = [24, 37, 28, 32];
+models_to_plot = [38, 28, 32];
 nModels = length(models_to_plot);
 vmax = max(testLL(:)) + 0.01;
 
@@ -185,7 +185,7 @@ for subjIdx = 1:length(uniqueSubj)
                 x = linspace(log(0.5), vmax);
                 plot(x, x, '--r');
                 if row ~= col
-                    title(sprintf('p-val = %.6f', p));
+                    title(sprintf('p-val = %.3f', p));
                 end
                 xlim([log(0.5), vmax]);
                 ylim([log(0.5), vmax]);

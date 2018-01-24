@@ -20,7 +20,7 @@ classdef TestsetBinaryReadout < dj.Relvar & dj.AutoPopulate
 		function makeTuples(self, key)
             [trainset, testset, decoder, model] = getAll(cd_lc.LCModelFits & key);
             modelChoice = model.pRespA(testset) > 0.5;
-            actualChoice = strcmp(dataSet.selected_class, 'A');
+            actualChoice = strcmp(testset.selected_class, 'A');
             correctChoice = modelChoice == actualChoice';
             pCorrect = mean(correctChoice);
             

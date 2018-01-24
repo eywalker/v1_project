@@ -324,9 +324,9 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% bar plots for delta average log likelihood across contrast relative to a taget model
-models_to_plot = [2, 34, 5, 7, 25, 29, 32];
+models_to_plot = [38, 29, 32];
 data = testLL;
-targetModel = 2;
+targetModel = 38;
 
 if targetModel == 0
     delta = data;
