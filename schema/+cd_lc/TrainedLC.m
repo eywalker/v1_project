@@ -30,10 +30,10 @@ classdef TrainedLC < dj.Relvar & dj.AutoPopulate
             if count(cd_lc.PrevFitLC & key) == 1
                 fprintf('Loading an existing model as baseline...\n');
                 lc_model = getLC(cd_lc.PrevFitLC & key);
-                reps = 20;
+                reps = 30;
             else
                 lc_model = getLC(cd_lc.LCModels & key);
-                reps = 30;
+                reps = 50;
             end
             [muLL, logl] = self.train(lc_model, key, reps);
             tuple.lc_trainset_size = length(logl);
