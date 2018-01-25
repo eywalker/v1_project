@@ -272,6 +272,10 @@ classdef PSLLC < handle
             % probability of responding 'A' for each trial, incorporating
             % the accentuation (alpha) and lapse rate.
             logPostRatio = logLRatio + log(self.priorA)-log(1 - self.priorA);% log(p(C = 'A' | r) / p(C = 'B' | r))
+            pos = isinf(logPostRatio);
+            % if Inf, adjust to 1000 so that multiplication with alpha can happen safely
+            logPostRatio(pos) = sign(logPostRatio(pos)) * 1000; 
+            
             %expRespA = (logPostRatio > 1); % expected response A
             
             p = exp(self.alpha .* logPostRatio); % exponentiated posterior ratio [p(B|~)/p(A|~)]^alpha
