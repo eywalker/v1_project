@@ -19,6 +19,20 @@
      %peak = decoder.decodeOri(p);
      %peak = dataset.orientation;
      delta = decoder.decodeOri' - peak;
+     
+     
+     [sori,v] = sort(dataset.orientation);
+     thr = prctile(L, 99, 1);
+     p = (L>thr);
+     Lx = L .* (1-p) + p .* thr;
+     Lx = Lx ./ max(Lx);
+     Lx = Lx(:, v);
+     subplot(3, 2, 2 + i);
+     imagesc(Lx, 'YData', [min(decoder.decodeOri), max(decoder.decodeOri)]);
+     hold on;
+     plot(1:length(sori), sori, 'color', 'k', 'LineWidth', 2);
+     
+     
      Lall = [];
      for idxL = 1:size(L, 2)
          Lq = interp1(delta(:, idxL), L(:, idxL), xq, 'spline', 0);
@@ -27,7 +41,8 @@
      %subplot(1, length(decs), i);
      Ls = mean(Lall);
      %Ls = Ls / sum(Ls);
-     subplot(1, 2, 1);
+     subplot(3, 2, 1);
+     
      
 
      h = plot(xq, Ls, 'LineWidth', 1.5);
@@ -39,7 +54,7 @@
      ylabel('Likelihood (a.u.)');
      
      
-     subplot(1, 2, 2);
+     subplot(3, 2, 2);
      if i==1
          x = linspace(240, 300, 100);
          plot(x, x, 'k--');
