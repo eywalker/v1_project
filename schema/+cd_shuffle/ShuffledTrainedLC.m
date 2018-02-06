@@ -31,10 +31,10 @@ classdef ShuffledTrainedLC < dj.Relvar & dj.AutoPopulate
             if count(cd_shuffle.ShuffledPrevFitLC & key) == 1
                 fprintf('Loading an existing model as baseline...\n');
                 lc_model = getLC(cd_shuffle.ShuffledPrevFitLC & key);
-                reps = 5;
+                reps = 3;
             else
                 lc_model = getLC(cd_lc.LCModels & key);
-                reps = 10;
+                reps = 5;
             end
             [muLL, logl] = self.train(lc_model, key, reps);
             tuple.lc_trainset_size = length(logl);

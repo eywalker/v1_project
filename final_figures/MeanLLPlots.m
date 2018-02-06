@@ -58,7 +58,7 @@ font = 'Arial';
 
 %% %% Grid wise model performance comparison on the training set
 
-models_to_plot = [38, 29, 32];
+models_to_plot = v_lcid; %[38, 29, 32];
 nModels = length(models_to_plot);
 vmax = max(trainLL(:)) + 0.01;
 
@@ -127,7 +127,7 @@ end
 
 %% Grid wise model performance comparison on the test set
 
-models_to_plot = [38, 29, 32];
+models_to_plot = v_lcid;% [38, 29, 32];
 nModels = length(models_to_plot);
 vmax = max(testLL(:)) + 0.01;
 
@@ -329,8 +329,8 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% bar plots for delta average log likelihood across contrast relative to a taget model
-models_to_plot = [38, 29, 32]; %[2, 25, 33:36, 37:40, 29, 32];
-data = testLL;
+models_to_plot = [38, 29, 32, 39:43]; %[2, 25, 33:36, 37:40, 29, 32];
+data = trainLL;
 targetModel = 38;
 posTrain = find(v_lcid == targetModel);
 

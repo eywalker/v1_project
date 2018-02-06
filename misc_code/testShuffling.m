@@ -1,5 +1,5 @@
-keys = fetch(cd_lc.TrainedLC & 'decoder_id = 3', 'LIMIT 1');
-[dataset, decoder, model] = getAll(cd_lc.TrainedLC & keys(1));
+keys = fetch(cd_lc.TrainedLC & 'decoder_id = 3', 'LIMIT 10');
+[dataset, decoder, model] = getAll(cd_lc.TrainedLC & keys(7));
 
 %%
 close all;
@@ -8,7 +8,7 @@ L = dataset.likelihood;
 
 peakExtractor = @ClassifierModel.getMeanStd;
 
-v = shufflePositionWithinBin(dataset.orientation, 3);
+v = shufflePositionWithinBin(dataset.orientation, 2);
 peak = peakExtractor(x, L);
 
 Lshuffled = L(:, v);
