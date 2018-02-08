@@ -103,10 +103,13 @@ classdef PSLLC < handle
             [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.selected_class);
         end
         
-        function muLL = train(self, trainSet, nReps)%decodeOri, likelihood, classResp, nReps)
+        function muLL = train(self, trainSet, nReps, method)%decodeOri, likelihood, classResp, nReps)
         % train Trains the model using the training dataset.
         % 
             fprintf('Training %s', self.modelName);
+            if nagin < 4
+                method = 'fmincon';
+            end
             % TRAIN Trains the likelihood classifier to learn the model
             if nargin < 3
                 nReps = 10; % defaults to 10 repetitions of training
@@ -135,7 +138,7 @@ classdef PSLLC < handle
             % 200
             paramSet.upperBounds(isinf(paramSet.upperBounds)) = 200;
             minX = paramSet.values;
-            minCost = min(cf(minX), Inf); % this step necessary in case cf evalutes to NaN
+            minCost = min(cf(minX), Inf); % this step is necessary in case cf evalutes to NaN
             
             options=optimset('Display','off','Algorithm','interior-point');%'MaxFunEvals',500,'FunValCheck','on');
             
@@ -145,10 +148,14 @@ classdef PSLLC < handle
                 fprintf('.');
                 x0 = x0set(:, i);
                 %fprintf('Starting to train...\n')
-                
-                [x, cost] = bads(@cf, x0(:)', paramSet.lowerBounds(:)', paramSet.upperBounds(:)', [], [], [], options);
-                %[x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
-                %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                switch method
+                    case 'bads'
+                        [x, cost] = bads(@cf, x0(:)', paramSet.lowerBounds(:)', paramSet.upperBounds(:)', [], [], [], options);
+                    case 'ga'
+                        [x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                    otherwise
+                        [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                end
                 if (cost < minCost)
                     minCost = cost;
                     minX = x;

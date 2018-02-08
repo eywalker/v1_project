@@ -1,11 +1,14 @@
 restr = 'decoder_id = 3';
 train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_lc.TrainedLC, 'lc_train_mu_logl', 'lc_trainset_size');
 test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_lc.LCModelFits, 'lc_test_mu_logl', 'lc_testset_size');
-aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels & restr;
+
+shuffle_train_leaf = pro(cd_dataset.CleanCVTrainSets, 'dataset_hash -> lc_trainset_hash') * pro(cd_shuffle.ShuffledTrainedLC, 'lc_train_mu_logl -> shuffle_train_mu_logl', 'lc_trainset_size -> shuffle_trainset_size');
+shuffle_test_leaf = pro(cd_dataset.CleanCVTestSets, 'dataset_hash -> lc_testset_hash') * pro(cd_shuffle.ShuffledLCModelFits, 'lc_test_mu_logl -> shuffle_test_mu_logl', 'lc_testset_size->shuffle_testset_size');
+aggr_targets = cd_dataset.CleanCrossValidationSets * cd_lc.LCModels * cd_decoder.DecoderModels * cd_shuffle.ShuffleParam & restr;
 
 %% merge all primary keys except for lc_id and decoder_id into a single key
 pk = aggr_targets.primaryKey;
-filter = ~ismember(pk, {'lc_id', 'decoder_id'});
+filter = ~ismember(pk, {'lc_id', 'decoder_id', 'lc_shuffle_id'});
 pk = pk(filter);
 joint_id = pro(aggr_targets, sprintf('concat_ws("-", %s) -> joint_id', strjoin(pk, ',')));
 
@@ -14,6 +17,12 @@ train_data = fetch(train_results * joint_id * class_discrimination.CSCLookup & '
 
 test_results = pro(aggr_targets, test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
 test_data = fetch(test_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
+
+shuffle_train_results = pro(aggr_targets, shuffle_train_leaf, 'avg(lc_train_mu_logl) -> train_mu_logl', 'count(*) -> n');
+shuffle_train_data = fetch(shuffle_train_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
+
+shuffle_test_results = pro(aggr_targets, shuffle_test_leaf, 'avg(lc_test_mu_logl) -> test_mu_logl', 'count(*) -> n');
+shuffle_test_data = fetch(shuffle_test_results * joint_id * class_discrimination.CSCLookup & 'n > 2', '*') ;
 
 %% build the model names - robust to case of skipping lc_id
 modelNames = {};
@@ -26,6 +35,9 @@ decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
 
 [trainLL, v_jointid, v_lcid, v_decid] = dj.struct.tabulate(train_data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 [testLL, v_jointid_test, v_lcid_test, v_decid_test] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
+
+[shuffle_trainLL, v_jointid, v_lcid_shuffle, v_decid] = dj.struct.tabulate(shuffle_train_data, 'train_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
+[shuffle_testLL, v_jointid_test, v_lcid_test_shuffle, v_decid_test] = dj.struct.tabulate(shuffle_test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 
 %[testLL, v_jointid_c, v_lcid_c, v_decid_c] = dj.struct.tabulate(test_data, 'test_mu_logl', 'joint_id', 'lc_id', 'decoder_id');
 %%
@@ -58,7 +70,7 @@ font = 'Arial';
 
 %% %% Grid wise model performance comparison on the training set
 
-models_to_plot = [38, 29, 32];
+models_to_plot = v_lcid;
 nModels = length(models_to_plot);
 vmax = max(trainLL(:)) + 0.01;
 
@@ -196,7 +208,7 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% Contrast vs. mean logL plot
-models_to_plot = [25, 38, 29, 32];
+models_to_plot = v_lcid;%[25, 38, 29, 32];
 line_color = lines(length(models_to_plot));
 h = figure;
 set(h, 'name',  'Fit vs Contrast');
@@ -329,9 +341,9 @@ for subjIdx = 1:length(uniqueSubj)
 end
 
 %% bar plots for delta average log likelihood across contrast relative to a taget model
-models_to_plot = [2, 5, 7, 25, 29, 32, 34, 38, 42]; %[38, 29, 32, 39:43]; %[2, 25, 33:36, 37:40, 29, 32];
-data = testLL;
-targetModel = 38;
+models_to_plot = v_lcid; %[38, 29, 32, 39:43]; %[2, 25, 33:36, 37:40, 29, 32];
+data = trainLL;
+targetModel = 2;
 posTrain = find(v_lcid == targetModel);
 
 delta = bsxfun(@minus, data, data(:, posTrain));

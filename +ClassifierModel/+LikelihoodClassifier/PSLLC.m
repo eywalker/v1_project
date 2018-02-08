@@ -100,11 +100,14 @@ classdef PSLLC < handle
             [muLL, logLList] = self.getLogLikelihoodHelper(logLRatio, dataStruct.selected_class);
         end
         
-        function muLL = train(self, trainSet, nReps)%decodeOri, likelihood, classResp, nReps)
+        function muLL = train(self, trainSet, nReps, method)%decodeOri, likelihood, classResp, nReps)
         % train Trains the model using the training dataset.
         % 
             fprintf('Training %s', self.modelName);
             % TRAIN Trains the likelihood classifier to learn the model
+            if nagin < 4
+                method = 'fmincon';
+            end
             if nargin < 3
                 nReps = 10; % defaults to 10 repetitions of training
             end
@@ -142,8 +145,14 @@ classdef PSLLC < handle
             for i = 1 : nReps
                 fprintf('.');
                 x0 = x0set(:, i);
-                
-                [x, cost] = bads(@cf, x0(:)', paramSet.lowerBounds(:)', paramSet.upperBounds(:)', [], [], [], options);
+                switch method
+                    case 'bads'
+                        [x, cost] = bads(@cf, x0(:)', paramSet.lowerBounds(:)', paramSet.upperBounds(:)', [], [], [], options);
+                    case 'ga'
+                        [x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                    otherwise
+                        [x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
+                end
                 %[x, cost] = fmincon(@cf, x0, [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 %[x, cost] = ga(@cf, length(x0), [], [], [], [], paramSet.lowerBounds, paramSet.upperBounds, [], options);
                 if (cost < minCost)
