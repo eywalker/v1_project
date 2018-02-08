@@ -105,7 +105,7 @@ classdef PSLLC < handle
         % 
             fprintf('Training %s', self.modelName);
             % TRAIN Trains the likelihood classifier to learn the model
-            if nagin < 4
+            if nargin < 4
                 method = 'fmincon';
             end
             if nargin < 3
