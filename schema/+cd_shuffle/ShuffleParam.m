@@ -16,6 +16,12 @@ classdef ShuffleParam < dj.Lookup
             
             x = dataSet.decodeOri;
             L = dataSet.likelihood;
+            
+            if bin_width == 0 % no shuffling
+                shuffledSet = dataSet;
+                shuffledSet.oldLikelihood = dataSet.likelihood;
+                return;
+            end
 
             peakExtractor = eval(['@' fName]);
 

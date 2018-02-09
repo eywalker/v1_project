@@ -1,5 +1,5 @@
 %{
-cd_plset.PLSets (manual)             # my newest table
+cd_plset.PLSets (manual)            # my newest table
 plset_owner  : varchar(255)        # name of the table that owns this dataset
 plset_hash   : varchar(255)        # SHA-1 hash for the primary key of the target data entry
 -----
