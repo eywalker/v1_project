@@ -42,6 +42,7 @@ classdef MLPDecoder < handle
             %logL = self.wo * relu(self.w2 * relu(self.w1 * spikeCounts + self.b1) + self.b2) + self.bo;
             normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
             normL(isnan(normL)) = 0;
+            normL = interp1(self.decodeOri, normL, decodeOri, 'pchip', 0);
             L = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
         end
         

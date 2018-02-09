@@ -35,7 +35,7 @@ rel_test = pro(cd_lc.LCTrainSets * pro(cd_dataset.CleanCVTrainSets, 'dataset_has
 parpopulate(cd_decoder.MLFiller);
 
 %% train all LC models
-parpopulate(cd_shuffle.ShuffledTrainedLC, rel_train, 'lc_id in (2, 7, 25, 32, 38)', 'decoder_id = 3');
+parpopulate(cd_shuffle.ShuffledTrainedLC, rel_train, 'lc_id in (32, 38)', 'decoder_id = 3');
 
 %% test trained LC on tset sets
 parpopulate(cd_shuffle.ShuffledLCModelFits, rel_test);

@@ -14,7 +14,7 @@ lc_trainset_size : int               # size of the trainset
 classdef TrainedLC < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = cd_decoder.TrainedDecoder * cd_lc.LCModels * cd_lc.LCTrainSetPairs;
+		popRel = cd_decoder.TrainedDecoder * cd_lc.LCModels * cd_lc.LCTrainSetPairs & 'lc_id in (32, 38)';
 	end
 
 	methods(Access=protected)

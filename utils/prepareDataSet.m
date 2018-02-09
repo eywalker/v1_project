@@ -7,11 +7,12 @@ function dataSet=prepareDataSet(dataSet, decoder, key)
     dataSet.goodUnits = decoder.unitFilter(:);
     dataSet.totalCounts = sum(dataSet.counts, 1);
     dataSet.goodTotalCounts = dataSet.goodUnits' * dataSet.counts;
-    if isprop(decoder, 'decodeOri')
-        decodeOri = decoder.decodeOri;
-    else
-        decodeOri = linspace(220, 320, 1000);
-    end
+%     if isprop(decoder, 'decodeOri')
+%         decodeOri = decoder.decodeOri;
+%     else
+%         decodeOri = linspace(220, 320, 1000);
+%     end
+    decodeOri = linspace(220, 320, 1000);
     L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
     dataSet.decodeOri = decodeOri;
     dataSet.likelihood = L;

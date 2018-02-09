@@ -15,7 +15,7 @@ lc_trainset_size : int               # size of the trainset
 classdef ShuffledTrainedLC < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = cd_decoder.TrainedDecoder * cd_lc.LCModels * cd_lc.LCTrainSetPairs * cd_shuffle.ShuffleParam;
+		popRel = pro(cd_decoder.TrainedDecoder * cd_lc.LCModels * cd_lc.LCTrainSetPairs * cd_shuffle.ShuffleParam & 'lc_id in (32, 38)');
 	end
 
 	methods(Access=protected)

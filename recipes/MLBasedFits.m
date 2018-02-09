@@ -35,7 +35,7 @@ rel_test = pro(cd_lc.LCTrainSets * pro(cd_dataset.CleanCVTrainSets, 'dataset_has
 parpopulate(cd_decoder.MLFiller);
 
 %% train all LC models
-parpopulate(cd_lc.TrainedLC, rel_train, 'lc_id <= 7 or lc_id >= 24', 'lc_id <= 43', 'decoder_id = 3');
+parpopulate(cd_lc.TrainedLC, rel_train, 'lc_id in (32, 38)', 'decoder_id = 3');
 
 %% test trained LC on tset sets
 parpopulate(cd_lc.LCModelFits, rel_test);
