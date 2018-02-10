@@ -1,8 +1,9 @@
 warning ('off','all');
 %parpopulate(cd_lc.PrevFitLC, 'decoder_id = 3')
-MLBasedFits
+%MLBasedFits
 %GetBinaryPerformance
-ShuffledMLBasedFits
+%ShuffledMLBasedFits
+DLSetFits
 %CleanCrossValidationSetFits;
 %FitCleanContrastSession;
 %RunCleanSimulationCV;
