@@ -12,7 +12,7 @@ function dataSet=prepareDataSet(dataSet, decoder, key)
 %     else
 %         decodeOri = linspace(220, 320, 1000);
 %     end
-    decodeOri = linspace(220, 320, 1000);
+    decodeOri = linspace(200, 340, 1000);
     L = decoder.getLikelihoodDistr(decodeOri, dataSet.contrast, dataSet.counts);
     dataSet.decodeOri = decodeOri;
     dataSet.likelihood = L;

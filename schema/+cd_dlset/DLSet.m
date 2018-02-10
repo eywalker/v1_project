@@ -1,9 +1,12 @@
 %{
 -> cd_decoder.TrainedDecoder
--> cd_shuffle.ShuffleParam
+-> cd_dlset.ShuffleParam
 %}
 
 classdef DLSet < dj.Computed
+    properties
+        popRel = cd_decoder.TrainedDecoder * cd_dlset.ShuffleParam & 'decoder_id = 3'
+    end
 
 	methods(Access=protected)
 		function makeTuples(self, key)
@@ -19,7 +22,7 @@ classdef DLSet < dj.Computed
             end
             [dataSet, decoder] = getAll(cd_decoder.TrainedDecoder & key);
             dataSet = prepareDataSet(dataSet, decoder, key);
-            dataSet = shuffleDataSet(cd_shuffle.ShuffleParam & key, dataSet);
+            dataSet = shuffleDataSet(cd_dlset.ShuffleParam & key, dataSet);
         end
     end
 
