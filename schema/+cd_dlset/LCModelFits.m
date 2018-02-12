@@ -5,6 +5,9 @@
 lc_test_mu_logl  : float  # mean loglikelihood
 lc_test_logl     : longblob # logl values for all trials
 lc_testset_size  : int    # size of the testset
+model_choice                : longblob                      # binary readout of a trial from the model
+model_correct               : longblob                      # indicates whether model choice was correct
+prop_correct                : float                         # proportion of correct trials
 %}
 
 classdef LCModelFits < dj.Computed
@@ -45,10 +48,18 @@ classdef LCModelFits < dj.Computed
             dataSet = self.getTestSet(key);
             
             [muLL, logl] = lc_model.getLogLikelihood(dataSet);
+            modelChoice = lc_model.pRespA(dataSet) > 0.5;
+            actualChoice = strcmp(dataSet.selected_class, 'A');
+            correctChoice = modelChoice(:) == actualChoice(:);
+            pCorrect = mean(correctChoice);
+            
             fprintf('%s model fit mu_logl = %.3f\n', lc_model.modelName, muLL);
             tuple.lc_test_mu_logl = muLL;
             tuple.lc_test_logl = logl;
             tuple.lc_testset_size = length(logl);
+            tuple.model_choice = modelChoice;
+            tuple.model_correct = correctChoice;
+            tuple.prop_correct = pCorrect;
             
 			self.insert(tuple)
 		end

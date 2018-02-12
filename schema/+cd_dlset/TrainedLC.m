@@ -25,16 +25,14 @@ classdef TrainedLC < dj.Computed
 %             tuple.lc_class = lc_info.lc_class;
 %             tuple.lc_label = lc_info.lc_label;
 %             
-%             % if previously trained model exist, start with that
-%             if count(cd_lc.PrevFitLC & key) == 1
-%                 fprintf('Loading an existing model as baseline...\n');
-%                 lc_model = getLC(cd_lc.PrevFitLC & key);
-%             else
-%                 
-%             end
+            % if previously trained model exist, start with that
+            if count(cd_dlset.PrevFitLC & key) == 1
+                fprintf('Loading an existing model as baseline...\n');
+                lc_model = getLC(cd_dlset.PrevFitLC & key);
+            else
+                lc_model = getLC(cd_lc.LCModels & key);
+            end
 
-            % get the model
-            lc_model = getLC(cd_lc.LCModels & key);
             [muLL, logl] = self.train(lc_model, key, 30, 2);
             tuple.lc_trainset_size = length(logl);
             tuple.lc_train_mu_logl = muLL;
