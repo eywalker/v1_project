@@ -1,8 +1,8 @@
  keys = fetch(class_discrimination.CSCLookup & 'subject_id = 21');
+ % 41 is good candidate
+ sessions = cd_dataset.CleanContrastSessionDataSet & keys(48);
  
- sessions = cd_dataset.CleanContrastSessionDataSet & keys(41);
- 
- decs = fetch(cd_decoder.TrainedDecoder & pro(sessions, 'dataset_hash -> dec_trainset_hash') & 'decoder_id = 3');
+ decs = fetch(cd_decoder.TrainedDecoder * pro(sessions, 'dataset_hash -> dec_trainset_hash') & 'decoder_id = 3', 'ORDER BY dataset_contrast');
  
  figure;
  xq = linspace(-50, 50, 1000);
@@ -12,23 +12,27 @@
  c = lines(length(decs));
  for i=1:length(decs)
      [dataset, decoder] = getAll(cd_decoder.TrainedDecoder & decs(i));
-     L = decoder.getLikelihoodDistr(decoder.decodeOri, [], dataset.counts);
+     decodeOri = linspace(220, 320, 1000); 
+     L = decoder.getLikelihoodDistr(decodeOri, [], dataset.counts);
      
-     peak = (decoder.decodeOri * L) ./ sum(L);
+     %peak = (decoder.decodeOri * L) ./ sum(L);
+     [peak, std] = ClassifierModel.getMeanStd(decodeOri, L);
      %[~, p] = max(L);
      %peak = decoder.decodeOri(p);
      %peak = dataset.orientation;
-     delta = decoder.decodeOri' - peak;
+     delta = decodeOri' - peak;
      
      
      [sori,v] = sort(dataset.orientation);
      thr = prctile(L, 99, 1);
      p = (L>thr);
+     
      Lx = L .* (1-p) + p .* thr;
      Lx = Lx ./ max(Lx);
      Lx = Lx(:, v);
      subplot(3, 2, 2 + i);
-     imagesc(Lx, 'YData', [min(decoder.decodeOri), max(decoder.decodeOri)]);
+     imagesc(Lx, 'YData', [min(decodeOri), max(decodeOri)]);
+     ylim([240, 300]);
      hold on;
      plot(1:length(sori), sori, 'color', 'k', 'LineWidth', 2);
      
@@ -43,8 +47,6 @@
      %Ls = Ls / sum(Ls);
      subplot(3, 2, 1);
      
-     
-
      h = plot(xq, Ls, 'LineWidth', 1.5);
      hline = [hline h];
      hold on;
@@ -71,8 +73,10 @@
      edges = linspace(230, 310, 6);
      
      [mu, sigma, n, binc] = nanBinnedStats(dataset.orientation, peak,edges);
+     [sigma, ~, n, binc] = nanBinnedStats(dataset.orientation, std,edges);
+
      sem = sigma ./ sqrt(n);
-     h = errorShade(binc, mu, sem, c(i, :), 0.5);
+     h = errorShade(binc, mu, sigma, c(i, :), 0.5);
      hpatch = [hpatch h];
      hold on;
  end
