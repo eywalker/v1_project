@@ -1,3 +1,4 @@
+% recipe for fitting DL based models
 % first fit only on restricted subset
 restr = 'lc_id in (32, 38)';
 parpopulate(cd_dlset.TrainedLC, restr);
