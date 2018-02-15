@@ -4,6 +4,9 @@
 %}
 
 classdef CVSet < dj.Computed
+    properties
+        popRel = cd_decoder.DecoderTrainSets * cd_dataset.CVParams & 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"'
+    end
 	methods(Access=protected)
         function makeTuples(self, key)
             data  = fetchDataSet(cd_decoder.DecoderTrainSets & key, '*');
