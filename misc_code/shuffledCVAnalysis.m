@@ -1,9 +1,11 @@
-rel = pro(cd_dlset.LCModelFits, 'lc_test_logl', 'lc_test_mu_logl * lc_testset_size -> lc_total_logl');
+rel = pro(cd_dlset.LCModelFits, 'lc_test_logl', 'lc_test_mu_logl', 'lc_test_mu_logl * lc_testset_size -> lc_total_logl');
 rel = rel * pro(cd_dataset.CleanContrastSessionDataSet, 'dataset_hash -> dec_trainset_hash') * class_discrimination.CSCLookup;
 data = fetch(rel, '*');
 
+%%
 [v, data_hash, cv_index, lc_id, shuffle_id] = dj.struct.tabulate(data, 'lc_total_logl', 'dec_trainset_hash', 'cv_index', 'lc_id', 'lc_shuffle_id' );
-subject_id = dj.struct.tabulate(data, 'subject_id', 'dec_trainset_hash', 'cv_index', 'lc_id', 'lc_shuffle_id' );
+
+subject_id = dj.struct.tabulate(data, 'subject_id', 'dec_trainset_hash', 'cv_index',  'lc_id', 'lc_shuffle_id' );
 
 
 m1 = v(:,:,1,1);
@@ -24,8 +26,13 @@ s2 = ClassifierModel.getMeanStd(data2.decodeOri, data2.likelihood);
 %%
 base = cd_dlset.LCModelFits & 'lc_id = 38' & 'lc_shuffle_id=0';
 shuffled = cd_dlset.LCModelFits & 'lc_id = 38' & 'lc_shuffle_id = 1';
-deltas = pro(base * pro(shuffled, 'lc_shuffle_id -> shuffle_id', 'lc_test_mu_logl -> shuffle_mu_logl'), 'abs(lc_test_mu_logl - shuffle_mu_logl) -> delta');
+deltas = pro(shuffled * pro(base, 'lc_shuffle_id -> shuffle_id', 'lc_test_mu_logl -> shuffle_mu_logl'), 'abs(lc_test_mu_logl - shuffle_mu_logl) -> delta');
 
-thr = 5e-5;
+thr = 0.001;
 
 filter= deltas & sprintf('delta > %f', thr);
+
+keys = fetch(cd_dlset.CVSetMember & filter);
+%%
+[train, test, dec, model] = getAll(cd_dlset.LCModelFits & keys(1) & 'lc_id = 38' & 'lc_shuffle_id = 0');
+[train2, test2, dec2, model2] = getAll(cd_dlset.LCModelFits & keys(1) & 'lc_id = 38' & 'lc_shuffle_id = 1');

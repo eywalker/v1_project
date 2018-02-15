@@ -19,9 +19,9 @@ for subjIdx=1:length(subjects)
     respA = strcmp(resp, 'A');
     uniqueContrasts = unique(cv);
     c_edges = prctile(cv(:), linspace(0, 100, nBins + 1));
-    %c_edges = [0, 0.02, 0.08, 0.12, 0.2, 0.4, 0.6, 0.75, 1];
-    c_edges(1) = c_edges(1) - 0.001;
-    c_edges(end) = c_edges(end) + 0.001;
+    c_edges = [0, 0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64];
+    c_edges(1) = c_edges(1);
+    c_edges(end) = c_edges(end);
 
     n = 25;
     ed1 = prctile(ori, linspace(0, 50, (n+1)/2));
@@ -58,12 +58,14 @@ for subjIdx=1:length(subjects)
         hold on;
         plot(peakloc, v, 'o', 'MarkerSize', 10, 'MarkerFaceColor', c, 'color', c);
         hs = [hs h];
-        labels = [labels {sprintf('Contrast in [%.3f, %.3f]', max(low*100, 0.5), min(high * 100, 100))}];
+        labels = [labels {sprintf('Contrast in [%.1f, %.1f)', max(low*100, 0.5), min(high * 100, 60))}];
         hold on;
     end
     title(sprintf('Subject %d Pyschometric curves', subject));
     xlim([250, 290]);
     xlabel('Stimulus orientation');
     ylabel('P(selecting A)');
-    legend(hs, labels);
+    if subjIdx == length(subjects)
+        legend(hs, labels);
+    end
 end
