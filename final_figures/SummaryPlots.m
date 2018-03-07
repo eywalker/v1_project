@@ -1,5 +1,5 @@
 %%
-rel = pro(cd_dlset.LCModelFits, 'lc_test_logl', 'lc_test_mu_logl', 'lc_test_mu_logl * lc_testset_size -> lc_total_logl');
+rel = pro(cd_dlset.LCModelFits & 'decoder_id=3', 'lc_test_logl', 'lc_test_mu_logl', 'lc_test_mu_logl * lc_testset_size -> lc_total_logl');
 rel = rel * pro(cd_dataset.CleanContrastSessionDataSet, 'dataset_hash -> dec_trainset_hash') * class_discrimination.CSCLookup;
 data = fetch(rel, '*');
 
@@ -11,6 +11,7 @@ subjects = dj.struct.tabulate(data, 'subject_id', 'dec_trainset_hash', 'cv_index
 contrast = cellfun(@str2num, all_contrasts(:, 1));
 subjects = subjects(:, 1);
 uniqueSubj = unique(subjects);
+subjNames = containers.Map([3, 21],{'L', 'T'});
 %%
 use_mean = false;
 
@@ -37,12 +38,16 @@ testLL = cvMu(:, :, 1); % get non shuffled data
 shuffledLL = cvMu(:, :, 2);
 
 
-
-%% build the model names - robust to case of skipping lc_id
+%% build the model names - robust to the case of skipping lc_id
 modelNames = {};
 for m=fetch(cd_lc.LCModels, 'lc_label')'
     modelNames{m.lc_id} = m.lc_label;
 end
+
+% change names for plots
+modelNames{32} = 'Bayesian model';
+modelNames{38} = 'Non-Bayesian model';
+
 decNames = fetchn(cd_decoder.DecoderModels, 'decoder_label');
 
 %% Construct labels and contrast edges
@@ -66,75 +71,6 @@ fs = 14;
 fs_title = 16;
 font = 'Arial';
 
-%% Grid wise model performance comparison on the test set
-
-models_to_plot = lc_id;
-nModels = length(models_to_plot);
-vmax = max(testLL(:)) + 0.01;
-
-line_color = lines(nModels);
-
-for subjIdx = 1:length(uniqueSubj)
-    subj = uniqueSubj(subjIdx);
-    sessMatch = (subjects == subj);
-    
-    muLL = mean(testLL(sessMatch, :), 1);
-    
-    h = figure;
-    set(h, 'name',  sprintf('Test Set Model comparisons for Subject %d', subj));
-
-    for row=1:nModels
-        for col=1:nModels
-            rowModel = models_to_plot(row);
-            colModel = models_to_plot(col);
-            posRow = find(lc_id == rowModel);
-            posCol = find(lc_id == colModel);
-            if isempty(posRow) || isempty(posCol)
-                continue;
-            end
-            
-            subplot(nModels, nModels, (row-1)*nModels + col);
-            
-            if row < col
-                axis off;
-%                 rowV = muLL(posRow);
-%                 colV = muLL(posCol);
-%                 bar([rowV, colV]);
-                continue;
-            elseif row == col
-                [mu, s, n, binc] = nanBinnedStats(contrast(sessMatch), testLL(sessMatch, posRow), edges);
-                p = '-';
-                errorbar(binc, mu, s./sqrt(n), p, 'color', line_color(row, :));
-                hold on;
-                x = logspace(-3, 0, 100);
-                plot(x, ones(size(x)) * log(0.5), 'k--');
-                title(modelNames(colModel));
-                xlabel('Contrast');
-                set(gca, 'xscale', 'log');
-                xlim([0.003, 1.2]);
-                ylabel('Mean log likelihood');
-                ylim([log(0.5), vmax]);
-            else
-
-                % on lower left, show scatter plot
-                
-                scatter(testLL(sessMatch, posCol), testLL(sessMatch, posRow), [], contrast(sessMatch));
-                [p, h, ci] = signrank(testLL(sessMatch, posCol), testLL(sessMatch, posRow));
-                xlabel(modelNames(colModel));
-                ylabel(modelNames(rowModel));
-                hold on;
-                x = linspace(log(0.5), vmax);
-                plot(x, x, '--r');
-                if row ~= col
-                    title(sprintf('p-val = %.3f', p));
-                end
-                xlim([log(0.5), vmax]);
-                ylim([log(0.5), vmax]);
-                
-            end
-        end
-    end
-end
 
 %% Contrast vs. mean logL plot
 models_to_plot = lc_id;
@@ -162,7 +98,7 @@ for subjIdx = 1:length(uniqueSubj)
 
     x = logspace(-3, 0, 100);
     plot(x, ones(size(x)) * log(0.5), 'k--');
-    title(sprintf('Fit on test set vs contrast for subject %d', subj));
+    title(sprintf('Fit on test set vs contrast for Monkey %s', subjNames(subj)));
     if subjIdx == length(uniqueSubj)
         legend(modelNames(models_to_plot));
     end
@@ -173,7 +109,7 @@ for subjIdx = 1:length(uniqueSubj)
     %ylim([log(0.5), -0.3]);
 
 end
-%% Contrast vs. mean logL plot for trainset and test set with error bars based on difference w.r.t. a target model
+%% Contrast vs. delta mean logL plot relative to a target model
 models_to_plot = lc_id;
 % compare against this model
 target_model = 38;
@@ -189,7 +125,7 @@ set(h, 'name',  'Fit vs Contrast');
 for subjIdx = 1:length(uniqueSubj)
     subj = uniqueSubj(subjIdx);
     
-    hrefs = []
+    hrefs = [];
     subplot(1, length(uniqueSubj), subjIdx);
     for idx = 1:length(models_to_plot)
         modelID = models_to_plot(idx);
@@ -214,7 +150,7 @@ for subjIdx = 1:length(uniqueSubj)
 
     %x = logspace(-3, 0, 100);
     %plot(x, ones(size(x)) * log(0.5), 'k--');
-    title(sprintf('Fit on test set vs contrast for subject %d', subj));
+    title(sprintf('Monkey %s', subjNames(subj)));
     if subjIdx == length(uniqueSubj)
         labels = {};
         for m=1:length(models_to_plot)
@@ -226,12 +162,14 @@ for subjIdx = 1:length(uniqueSubj)
     xlabel('Contrast');
     set(gca, 'xscale', 'log');
     xlim([0.003, 1.2]);
-    ylabel('Mean log likelihood');
+    if subjIdx==1
+        ylabel('Relative log likelihood');
+    end
     %ylim([log(0.5), -0.3]);
 
 end
 
-%% bar plots for delta average log likelihood across contrast relative to a taget model
+%% bar plots for delta average log likelihood relative to a taget model
 models_to_plot = [38, 32]; %[38, 29, 32, 39:43]; %[2, 25, 33:36, 37:40, 29, 32];
 
 targetModel = 38;
@@ -243,7 +181,7 @@ shuffled_delta = bsxfun(@minus, shuffledLL, testLL(:, posTrain));
 
 %NUM_MODELS = length(models_to_plot);
 h = figure;
-set(h, 'name',  'Average log likelihood across contrast');
+set(h, 'name',  'Average relative log likelihood');
 width = 2;
 
 space = 0.5;
@@ -321,9 +259,11 @@ for subjIdx = 1:length(uniqueSubj)
     right = x_pos + width/2 + space;
     set(gca, 'xtick', labelPos);
     set(gca, 'xticklabel', labels);
-    title(sprintf('Mean log likelihood across contrast for Subject %d', subj));
+    title(sprintf('Monkey %s', subjNames(subj)));
     xlim([0, right]);
-    ylabel('Mean loglikelihood');
+    if subjIdx == 1
+        ylabel('Relative log likelihood');
+    end
     ylim([-0.01, 0.02 ]);
     rotateXLabels(gca,90);
 end
@@ -341,7 +281,7 @@ shuffled_delta = bsxfun(@minus, shuffledLL, testLL(:, posTrain));
 
 %NUM_MODELS = length(models_to_plot);
 h = figure;
-set(h, 'name',  'Average log likelihood across contrast');
+set(h, 'name',  'Total log likelihood');
 width = 2;
 
 space = 0.5;
@@ -356,7 +296,6 @@ for subjIdx = 1:length(uniqueSubj)
 
     
     muDeltaTestLL = nansum(test_delta(filter,:), 1); % take average across all contrasts
-    
     muDeltaShuffledLL = nansum(shuffled_delta(filter,:), 1); % take average across all contrasts
  
     
@@ -395,9 +334,11 @@ for subjIdx = 1:length(uniqueSubj)
     right = x_pos + width/2 + space;
     set(gca, 'xtick', labelPos);
     set(gca, 'xticklabel', labels);
-    title(sprintf('Total delta log likelihood for Subject %d', subj));
+    title(sprintf('Monkey %s', subjNames(subj)));
     xlim([0, right]);
-    ylabel('Total delta loglikelihood');
+    if subjIdx==1
+        ylabel('Relative log likelihood');
+    end
     ylim([-800, 1500 ]);
     rotateXLabels(gca,90);
 end

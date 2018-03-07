@@ -32,9 +32,12 @@
      Lx = Lx(:, v);
      subplot(3, 2, 2 + i);
      imagesc(Lx, 'YData', [min(decodeOri), max(decodeOri)]);
-     ylim([240, 300]);
+     ylim([250, 290]);
      hold on;
      plot(1:length(sori), sori, 'color', 'k', 'LineWidth', 2);
+     xlabel('Trials');
+     ylabel('Estimated orientation');
+     title(sprintf('contrast=%.1f%%', 100 * dataset.contrast(1)))
      
      
      Lall = [];
@@ -50,23 +53,23 @@
      h = plot(xq, Ls, 'LineWidth', 1.5);
      hline = [hline h];
      hold on;
-     legends = [legends {sprintf('contrast=%.2f', 100 * dataset.contrast(1))}];
-     xlim([-30, 30]);
+     legends = [legends {sprintf('contrast=%.1f%%', 100 * dataset.contrast(1))}];
+     xlim([-20, 20]);
      xlabel('Relative orientation');
      ylabel('Likelihood (a.u.)');
      
      
      subplot(3, 2, 2);
      if i==1
-         x = linspace(240, 300, 100);
+         x = linspace(250, 290, 100);
          plot(x, x, 'k--');
          hold on;
      end
      %scatter(dataset.orientation, peak);
-     xlim([240, 300]);
-     ylim([240, 300]);
+     xlim([250, 290]);
+     ylim([250, 290]);
      xlabel('True stimulus orientation');
-     ylabel('Max likelihood decoded stimulus orientatin');
+     ylabel('MAP stimulus orientatin');
      %edges = prctile(dataset.orientation, linspace(0, 100, 7));
      %edges(1) = edges(1) - 1;
      %edges(end) = edges(end) + 1;

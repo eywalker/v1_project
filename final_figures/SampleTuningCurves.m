@@ -50,7 +50,7 @@ for idx = pos
     contVal = contrasts(idx);
     baseEnc = model.baseEncoder; % tuning curve encoder
     stim = linspace(lb, ub, 100);
-    leg = [leg {sprintf('Contrast = %.2f', 100 * contVal)}];
+    leg = [leg {sprintf('Contrast=%.1f%%', 100 * contVal)}];
     spikeCounts = baseEnc.encode(stim);
     for indUnit=1:NUM_UNITS
         %hax=subplot(ROW,COL,indUnit);
@@ -58,7 +58,7 @@ for idx = pos
         axes(hax);
         %scale=max(spikeCounts(indUnit,:))-min(spikeCounts(indUnit,:));
         scale = 1;
-        hf=plot(stim,(spikeCounts(indUnit,:)-min(spikeCounts(indUnit,:)))/scale);
+        hf=plot(stim,(spikeCounts(indUnit,:)-min(spikeCounts(indUnit,:)))/scale, 'linewidth', 1);
         hold on;
         set(hax,'xtick',[],'ytick',[]);
         set(hax,'xticklabel',[]);
@@ -69,8 +69,8 @@ for idx = pos
         xlim([lb, ub]);
         
         if indUnit == 9
-            xlabel('Orientation');
-            ylabel('Response');
+            xlabel('Orientation', 'fontsize', 10);
+            ylabel('Response', 'fontsize', 10);
             xticks([lb, 270, ub]);
             xticklabels([lb, 270, ub]);
         end
