@@ -27,8 +27,8 @@ classdef PSLLC < handle
         
         params = {'sigmaA', 'sigmaB', 'stimCenter', 'priorA', 'lapseRate', 'alpha'}; % specification of parameter names
         fixedParams = [true, true, false, false, false, false]; % specifies which of the parameters should be "fixed" - non-trainable
-        p_lb = [0, 0, 190, 0, 0.001, 0]; % lower bound for parameters
-        p_ub = [50, 50, 350, 1, 1, 20]; % upper bound for parameters
+        p_lb = [0, 0, 190, 0.001, 0.001, 0]; % lower bound for parameters
+        p_ub = [50, 50, 350, 0.999, 1, 20]; % upper bound for parameters
         initializer;
         precompLogLRatio = false % set this to false to get logLRatio recomputed with parameter update
         
@@ -128,9 +128,12 @@ classdef PSLLC < handle
                     [logLRatio, trainSet] = self.getLogLRatio(trainSet);
                 end
                 cost = -self.getLogLikelihoodHelper(logLRatio, trainSet.selected_class);
-                if(isnan(cost) || ~isreal(cost))
-                    cost = Inf;
-                end
+%                 if(isnan(cost) || ~isreal(cost))
+%                     cost = Inf;
+%                 end
+%                 if isinf(cost)
+%                     cost = 1000; % surrogate cost
+%                 end
             end
             
             paramSet = self.getModelParameters;

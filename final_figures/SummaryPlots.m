@@ -13,7 +13,7 @@ subjects = subjects(:, 1);
 uniqueSubj = unique(subjects);
 subjNames = containers.Map([3, 21],{'L', 'T'});
 %%
-use_mean = false;
+use_mean = true;
 
 if use_mean
     [v, data_hash, cv_index, lc_id, shuffle_id] = dj.struct.tabulate(data, 'lc_test_mu_logl', 'dec_trainset_hash', 'cv_index', 'lc_id', 'lc_shuffle_id' );
