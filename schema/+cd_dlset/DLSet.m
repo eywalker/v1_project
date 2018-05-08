@@ -16,12 +16,15 @@ classdef DLSet < dj.Computed
     
     methods
     
-        function [dataSet, decoder] = getDataSet(self, key)
+        function [dataSet, decoder] = getDataSet(self, key, nori)
+            if nargin < 3
+                nori = [];
+            end
             if nargin < 2
                 key = fetch(self);
             end
             [dataSet, decoder] = getAll(cd_decoder.TrainedDecoder & key);
-            dataSet = prepareDataSet(dataSet, decoder, key);
+            dataSet = prepareDataSet(dataSet, decoder, key, nori);
             dataSet = shuffleDataSet(cd_dlset.ShuffleParam & key, dataSet);
         end
     end

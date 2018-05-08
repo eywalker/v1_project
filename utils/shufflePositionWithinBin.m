@@ -1,4 +1,4 @@
-function shuffledIdx = shufflePositionWithinBin(x, binWidth, seed, binCenter)
+function [shuffledIdx, binnedX] = shufflePositionWithinBin(x, binWidth, seed, binCenter)
 %SHUFFLELIKELIHOODWIDTHSAROUNDACTUALSTIMS Shuffle likelihood widths within
 %the binned stimulus orientation
 
