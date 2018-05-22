@@ -7,16 +7,21 @@
 
 classdef MLFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"' & 'decoder_id = 3') - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"' & 'decoder_id in (3, 4)') - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
 		%!!! compute missing fields for key here
-            model_info = cd_ml.BestModel * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
+            if key.decoder_id == 3
+                restr = 'bin_counts = 61';
+            elseif key.decoder_id == 4
+                restr = 'bin_counts = 91';
+            end
+            model_info = cd_ml.BestModelByBin * (cd_ml.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
             decoder_info = fetch(cd_decoder.DecoderModels & key, '*');
-            [binw, binc] = fetchn(cd_ml.BinConfig & model_info, 'bin_width', 'bin_counts');
+            [binw, binc] = fetchn(cd_ml.BinConfig & pro(model_info), 'bin_width', 'bin_counts');
             low = -floor(binc / 2);
             high = low + binc - 1;
             decodeOri = low:high;

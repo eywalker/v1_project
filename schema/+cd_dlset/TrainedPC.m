@@ -12,7 +12,7 @@ lc_trainset_size : int               # size of the trainset
 classdef TrainedPC < dj.Computed
 
 	properties
-		popRel = cd_dlset.DLSet * cd_dlset.CVSetMember & 'lc_id in (32, 37, 38, 39, 40)';
+		popRel = cd_dlset.DLSet * cd_dlset.CVSetMember & 'lc_id in (32, 38)';
 	end
 
 	methods(Access=protected)

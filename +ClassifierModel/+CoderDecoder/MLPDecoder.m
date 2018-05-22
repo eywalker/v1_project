@@ -9,6 +9,7 @@ classdef MLPDecoder < handle
         wo;
         bo;
         decodeOri;
+        extrap=0;
         unitFilter = ':'; % filter out bad units when computing likelihood distr
     end
     
@@ -42,8 +43,24 @@ classdef MLPDecoder < handle
             %logL = self.wo * relu(self.w2 * relu(self.w1 * spikeCounts + self.b1) + self.b2) + self.bo;
             normL = exp(bsxfun(@minus, logL, max(logL))); % max normalized likelihood
             normL(isnan(normL)) = 0;
-            normL = interp1(self.decodeOri, normL, decodeOri, 'pchip', 0);
-            L = bsxfun(@rdivide, normL, sum(normL)); %likelihood function with normalized area
+            
+            if strcmp(self.extrap, 'endvals')
+                lowPos = find(decodeOri >= self.decodeOri(1), 1) - 10;
+                lowThr = decodeOri(lowPos);
+                highPos = find(decodeOri >= self.decodeOri(end), 1) + 10;
+                highThr = decodeOri(highPos);
+                normL = interp1(self.decodeOri, normL, decodeOri, 'pchip', 'extrap');
+                lowEndvals = normL(lowPos, :);
+                highEndvals = normL(highPos, :);
+                lowSelection = (decodeOri < lowThr)';
+                normL = bsxfun(@times, lowSelection, lowEndvals) + ~lowSelection .* normL;
+                highSelection = (decodeOri > highThr)';
+                normL = bsxfun(@times, highSelection, highEndvals) + ~highSelection .* normL;
+            else 
+                normL = interp1(self.decodeOri, normL, decodeOri, 'pchip', self.extrap);
+            end
+            normL(normL < 0) = 0;
+            L = bsxfun(@rdivide, normL, sum(normL)); % likelihood function with normalized area
         end
         
         
@@ -58,6 +75,7 @@ classdef MLPDecoder < handle
             configSet.b2 = self.b2;
             configSet.wo = self.wo;
             configSet.bo = self.bo;
+            configSet.extrap = self.extrap;
             configSet.decodeOri = self.decodeOri;
         end
         
@@ -68,6 +86,9 @@ classdef MLPDecoder < handle
             self.b2 = configSet.b2;
             self.wo = configSet.wo;
             self.bo = configSet.bo;
+            if isfield(configSet, 'extrap')
+                self.extrap = configSet.extrap;
+            end
             self.decodeOri = configSet.decodeOri;
         end  
     end
