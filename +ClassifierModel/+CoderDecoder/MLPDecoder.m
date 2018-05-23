@@ -53,9 +53,9 @@ classdef MLPDecoder < handle
                 lowEndvals = normL(lowPos, :);
                 highEndvals = normL(highPos, :);
                 lowSelection = (decodeOri < lowThr)';
-                normL = bsxfun(@times, lowSelection, lowEndvals) + ~lowSelection .* normL;
+                normL = bsxfun(@times, lowSelection, lowEndvals) + bsxfun(@times, ~lowSelection, normL);
                 highSelection = (decodeOri > highThr)';
-                normL = bsxfun(@times, highSelection, highEndvals) + ~highSelection .* normL;
+                normL = bsxfun(@times, highSelection, highEndvals) + bsxfun(@times, ~highSelection, normL);
             else 
                 normL = interp1(self.decodeOri, normL, decodeOri, 'pchip', self.extrap);
             end
