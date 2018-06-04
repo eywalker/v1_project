@@ -7,7 +7,9 @@ lc_test_logl     : longblob # logl values for all trials
 lc_testset_size  : int    # size of the testset
 model_choice                : longblob                      # binary readout of a trial from the model
 model_correct               : longblob                      # indicates whether model choice was correct
+subj_choice                 : longblob                      # subject choice
 prop_correct                : float                         # proportion of correct trials
+orientation                 : longblob                      # orientation
 %}
 
 classdef LCModelFits < dj.Computed
@@ -60,6 +62,8 @@ classdef LCModelFits < dj.Computed
             tuple.model_choice = modelChoice;
             tuple.model_correct = correctChoice;
             tuple.prop_correct = pCorrect;
+            tuple.subj_choice = actualChoice;
+            tuple.orientation = dataSet.orientation;
             
 			self.insert(tuple)
 		end
