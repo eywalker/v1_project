@@ -50,6 +50,26 @@ classdef TrainedLC < dj.Computed
             model.setModelConfigs(info.lc_trained_config);
         end
         
+         function dataSet=getSimulatedDataSet(self, key, seed, dataSet)
+            
+            % get dataset
+            key = 0;
+            if nargin < 4
+                dataSet = getDataSet(cd_dlset.DLSet & key);
+            end
+            model = getLC(self & key);
+            if nargin >= 3
+                rng(seed, 'twister');
+            end
+            resp = model.classifyLikelihood(dataSet);
+            dataSet.selected_class = resp';
+            dataSet.correct_response=strcmp(dataSet.selected_class, dataSet.stimulus_class);
+            isLeft = strcmp(dataSet.correct_direction, 'Left');
+            choseLeft = dataSet.correct_response == isLeft; % using notXOR trick to flip boolean if correct_response is false
+            [dataSet.selected_direction{choseLeft}] = deal('Left');
+            [dataSet.selected_direction{~choseLeft}] = deal('Right'); 
+        end
+        
         function [dataset, decoder, model]=getAll(self)
             [dataset, decoder] = getDataSet(self);
             model = getLC(self);
