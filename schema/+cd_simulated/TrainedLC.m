@@ -56,8 +56,10 @@ classdef TrainedLC < dj.Computed
         function [dataSet] = getSimulatedDataSet(self, key)
             srcKey = key;
             srcKey.lc_id = key.source_lc_id;
-            srcKey.lc_shuffle_id = key.source_shuffle.id;
-            [dataSet, ~, model] = getAll(cd_dlset.TrainedLC & srcKey);
+            srcKey.lc_shuffle_id = key.source_shuffle_id;
+            % get original dataset
+            dataSet = getDataSet(cd_dlset.DLSet & srcKey);
+            model = getLC(cd_dlset.TrainedLC & srcKey);
             rng(srcKey.cv_seed, 'twister');
             resp = model.classifyLikelihood(dataSet);
             dataSet.selected_class = resp';
@@ -78,8 +80,8 @@ classdef TrainedLC < dj.Computed
             
             % transfer over simulated responses
             dataSet.selected_class = simDataSet.selected_class;
-            dataSet.correct_response = stimDataSet.correct_response;
-            dataSet.selected_direction = stimDataSet.selected_direction;
+            dataSet.correct_response = simDataSet.correct_response;
+            dataSet.selected_direction = simDataSet.selected_direction;
             
             train_indices = fetch1(cd_dlset.CVSetMember & key, 'train_indices');
             dataSet = selectData(dataSet, train_indices, {'decoder', 'goodUnits', 'decodeOri', 'key'});

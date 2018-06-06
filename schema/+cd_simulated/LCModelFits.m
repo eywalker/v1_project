@@ -30,8 +30,8 @@ classdef LCModelFits < dj.Computed
             
             % transfer over simulated responses
             dataSet.selected_class = simDataSet.selected_class;
-            dataSet.correct_response = stimDataSet.correct_response;
-            dataSet.selected_direction = stimDataSet.selected_direction;
+            dataSet.correct_response = simDataSet.correct_response;
+            dataSet.selected_direction = simDataSet.selected_direction;
             
             test_indices = fetch1(cd_dlset.CVSetMember & key, 'test_indices');
             dataSet = selectData(dataSet, test_indices, {'decoder', 'goodUnits', 'decodeOri', 'key'});
