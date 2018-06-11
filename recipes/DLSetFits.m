@@ -9,5 +9,5 @@ parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
 
-parpopulate(cd_simulated.TrainedLC, restr);
-parpopulate(cd_simulated.LCModelFits, restr);
+parpopulate(cd_sim.TrainedLC, restr);
+parpopulate(cd_sim.LCModelFits, restr);

@@ -68,6 +68,17 @@ classdef PSLLC < handle
             obj.initializer.stimCenter = @(n) randn(1, n) * 5 + 270;
         end
         
+        function simDS = simulateDataset(self, dataSet)
+            simDS = dataSet;
+            resp = self.classifyLikelihood(simDS);
+            simDS.selected_class = resp';
+            simDS.correct_response=strcmp(simDS.selected_class, simDS.stimulus_class);
+            isLeft = strcmp(simDS.correct_direction, 'Left');
+            choseLeft = simDS.correct_response == isLeft; % using notXOR trick to flip boolean if correct_response is false
+            [simDS.selected_direction{choseLeft}] = deal('Left');
+            [simDS.selected_direction{~choseLeft}] = deal('Right');
+        end
+        
         function pA = pRespA(self, dataStruct)
         % pRespA Returns the probability of the classifier responding 
         % class 'A' given the likelihood function over the orientation
