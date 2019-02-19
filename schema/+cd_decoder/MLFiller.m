@@ -20,6 +20,10 @@ classdef MLFiller < dj.Computed
                 restr = 'bin_counts = 91';
             end
             model_info = cd_ml.BestModelByBin * (cd_ml.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
+            if count(model_info)==0
+               fprintf('No matching entry...');
+               return
+            end
             decoder_info = fetch(cd_decoder.DecoderModels & key, '*');
             [binw, binc] = fetchn(cd_ml.BinConfig & pro(model_info), 'bin_width', 'bin_counts');
             low = -floor(binc / 2);
