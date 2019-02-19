@@ -53,6 +53,17 @@ classdef TrainedLC < dj.Computed
             model = getLC(self);
         end
         
+        function simDS = simulateResponses(self, model, dataSet)
+            simDS = dataSet;
+            resp = model.classifyLikelihood(simDS);
+            simDS.selected_class = resp';
+            simDS.correct_response=strcmp(simDS.selected_class, simDS.stimulus_class);
+            isLeft = strcmp(simDS.correct_direction, 'Left');
+            choseLeft = simDS.correct_response == isLeft; % using notXOR trick to flip boolean if correct_response is false
+            [simDS.selected_direction{choseLeft}] = deal('Left');
+            [simDS.selected_direction{~choseLeft}] = deal('Right');
+        end
+        
         function [dataSet] = getSimulatedDataSet(self, key)
             srcKey = key;
             srcKey.lc_id = key.source_lc_id;

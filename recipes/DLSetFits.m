@@ -1,6 +1,6 @@
 % recipe for fitting DL based models
 % first fit only on restricted subset
-restr = 'lc_id in (32, 38) and decoder_id=4';
+restr = 'lc_id in (32, 38) and decoder_id=4 and lc_shuffle_id=0';
 
 
 % get all contrast sessions
@@ -16,7 +16,7 @@ parpopulate(cd_dlset.CVSet);
 parpopulate(cd_decoder.MLFiller, 'decoder_id = 4');
 
 parpopulate(cd_dlset.DLSet);
-parpopulate(cd_dlset.DLSetInfo);
+%parpopulate(cd_dlset.DLSetInfo);
 
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);

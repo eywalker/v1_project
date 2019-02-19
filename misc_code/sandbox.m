@@ -1,13 +1,22 @@
-% data = fetch(cd_analysis.BinaryReadout, '*');
-% 
-% for idx=1:length(data)
-%     waitbar(idx/length(data));
-%     d = data(idx);
-%     insert(cd_analysis.BinaryReadout2, d);
-% end
+keys = fetch(cd_simulated.TrainedLC & 'decoder_id = 4' & 'lc_shuffle_id = 0');
+[trainSet, testSet, dec, model] = getAll(cd_dlset.LCModelFits & keys(1));
 
-fprintf('%d', testA());
+%%
+simTrain = model.simulateDataset(trainSet);
 
-function x = testA()
-    x = 5;
-end
+newModel = getLC(cd_lc.LCModels & 'lc_id = 32');
+newModel2 = getLC(cd_lc.LCModels & 'lc_id = 38');
+
+newModel.train(simTrain);
+newModel2.train(simTrain);
+
+model.getLogLikelihood(simTrain)
+newModel.getLogLikelihood(simTrain)
+newModel2.getLogLikelihood(simTrain)
+
+%%
+simTest = model.simulateDataset(testSet);
+
+model.getLogLikelihood(simTest)
+newModel.getLogLikelihood(simTest)
+newModel2.getLogLikelihood(simTest)
