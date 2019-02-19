@@ -10,6 +10,8 @@ parpopulate(cd_dataset.CleanContrastSessionDataSet);
 % register CleanContrastSessions as decoder trainset
 parpopulate(cd_decoder.DecoderTrainSets, 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"');
 
+parpopulate(cd_dlset.CVSet);
+
 % use specialized filler table to populate decoder_id = 3 and 4 case
 parpopulate(cd_decoder.MLFiller);
 
