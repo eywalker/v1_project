@@ -5,7 +5,7 @@
 
 classdef DLSet < dj.Computed
     properties
-        popRel = cd_decoder.TrainedDecoder * cd_dlset.ShuffleParam & 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"' & 'decoder_id in (1, 3, 4)'
+        popRel = cd_decoder.TrainedDecoder * cd_dlset.ShuffleParam & 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"' & 'decoder_id in (1, 3, 4, 5)'
     end
 
 	methods(Access=protected)
