@@ -12,18 +12,18 @@ parpopulate(cd_dlset.CVSet);
 
 % use specialized filler table to populate decoder_id = 4 case
 % parpopulate(cd_decoder.MLFiller, 'decoder_id = 4');
-% parpopulate(cd_decoder.FixedLikelihoodFiller, 'decoder_id = 5');
+parpopulate(cd_decoder.PoissonLikeFiller);
 
 parpopulate(cd_dlset.DLSet);
 
 
 % first fit only on restricted subset
-restr = 'lc_id=32 and decoder_id in (4,5,6) and lc_shuffle_id=0';
+restr = 'lc_id=32 and decoder_id in (10) and lc_shuffle_id=0';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
 % Fit now on shuffled dataset
-restr = 'lc_id=32 and decoder_id in (4,5,6) and lc_shuffle_id=1';
+restr = 'lc_id=32 and decoder_id in (10) and lc_shuffle_id=1';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
