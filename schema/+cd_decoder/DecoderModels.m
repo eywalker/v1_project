@@ -14,7 +14,7 @@ classdef DecoderModels < dj.Relvar
         end
         
         function new_id = registerDecoder(self, label, model, config, new_id)            
-            if nargin < 4
+            if nargin < 4 || isempty(config)
                 config = getModelConfigs(model);
             end
             

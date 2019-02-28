@@ -7,7 +7,7 @@
 
 classdef PoissonLikeFiller < dj.Computed
     properties
-        popRel = cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id=10' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml2.BestPoissonLike, 'dataset_hash -> dec_trainset_hash') - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'dec_trainset_owner = "cd_dataset.CleanContrastSessionDataSet"' & 'decoder_id in (6)') - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
@@ -15,12 +15,13 @@ classdef PoissonLikeFiller < dj.Computed
 		function makeTuples(self, key)
 		%!!! compute missing fields for key here
 
-            if key.decoder_id == 10
+            if key.decoder_id == 6
                 restr = 'bin_counts = 91';
             else
+                % only work on decoder_id = 6
                 return;
             end
-            model_info = cd_ml2.BestPoissonLike * (cd_ml2.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
+            model_info = cd_ml.BestPoissonLikeByBin * (cd_ml.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
             if count(model_info)==0
                fprintf('No matching entry...');
                return
@@ -35,17 +36,17 @@ classdef PoissonLikeFiller < dj.Computed
             model_config = fetch1(model_info, 'model');
             decoder = getDecoder(cd_decoder.DecoderModels & key);
             
-            if isfield(model_config, 'hiddens.layer0.weight')
-                decoder.w1 = double(model_config.('hiddens.layer0.weight'));
-                decoder.b1 = double(model_config.('hiddens.layer0.bias'));
+            if isfield(model_config, 'hiddens.0.weight')
+                decoder.w1 = double(model_config.('hiddens.0.weight'));
+                decoder.b1 = double(model_config.('hiddens.0.bias'));
             else
                 decoder.w1 = 1;
                 decoder.b1 = 0;
             end
             
-            if isfield(model_config, 'hiddens.layer1.weight')
-                decoder.w2 = double(model_config.('hiddens.layer1.weight'));
-                decoder.b2 = double(model_config.('hiddens.layer1.bias'));
+            if isfield(model_config, 'hiddens.3.weight')
+                decoder.w2 = double(model_config.('hiddens.3.weight'));
+                decoder.b2 = double(model_config.('hiddens.3.bias'));
             else
                 decoder.w2 = 1;
                 decoder.b2 = 0;
