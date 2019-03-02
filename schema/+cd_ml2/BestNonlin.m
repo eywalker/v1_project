@@ -9,7 +9,7 @@ model                       : longblob                      # saved model state
 %}
 
 
-classdef BestPoissonLike < dj.Computed
+classdef BestNonlin < dj.Computed
 
 	methods(Access=protected)
 
