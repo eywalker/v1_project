@@ -61,6 +61,8 @@ classdef PoissonLikeFiller < dj.Computed
             key.decoder_trained_config = decoder.getModelConfigs();
             
             insert(cd_decoder.TrainedDecoder, key);
+            
+            insert(self, key);
 		end
 	end
 
