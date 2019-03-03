@@ -5,25 +5,22 @@
 # add additional attributes
 %}
 
-classdef PoissonLikeFiller < dj.Computed
+classdef NonLinMLFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (11)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml2.BestPoissonLike, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (12)' & proj(cd_dataset.CleanContrastSessionDataSet & (cd_ml2.BestNonLin & 'objective="mse"'), 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-            keyOrig = key;
 		%!!! compute missing fields for key here
             
-            if key.decoder_id == 10
-                restr = 'bin_counts = 91 and objective="ce"';
-            elseif key.decoder_id == 11
+            if key.decoder_id == 12
                 restr = 'bin_counts = 91 and objective="mse"';
             else
                 return;
             end
-            model_info = (cd_ml2.BestPoissonLike * cd_ml2.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
+            model_info = (cd_ml2.BestNonLins * cd_ml2.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
             if count(model_info)==0
                fprintf('No matching entry...');
                return
@@ -62,8 +59,6 @@ classdef PoissonLikeFiller < dj.Computed
             key.decoder_trained_config = decoder.getModelConfigs();
             
             insert(cd_decoder.TrainedDecoder, key);
-            
-            insert(self, keyOrig);
 		end
 	end
 
