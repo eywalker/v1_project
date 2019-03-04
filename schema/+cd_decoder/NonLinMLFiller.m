@@ -7,7 +7,7 @@
 
 classdef NonLinMLFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (13)' & proj(cd_dataset.CleanContrastSessionDataSet & (cd_ml3.BestNonLin & 'objective="mse"'), 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (13)' & proj(cd_dataset.CleanContrastSessionDataSet & (cd_ml3.BestNonlin & 'objective="mse"'), 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
@@ -20,7 +20,7 @@ classdef NonLinMLFiller < dj.Computed
             else
                 return;
             end
-            model_info = (cd_ml3.BestNonLins * cd_ml3.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
+            model_info = (cd_ml3.BestNonlin * cd_ml3.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
             if count(model_info)==0
                fprintf('No matching entry...');
                return
