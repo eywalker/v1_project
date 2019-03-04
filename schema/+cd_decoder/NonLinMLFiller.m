@@ -14,7 +14,7 @@ classdef NonLinMLFiller < dj.Computed
 
 		function makeTuples(self, key)
 		%!!! compute missing fields for key here
-            
+            keyOrig = key;
             if key.decoder_id == 13
                 restr = 'bin_counts = 91 and objective="mse"';
             else
@@ -59,6 +59,8 @@ classdef NonLinMLFiller < dj.Computed
             key.decoder_trained_config = decoder.getModelConfigs();
             
             insert(cd_decoder.TrainedDecoder, key);
+            
+            insert(self, keyOrig);
 		end
 	end
 
