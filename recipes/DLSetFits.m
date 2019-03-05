@@ -14,17 +14,18 @@ parpopulate(cd_dlset.CVSet);
 % parpopulate(cd_decoder.MLFiller, 'decoder_id = 4');
 parpopulate(cd_decoder.PoissonLikeFiller);
 parpopulate(cd_decoder.NonLinMLFiller);
+parpopulate(cd_decoder.FixedLikelihoodFiller);
 
 parpopulate(cd_dlset.DLSet);
 
 
 % first fit only on restricted subset
-restr = 'lc_id=32 and decoder_id in (10, 11, 13) and lc_shuffle_id=0';
+restr = 'lc_id=32 and decoder_id in (11, 13, 15) and lc_shuffle_id=0';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
 % Fit now on shuffled dataset
-restr = 'lc_id=32 and decoder_id in (10, 11, 13) and lc_shuffle_id=1';
+restr = 'lc_id=32 and decoder_id in (11, 13, 15) and lc_shuffle_id=1';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 

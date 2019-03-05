@@ -7,7 +7,7 @@
 
 classdef PoissonLikeFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (11)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml2.BestPoissonLike, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (11)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestPoissonLike, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
@@ -17,19 +17,19 @@ classdef PoissonLikeFiller < dj.Computed
 		%!!! compute missing fields for key here
             
             if key.decoder_id == 10
-                restr = 'bin_counts = 91 and objective="ce"';
+                restr = 'bin_counts = 91 and selection_objective="ce"';
             elseif key.decoder_id == 11
-                restr = 'bin_counts = 91 and objective="mse"';
+                restr = 'bin_counts = 91 and selection_objective="mse"';
             else
                 return;
             end
-            model_info = (cd_ml2.BestPoissonLike * cd_ml2.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
+            model_info = (cd_ml3.BestPoissonLike * cd_ml3.BinConfig & restr) * cd_dataset.CleanContrastSessionDataSet & (cd_dataset.DataSets * cd_decoder.DecoderTrainSets & key);
             if count(model_info)==0
                fprintf('No matching entry...');
                return
             end
             decoder_info = fetch(cd_decoder.DecoderModels & key, '*');
-            [binw, binc] = fetchn(cd_ml.BinConfig & pro(model_info), 'bin_width', 'bin_counts');
+            [binw, binc] = fetchn(cd_ml3.BinConfig & pro(model_info), 'bin_width', 'bin_counts');
             low = -floor(binc / 2);
             high = low + binc - 1;
             decodeOri = low:high;

@@ -7,7 +7,7 @@
 
 classdef NonLinMLFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (13)' & proj(cd_dataset.CleanContrastSessionDataSet & (cd_ml3.BestNonlin & 'objective="mse"'), 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (13)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestNonlin, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
@@ -16,7 +16,7 @@ classdef NonLinMLFiller < dj.Computed
 		%!!! compute missing fields for key here
             keyOrig = key;
             if key.decoder_id == 13
-                restr = 'bin_counts = 91 and objective="mse"';
+                restr = 'bin_counts = 91 and selection_objective="mse"';
             else
                 return;
             end
@@ -26,7 +26,7 @@ classdef NonLinMLFiller < dj.Computed
                return
             end
             decoder_info = fetch(cd_decoder.DecoderModels & key, '*');
-            [binw, binc] = fetchn(cd_ml.BinConfig & pro(model_info), 'bin_width', 'bin_counts');
+            [binw, binc] = fetchn(cd_ml3.BinConfig & pro(model_info), 'bin_width', 'bin_counts');
             low = -floor(binc / 2);
             high = low + binc - 1;
             decodeOri = low:high;
