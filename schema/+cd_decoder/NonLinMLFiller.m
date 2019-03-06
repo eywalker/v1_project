@@ -7,7 +7,7 @@
 
 classdef NonLinMLFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (13)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestNonlin, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (12)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestNonlin, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
@@ -17,6 +17,8 @@ classdef NonLinMLFiller < dj.Computed
             keyOrig = key;
             if key.decoder_id == 13
                 restr = 'bin_counts = 91 and selection_objective="mse"';
+            elseif key.decoder_id == 12
+                restr = 'bin_counts = 91 and selection_objective="ce"';
             else
                 return;
             end
