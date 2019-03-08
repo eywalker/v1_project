@@ -7,7 +7,7 @@
 
 classdef FixedLikelihoodFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (15)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestFixedLikelihood, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (14)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestFixedLikelihood, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
@@ -17,6 +17,8 @@ classdef FixedLikelihoodFiller < dj.Computed
             keyOrig = key;
             if key.decoder_id == 15
                 restr = 'bin_counts = 91 and selection_objective="mse"';
+            elseif key.decoder_id == 14
+                restr = 'bin_counts = 91 and selection_objective="ce"';
             else
                 return;
             end
