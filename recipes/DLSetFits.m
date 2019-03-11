@@ -12,7 +12,7 @@ parpopulate(cd_dlset.CVSet);
 
 % use specialized filler table to populate decoder_id = 4 case
 % parpopulate(cd_decoder.MLFiller, 'decoder_id = 4');
-parpopulate(cd_decoder.PoissonLikeFiller);
+%parpopulate(cd_decoder.PoissonLikeFiller);
 parpopulate(cd_decoder.NonLinMLFiller);
 parpopulate(cd_decoder.FixedLikelihoodFiller);
 
