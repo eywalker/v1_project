@@ -7,7 +7,7 @@
 
 classdef NonLinMLFiller < dj.Computed
     properties
-        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (12)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestNonlin, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
+        popRel = (cd_decoder.DecoderModels * cd_decoder.DecoderTrainSets & 'decoder_id in (13)' & proj(cd_dataset.CleanContrastSessionDataSet & cd_ml3.BestNonlin, 'dataset_hash -> dec_trainset_hash')) - pro(cd_decoder.TrainedDecoder)
     end
 
 	methods(Access=protected)
