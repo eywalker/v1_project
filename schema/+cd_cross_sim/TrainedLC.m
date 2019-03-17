@@ -19,7 +19,7 @@ classdef TrainedLC < dj.Computed
 	properties
 		popRel = cd_sim.SimulationSeed * cd_lc.LCModels * cd_dlset.DLSet * cd_dlset.CVSetMember ...
             * pro(cd_dlset.TrainedLC, 'lc_id -> source_lc_id', 'decoder_id -> source_dec_id', 'lc_shuffle_id -> source_shuffle_id') ...
-            & 'lc_id in (32)' & 'decoder_id in (4, 5)' & 'source_lc_id = 32' & 'source_shuffle_id = 0' & 'source_dec_id = 4';
+            & 'lc_id in (32)' & 'decoder_id in (13, 15)' & 'source_lc_id = 32' & 'source_shuffle_id = 0' & 'source_dec_id = 13';
 	end
 
 	methods(Access=protected)
