@@ -35,8 +35,10 @@ rel = pro(cd_dataset.CleanContrastSessionDataSet & (class_discrimination.CSCLook
 
 restr = 'lc_id=32 and decoder_id in (13, 15) and lc_shuffle_id=0 and sim_seed < 500';
 parpopulate(cd_cross_sim.TrainedLC, rel, restr);
+parpopulate(cd_cross_sim.LCModelFits, rel, restr);
 
 restr = 'lc_id=32 and decoder_id in (13, 15) and lc_shuffle_id=1 and sim_seed < 500';
 parpopulate(cd_cross_sim.TrainedLC, rel, restr);
+parpopulate(cd_cross_sim.LCModelFits, rel, restr);
 %parpopulate(cd_sim.TrainedLC, restr);
 %parpopulate(cd_sim.LCModelFits, restr);
