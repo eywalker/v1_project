@@ -4,7 +4,9 @@
 -> cd_lc.LCModels
 -> cd_dlset.DLSet
 -> cd_dlset.CVSetMember
-(source_lc_id, source_shuffle_id, source_dec_id) -> cd_dlset.TrainedLC(lc_id, lc_shuffle_id, decoder_id)
+source_dec_id: int   # source decoder id
+source_lc_id: int    # source lc id
+source_shuffle_id: int # source shuffle id
 -----
 lc_trained_config   : longblob       # structure for configuring the model
 lc_train_mu_logl    : double         # mean log likelihood
@@ -17,14 +19,15 @@ src_train_logl      : longblob       # logl value for all trials
 classdef TrainedLC < dj.Computed
 
 	properties
-		popRel = cd_sim.SimulationSeed * cd_lc.LCModels * cd_dlset.DLSet * cd_dlset.CVSetMember ...
-            * pro(cd_dlset.TrainedLC, 'lc_id -> source_lc_id', 'decoder_id -> source_dec_id', 'lc_shuffle_id -> source_shuffle_id') ...
-            & 'lc_id in (32)' & 'decoder_id in (13, 15)' & 'source_lc_id = 32' & 'source_shuffle_id = 0' & 'source_dec_id = 13';
+		popRel = cd_cross_sim.SimulationSeed * cd_lc.LCModels * cd_dlset.DLSet * cd_dlset.CVSetMember
 	end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
+            key.source_dec_id = 13;
+            key.source_lc_id = 32;
+            key.source_shuffle_id = 0;
             
             tuple = key;
             lc_model = getLC(cd_lc.LCModels & key);
