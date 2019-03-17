@@ -29,7 +29,7 @@ restr = 'lc_id=32 and decoder_id in (11, 13, 15) and lc_shuffle_id=1';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
-parpopulate(cd_dlset.DLSetInfo);
+parpopulate(cd_dlset.DLSetInfo, 'decoder_id in (11, 13, 15)');
 
 rel = pro(cd_dataset.CleanContrastSessionDataSet & (class_discrimination.CSCLookup & 'count_start = 0 and count_stop = 500'), 'dataset_hash -> dec_trainset_hash');
 
