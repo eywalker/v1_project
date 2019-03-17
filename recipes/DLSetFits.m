@@ -30,5 +30,13 @@ parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
 parpopulate(cd_dlset.DLSetInfo);
+
+rel = pro(cd_dataset.CleanContrastSessionDataSet & (class_discrimination.CSCLookup & 'count_start = 0 and count_stop = 500'), 'dataset_hash -> dec_trainset_hash');
+
+restr = 'lc_id=32 and decoder_id in (13, 15) and lc_shuffle_id=0 and sim_seed < 500';
+parpopulate(cd_cross_sim.TrainedLC, rel, restr);
+
+restr = 'lc_id=32 and decoder_id in (13, 15) and lc_shuffle_id=1 and sim_seed < 500';
+parpopulate(cd_cross_sim.TrainedLC, rel, restr);
 %parpopulate(cd_sim.TrainedLC, restr);
 %parpopulate(cd_sim.LCModelFits, restr);
