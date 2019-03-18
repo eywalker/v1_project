@@ -21,7 +21,7 @@ classdef ResponseDelay < dj.Computed
             resp = proj(stimulation.StimTrialEvents & 'event_type="response"', 'event_type -> resp_ev', 'event_time -> resp');
             trials = class_discrimination.ClassDiscriminationTrial & key;
             
-            dt = fetch(proj(sstim * resp * trials, '(resp - show_stim) -> delta', 'contrast', 'orientation'), 'delta', 'contrast');
+            dt = fetch(proj(sstim * resp * trials, '(resp - show_stim) -> delta', 'contrast', 'orientation'), 'delta', 'contrast', 'orientation');
             
             for trial=dt'
                 tuple.trial_num = trial.trial_num;
