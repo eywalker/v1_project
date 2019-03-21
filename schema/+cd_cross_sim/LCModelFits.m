@@ -1,5 +1,4 @@
 %{
-# results on testset
 -> cd_cross_sim.TrainedLC
 -----
 lc_test_mu_logl  : float  # mean loglikelihood
@@ -20,7 +19,7 @@ classdef LCModelFits < dj.Computed
             if nargin < 2
                 key = fetch(self);
             end
-            [dataSet, decoder] = getDataSet(cd_sim.TrainedLC & key);
+            [dataSet, decoder] = getDataSet(cd_cross_sim.TrainedLC & key);
         end
         
         function [dataSet, decoder] = getTestSet(self, key)
@@ -28,7 +27,7 @@ classdef LCModelFits < dj.Computed
                 key = fetch(self);
             end
             [dataSet, decoder] = getDataSet(cd_dlset.DLSet & key);
-            [simDataSet, ~, logl] = getSimulatedDataSet(cd_sim.TrainedLC, key);
+            [simDataSet, ~, logl] = getSimulatedDataSet(cd_cross_sim.TrainedLC, key);
             
             % transfer over simulated responses
             dataSet.selected_class = simDataSet.selected_class;
@@ -47,7 +46,7 @@ classdef LCModelFits < dj.Computed
             end
             [trainset, decoder] = getTrainSet(self, key);
             [testset, ~] = getTestSet(self, key);
-            model = getLC(cd_sim.TrainedLC & key);
+            model = getLC(cd_cross_sim.TrainedLC & key);
         end
             
     end
@@ -57,7 +56,7 @@ classdef LCModelFits < dj.Computed
 		function makeTuples(self, key)
             tuple = key;
             
-            lc_model = getLC(cd_sim.TrainedLC & key);
+            lc_model = getLC(cd_cross_sim.TrainedLC & key);
             dataSet = self.getTestSet(key);
             
             [muLL, logl] = lc_model.getLogLikelihood(dataSet);
