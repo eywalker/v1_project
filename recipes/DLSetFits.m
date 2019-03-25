@@ -29,6 +29,16 @@ restr = 'lc_id=32 and decoder_id in (11, 13, 15) and lc_shuffle_id=1';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
 
+% For comparison, do fit on 13 with model 38 (Gaussian approx of full)
+restr = 'lc_id=38 and decoder_id in (13) and lc_shuffle_id=0';
+parpopulate(cd_dlset.TrainedLC, restr);
+parpopulate(cd_dlset.LCModelFits, restr);
+
+% Fit now on shuffled dataset
+restr = 'lc_id=38 and decoder_id in (13) and lc_shuffle_id=1';
+parpopulate(cd_dlset.TrainedLC, restr);
+parpopulate(cd_dlset.LCModelFits, restr);
+
 parpopulate(cd_dlset.DLSetInfo, 'decoder_id in (11, 13, 15)');
 
 target_dset = pro(cd_dataset.CleanContrastSessionDataSet & (class_discrimination.CSCLookup & 'count_start = 0 and count_stop = 500'), 'dataset_hash -> dec_trainset_hash');
