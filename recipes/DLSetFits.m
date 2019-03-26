@@ -46,21 +46,13 @@ restr = 'lc_id=32 and decoder_id in (13, 15, 5) and lc_shuffle_id=0 and sim_seed
 parpopulate(cd_cross_sim.TrainedLC, target_dset, restr);
 parpopulate(cd_cross_sim.LCModelFits, target_dset, restr);
 
-restr = 'lc_id=32 and decoder_id in (13, 15, 5) and lc_shuffle_id=1 and sim_seed < 300';
-parpopulate(cd_cross_sim.TrainedLC, target_dset, restr);
-parpopulate(cd_cross_sim.LCModelFits, target_dset, restr);
-%parpopulate(cd_sim.TrainedLC, restr);
-%parpopulate(cd_sim.LCModelFits, restr);
-% For comparison, do fit on 13 with model 38 (Gaussian approx of full)
 
 restr = 'lc_id=32 and decoder_id in (13, 15, 5) and lc_shuffle_id=0';
 parpopulate(cd_cross_sim.TrainedLC, target_dset, restr);
 parpopulate(cd_cross_sim.LCModelFits, target_dset, restr);
 
-restr = 'lc_id=32 and decoder_id in (13, 15, 5) and lc_shuffle_id=1';
-parpopulate(cd_cross_sim.TrainedLC, target_dset, restr);
-parpopulate(cd_cross_sim.LCModelFits, target_dset, restr);
-%parpopulate(cd_sim.TrainedLC, restr);
+
+% For comparison, do fit on 13 with model 38 (Gaussian approx of full)
 
 restr = 'lc_id=38 and decoder_id in (13) and lc_shuffle_id=0';
 parpopulate(cd_dlset.TrainedLC, restr);
@@ -70,3 +62,11 @@ parpopulate(cd_dlset.LCModelFits, restr);
 restr = 'lc_id=38 and decoder_id in (13) and lc_shuffle_id=1';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
+
+restr = 'lc_id=32 and decoder_id in (13, 15, 5) and lc_shuffle_id=1 and sim_seed < 300';
+parpopulate(cd_cross_sim.TrainedLC, target_dset, restr);
+parpopulate(cd_cross_sim.LCModelFits, target_dset, restr);
+
+restr = 'lc_id=32 and decoder_id in (13, 15, 5) and lc_shuffle_id=1';
+parpopulate(cd_cross_sim.TrainedLC, target_dset, restr);
+parpopulate(cd_cross_sim.LCModelFits, target_dset, restr);
