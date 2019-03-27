@@ -19,13 +19,14 @@ src_train_logl      : longblob       # logl value for all trials
 classdef TrainedLC < dj.Computed
 
 	properties
-		popRel = cd_cross_sim.SimulationSeed * cd_lc.LCModels * cd_dlset.DLSet * cd_dlset.CVSetMember
+		popRel = cd_cross_sim.SimulationSeed * cd_lc.LCModels * cd_dlset.DLSet * cd_dlset.CVSetMember * proj(cd_decoder.DecoderModels & 'decoder_id = 4', 'decoder_id -> source_dec_id')
 	end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-            key.source_dec_id = 13;
+            %key.source_dec_id = 13;
+            assert(key.source_dec_id == 4, 'Should be working on source ID 4!');
             key.source_lc_id = 32;
             key.source_shuffle_id = 0;
             
