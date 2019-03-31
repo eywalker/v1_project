@@ -12,7 +12,7 @@ classdef ShuffleParam < dj.Lookup
     methods
         function shuffledSet = shuffleDataSet(self, dataSet)
             assert(length(self)==1, 'Can only shuffle using one parameter at a time');
-            [fName, bin_width, shuffle_seed, bin_center] = fetch1(self, 'peak_extractor', 'bin_width', 'shuffle_seed', 'bin_center');
+            [shuffleID, fName, bin_width, shuffle_seed, bin_center] = fetch1(self, 'lc_shuffle_id', 'peak_extractor', 'bin_width', 'shuffle_seed', 'bin_center');
             
             x = dataSet.decodeOri;
             L = dataSet.likelihood;
@@ -32,7 +32,6 @@ classdef ShuffleParam < dj.Lookup
                 return;
             end
 
-            
 
             [v, oriBin] = shufflePositionWithinBin(dataSet.orientation, bin_width, shuffle_seed, bin_center);
 
@@ -41,9 +40,15 @@ classdef ShuffleParam < dj.Lookup
 
             shift = peak - pmoved;
 
-            Lshifted = shiftFunction(x, Lshuffled, shift);
-            shiftedPeaks = peakExtractor(x, Lshifted);
+            if shuffleID >= 0
+                Lshifted = shiftFunction(x, Lshuffled, shift);
+            else
+                % handle -1 case specially - shuffling the posterior
+                Lshifted = shiftUntilTarget(x, Lshuffled, shift);
+            end
             
+            shiftedPeaks = peakExtractor(x, Lshifted);
+
             shuffledSet = dataSet;
             shuffledSet.likelihood = Lshifted;
             shuffledSet.orientationBin = oriBin;

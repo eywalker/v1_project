@@ -18,6 +18,16 @@ parpopulate(cd_decoder.FixedLikelihoodFiller);
 
 parpopulate(cd_dlset.DLSet);
 
+% first fit only on restricted subset
+restr = 'lc_id=32 and decoder_id in (13) and lc_shuffle_id=-1';
+parpopulate(cd_dlset.TrainedLC, restr);
+parpopulate(cd_dlset.LCModelFits, restr);
+
+% first fit only on restricted subset
+restr = 'lc_id=32 and decoder_id in (5) and lc_shuffle_id=-1';
+parpopulate(cd_dlset.TrainedLC, restr);
+parpopulate(cd_dlset.LCModelFits, restr);
+
 
 % first fit only on restricted subset
 restr = 'lc_id=32 and decoder_id in (11, 13, 15) and lc_shuffle_id=0';
