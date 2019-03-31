@@ -26,6 +26,9 @@ classdef DLSet < dj.Computed
                 key = fetch(self);
             end
             
+            
+
+            
             % arguably this is such a circular dependency that it's a bad
             % idea but this does make cache based retrieval logic 
             % simpler to implement
@@ -38,13 +41,13 @@ classdef DLSet < dj.Computed
                 try
                     dt = load(fullPath);
                     dataSet = dt.dataSet;
+                    decoder = getDecoder(cd_decoder.TrainedDecoder & key);
                     return;
                 catch
                     fprintf('Failed to retrieve from cache...\n');
                     % pass it out
                 end
             end
-            
             [dataSet, decoder] = getAll(cd_decoder.TrainedDecoder & key);
             dataSet = prepareDataSet(dataSet, decoder, key, nori);
             dataSet = shuffleDataSet(cd_dlset.ShuffleParam & key, dataSet);
