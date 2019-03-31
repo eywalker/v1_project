@@ -18,6 +18,9 @@ parpopulate(cd_decoder.FixedLikelihoodFiller);
 
 parpopulate(cd_dlset.DLSet);
 
+parpopulate(cd_dlset.DLSetInfo, 'decoder_id in (5, 11, 13)');
+
+
 target_dset = pro(cd_dataset.CleanContrastSessionDataSet & (class_discrimination.CSCLookup & 'count_start = 0 and count_stop = 500'), 'dataset_hash -> dec_trainset_hash');
 
 
