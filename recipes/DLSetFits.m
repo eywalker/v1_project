@@ -18,11 +18,11 @@ parpopulate(cd_decoder.FixedLikelihoodFiller);
 
 parpopulate(cd_dlset.DLSet);
 
-parpopulate(cd_dlset.DLSetInfo, 'decoder_id in (5, 11, 13)');
+
 
 
 target_dset = pro(cd_dataset.CleanContrastSessionDataSet & (class_discrimination.CSCLookup & 'count_start = 0 and count_stop = 500'), 'dataset_hash -> dec_trainset_hash');
-
+parpopulate(cd_dlset.DLSetInfo, 'decoder_id in (5, 13)', target_dset);
 
 % first fit only on restricted subset
 restr = 'lc_id=32 and decoder_id in (13) and lc_shuffle_id=-1';
@@ -34,6 +34,8 @@ restr = 'lc_id=32 and decoder_id in (5) and lc_shuffle_id=-1';
 parpopulate(cd_dlset.TrainedLC, restr, target_dset);
 parpopulate(cd_dlset.LCModelFits, restr, target_dset);
 
+parpopulate(cd_dlset.DLSetInfo, 'decoder_id in (5, 13)');
+
 
 % first fit only on restricted subset
 restr = 'lc_id=32 and decoder_id in (13) and lc_shuffle_id=-1';
@@ -44,6 +46,8 @@ parpopulate(cd_dlset.LCModelFits, restr);
 restr = 'lc_id=32 and decoder_id in (5) and lc_shuffle_id=-1';
 parpopulate(cd_dlset.TrainedLC, restr);
 parpopulate(cd_dlset.LCModelFits, restr);
+
+
 
 
 % first fit only on restricted subset
